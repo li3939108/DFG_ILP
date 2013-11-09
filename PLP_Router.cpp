@@ -140,7 +140,7 @@ void PLP_Router::build_model()
 			delete [] row;
 			delete [] colno;
 		}
-	}//*/
+	}*/
 #endif
 	set_add_rowmode(lp,false);
 	//max capacity constraints
@@ -286,5 +286,3 @@ void PLP_Router::compute()
 	Time_compute = float(t_clk)/CLOCKS_PER_SEC;
 	cout<<"\tcompute time = "<<Time_compute<<endl;
 }
-
-
