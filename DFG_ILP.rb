@@ -1,4 +1,4 @@
-module DFG_Graph
+module DFG_ILP
 	class GRAPH
 		def initialize(graph)
 			@edge = []
@@ -6,7 +6,7 @@ module DFG_Graph
 			set_node(graph)
 		end
 		
-		def set_node( graph)
+		def set_node(graph)
 			if @vertex.empty?
 				graph['node'] = 1
 			else
@@ -17,6 +17,8 @@ module DFG_Graph
 				graph['preceding'].each {|g|
 					set_node(g)
 				}
+			else
+				return
 			end
 		end
 		
