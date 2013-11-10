@@ -3,7 +3,7 @@ module DFG_Graph
 		def initialize(graph)
 			@edge = []
 			@vertex = []
-			
+			set_node(graph)
 		end
 		
 		def set_node( graph)
@@ -11,23 +11,27 @@ module DFG_Graph
 				graph['node'] = 1
 			else
 				graph['node'] = @vertex.last + 1
-				@vertex.push(graph['node'])
 			end
+			@vertex.push(graph['node'])
 			if !graph['preceding'].empty?
-				graph['preceding'].each {|graph|
-					set_node(@vertex, graph)
+				graph['preceding'].each {|g|
+					set_node(g)
 				}
 			end
 		end
-
-		def get_edge(edge_list, graph)
-			if !graph['preceding'].empty?
-				edge_list.push(
-			end
+		
+		def print_node
+			@vertex
 		end
+
+	#	def get_edge(edge_list, graph)
+	#		if !graph['preceding'].empty?
+	#			edge_list.push(
+	#		end
+	#	end
 		
 		public :initialize
-		private :get_edge, :set_node
+		private :set_node
 	end
 end
 			
