@@ -6,7 +6,7 @@ module DFG_ILP
 			@errB = 0 #error Bound on Primary Output
 		end
 		
-		def IIR_gen(order)
+		def IIR(order)
 			vertex2 = ['x', '+', '+', '+', '+', 'D', 'x', 'x', 'D', 'x']
 			edge2 = [[1,0],[1,6],[2,1],[2,9],[3,2],[3,7],[4,3],[5,2],[5,6],[5,7],[5,8],[8,9],[8,4]]
 			vertex1 = ['x', '+', '+', 'D', 'x']
@@ -44,7 +44,7 @@ module DFG_ILP
 		end
 
 		
-		public :initialize, :v, :e, :IIR_gen
+		public :initialize, :v, :e, :IIR
 	end
 	
 	class ILP
