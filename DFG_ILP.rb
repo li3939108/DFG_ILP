@@ -16,7 +16,22 @@ module DFG_ILP
 			edge1 = [[1,0],[1,4],[2,1],[3,1],[3,2],[3,4]]
 			section2 = order / 2
 			section1 = order % 2
-			vertex = vertex2 * section2 + vertex1 * section1	
+			vertex = vertex2 * section2 + vertex1 * section1
+			edge = 
+			[*0..section2-1].map{|x|
+				edge2.map{|edge|
+					edge.map{|v|
+						v + vertex2.count * x
+					}
+				}
+			} + 
+			[*0..section1-1].map{|x|
+				edge1.map{|edge|
+					edge.map{|v|
+						v + vertex1.count * x + vertex2.count * section2
+					}
+				}
+			}
 		end
 
 		def set_node(graph)
@@ -50,7 +65,7 @@ module DFG_ILP
 		end
 
 		
-		public :initialize, :v, :e
+		public :initialize, :v, :e, :IIR_gen
 		private :set_node, :set_edge
 	end
 	
