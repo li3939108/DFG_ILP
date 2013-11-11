@@ -15,7 +15,7 @@ module DFG_ILP
 			section1 = order % 2
 			@vertex = vertex2 * section2 + vertex1 * section1
 			@edge = 
-			[*0..section2-1].map{|x|
+			[*0..section2-1].map{|x| #[0,1,2,...,section2 - 1]
 				edge2.map{|edge|
 					edge.map{|v|
 						v + vertex2.count * x
@@ -28,7 +28,11 @@ module DFG_ILP
 						v + vertex1.count * x + vertex2.count * section2
 					}
 				}
-			}.flatten(1)
+			}.flatten(1) +
+			[*1..section2-1].map{|x|
+				[x * vertex2.count, x * vertex2.count - 1]
+			} +
+			[[section2 * vertex2.count, section2 * vertex2.count - 1]]
 		end
 
 
@@ -41,7 +45,6 @@ module DFG_ILP
 
 		
 		public :initialize, :v, :e, :IIR_gen
-		private :set_node, :set_edge
 	end
 	
 	class ILP
