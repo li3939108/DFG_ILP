@@ -16,7 +16,7 @@ module DFG_ILP
 			edge1 = [[1,0],[1,4],[2,1],[3,1],[3,2],[3,4]]
 			section2 = order / 2
 			section1 = order % 2
-			
+			vertex = vertex2 * section2 + vertex1 * section1	
 		end
 
 		def set_node(graph)
