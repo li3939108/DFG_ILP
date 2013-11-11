@@ -1,12 +1,9 @@
 module DFG_ILP
 	class GRAPH
-		def initialize(graph)
+		def initialize()
 			@edge = []
 			@vertex = []
-			@graph = graph
 			@errB = 0 #error Bound on Primary Output
-			set_node(@graph)
-			set_edge(@graph)
 		end
 		
 		def IIR_gen(order)
@@ -16,46 +13,24 @@ module DFG_ILP
 			edge1 = [[1,0],[1,4],[2,1],[3,1],[3,2],[3,4]]
 			section2 = order / 2
 			section1 = order % 2
-			vertex = vertex2 * section2 + vertex1 * section1
-			edge = 
+			@vertex = vertex2 * section2 + vertex1 * section1
+			@edge = 
 			[*0..section2-1].map{|x|
 				edge2.map{|edge|
 					edge.map{|v|
 						v + vertex2.count * x
 					}
 				}
-			} + 
+			}.flatten(1) + 
 			[*0..section1-1].map{|x|
 				edge1.map{|edge|
 					edge.map{|v|
 						v + vertex1.count * x + vertex2.count * section2
 					}
 				}
-			}
+			}.flatten(1)
 		end
 
-		def set_node(graph)
-			if @vertex.empty?
-				graph['node'] = 1
-			else
-				graph['node'] = @vertex.last + 1
-			end
-			@vertex.push(graph['node'])
-			if !graph['preceding'].empty?
-				graph['preceding'].each {|g|
-					set_node(g)
-				}
-			end
-		end
-
-		def set_edge(graph)
-			if !graph['preceding'].empty?
-				graph['preceding'].each {|g|
-					@edge.push([g['node'],graph['node']])
-					set_edge(g)
-				}
-			end
-		end
 
 		def v
 			@vertex
