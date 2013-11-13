@@ -98,5 +98,5 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 
 }
 void Init_ILP(){
-        rb_define_method(rb_cObject, "ILP", ILP, 5);//like a normal function, because everything is the child of Object class
+	rb_define_module_function( rb_const_get(rb_cObject, rb_intern("DFG_ILP")),"ILP", ILP, 5);//like a normal function, because everything is the child of Object class
 }

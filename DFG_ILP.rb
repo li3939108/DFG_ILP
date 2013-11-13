@@ -1,5 +1,9 @@
-require 'ILP'
 module DFG_ILP
+	LE = 1
+	GE = 2
+	EQ = 3
+	MIN = true
+	MAX = false
 	class GRAPH
 		def initialize()
 			@edge = []
@@ -53,3 +57,5 @@ module DFG_ILP
 		@U = {'+' => [0, 0], 'x' => [0, 0]} #Resource Bound
 	end
 end
+
+require 'ILP'
