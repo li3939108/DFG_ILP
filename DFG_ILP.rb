@@ -1,14 +1,19 @@
 module DFG_ILP
-	LE = 1
-	GE = 2
-	EQ = 3
-	MIN = true
-	MAX = false
+	LE = 1#constant for less than or equal in lp_solve
+	GE = 2#constant for greater than or equal in lp_solve
+	EQ = 3#constant for equal in lp_solve
+	MIN = true#constant for minimum linear programming
+	MAX = false#constant for maximum linear programming
 	class GRAPH
 		def initialize()
 			@edge = []
 			@vertex = []
 			@errB = 0 #error Bound on Primary Output
+			@Q = 0 #Longest Latency
+			@U = {'+' => [1, 1], 'x' => [1, 1], 'D' => 4} #Resource Bound
+			@d = {'+' => [1, 2], 'x' => [2, 3], 'd' => [1]} #delay for every implementation of every operation type
+			@g = {'+' => [1, 2], 'x' => [10, 20], 'D' => [0]} #dynamic energy for every implementation of every operation type
+			@p = {'+' => [1, 3], 'x' => 
 		end
 		
 		def IIR(order)
@@ -53,9 +58,7 @@ module DFG_ILP
 	end
 	
 	class ILP
-		@Q = 0 #Longest Latency
-		@U = {'+' => [0, 0], 'x' => [0, 0]} #Resource Bound
 	end
 end
 
-require 'ILP'
+require 'ILP'#load the C implemented extension ILP.bundle in mac or ILP.so 
