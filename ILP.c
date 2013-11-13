@@ -97,6 +97,6 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	return ret_hash;
 
 }
-void Init_DFG_ILP(){
+void Init_ILP(){
         rb_define_method(rb_cObject, "ILP", ILP, 5);//like a normal function, because everything is the child of Object class
 }
