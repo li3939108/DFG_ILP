@@ -1,3 +1,4 @@
+require 'ILP'
 module DFG_ILP
 	class GRAPH
 		def initialize()
