@@ -1,6 +1,8 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "lp_lib.h"
+
+#define DISPLAY
 
 int main()
 {
@@ -40,6 +42,7 @@ int main()
 	
 	get_primal_solution(lp, result);
 
+#ifdef DISPLAY
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
 			printf("obj: ");
@@ -50,7 +53,7 @@ int main()
 		}}}
 		printf("%f\n", result[i]);
 	}
-
+#endif
 	delete_lp(lp);
 	return 0;
 }
