@@ -8,12 +8,12 @@ module DFG_ILP
 		def initialize()
 			@edge = []
 			@vertex = []
-			@errB = 0 #error Bound on Primary Output
-			@Q = 0 #Longest Latency
+			@errB = 10 #error Bound on Primary Output
+			@Q = 100 #Longest Latency
 			@U = {'+' => [1, 1], 'x' => [1, 1], 'D' => 4} #Resource Bound
-			@d = {'+' => [1, 2], 'x' => [2, 3], 'd' => [1]} #delay for every implementation of every operation type
-			@g = {'+' => [1, 2], 'x' => [10, 20], 'D' => [0]} #dynamic energy for every implementation of every operation type
-			@p = {'+' => [1, 3], 'x' => 
+			@d = {'+' => [1, 2], 'x' => [2, 3], 'd' => [1]} #delay for every implementation of every operation types
+			@g = {'+' => [2, 5], 'x' => [10, 20], 'D' => [1]} #dynamic energy for every implementation of every operation types
+			@p = {'+' => [1, 3], 'x' => [10, 20], 'D' => [0]} #static power for every implementation of every operation types
 		end
 		
 		def IIR(order)
