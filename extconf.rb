@@ -1,6 +1,6 @@
 require 'mkmf'
 
-#have_library()
+have_library('lpsolve55')
 
 #ruby extconf.rb --with-DFG_ILP-dir=dir
 #set the lib and include directory associated with DFG_ILP to dir/lib dir/include
