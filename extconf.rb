@@ -1,6 +1,10 @@
 require 'mkmf'
+
 #have_library()
-# The destination
+
+#ruby extconf.rb --with-DFG_ILP-dir=.
+#set the lib and include directory associated with DFG_ILP to ./lib ./include
 dir_config('DFG_ILP')
-# Do the work
+
+#create it
 create_makefile('DFG_ILP')
