@@ -80,7 +80,6 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		printf("%f\n", result[i]);
 	}
 #endif	
-
 	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
 		if(i >= 1 && i <= get_Nrows(lp)){
 			rb_ary_store(constraints, i - 1, rb_float_new(result[i]));
@@ -98,5 +97,5 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 
 }
 void Init_ILP(){
-	rb_define_module_function( rb_const_get(rb_cObject, rb_intern("DFG_ILP")),"ILP", ILP, 5);//like a normal function, because everything is the child of Object class
+	rb_define_module_function( rb_const_get(rb_cObject, rb_intern("DFG_ILP")),"ILP", ILP, 5);
 }
