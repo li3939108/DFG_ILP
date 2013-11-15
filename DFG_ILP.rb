@@ -52,7 +52,7 @@ module DFG_ILP
 		end
 
 		def p
-			{:v => @v, :e => vertex, :PI => @PI, :PO => @PO, :U => @U}
+			{:v => @v, :e => vertex, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q}
 		end
 	end
 	
@@ -63,8 +63,10 @@ module DFG_ILP
 				g.v.length + 
 				g.e.length + 
 				@end.count(true) +
-				g.p[:v].length +
-				g.p[:PO].count(true) 
+				g.p[:v].count{|v| v != 'D'} + #error in D operation is ignored
+				g.p[:PO].count(true) +
+				g.p[:Q] * g.p[:U].values.flatten.length
+			@x = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * g.p[:Q]
 			@column = 0
 		end
 	end
