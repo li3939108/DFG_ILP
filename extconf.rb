@@ -11,6 +11,6 @@ require 'mkmf'
 
 
 #create it
-if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy' ,'./lib') 
+if find_header('lp_lib.h', './include') and have_library('lpsolve55', 'strcpy' ) 
 	create_makefile('ILP')
 end

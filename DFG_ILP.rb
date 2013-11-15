@@ -1,5 +1,5 @@
 module DFG_ILP
-	require 'ILP'#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
+	require './ILP.so'#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
 	LE = 1#constant for less than or equal in lp_solve
 	GE = 2#constant for greater than or equal in lp_solve
 	EQ = 3#constant for equal in lp_solve
@@ -44,11 +44,11 @@ module DFG_ILP
 				}
 			}.flatten(1) +
 			[*1..section2-1].map{|x|
-				[x * vertex2.count, x * vertex2.count - 1]
+				[x * vertex2.count, x * vertex2.count - 6]
 			} +
-			(section1 == 0 ? [] : [[section2 * vertex2.count, section2 * vertex2.count - 1]])
-			@PI = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[0]}.include?(i)}
-			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| e[1] == i}.select{|e| @vertex[e[0]] != 'D'}.empty?}
+			(section1 == 0 ? [] : [[section2 * vertex2.count, section2 * vertex2.count - 6]])
+			@PI = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[0]}.include?(i) and @vertex[i] != 'D'}
+			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| e[1] == i}.select{|e| @vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
 		end
 
 		def p
