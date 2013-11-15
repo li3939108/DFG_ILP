@@ -65,6 +65,7 @@ module DFG_ILP
 				@end.count(true) +
 				g.p[:v].count{|v| v != 'D'} + #error in D operation is ignored
 				g.p[:PO].count(true) +
+				g.p[:Q] * g.p[:U].values.flatten.length +
 				g.p[:Q] * g.p[:U].values.flatten.length
 			@x = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * g.p[:Q]
 			@column = 0
