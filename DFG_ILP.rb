@@ -60,9 +60,9 @@ module DFG_ILP
 		def initialize(g)
 			@end = [*0..g.v.length-1].map{|i| !g.e.map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@Nrow =	
-				g.v.length +
-				g.v.length + 
-				g.e.length + 
+				g.p[:v].length +
+				g.p[:v].length + 
+				g.p[:e].length + 
 				@end.count(true) +
 				g.p[:v].count{|v| v != 'D'} + #error in D operation is ignored
 				g.p[:PO].count(true) +
@@ -73,6 +73,7 @@ module DFG_ILP
 			@Nu = g.p[:U].values.flatten.length 
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Ne + @Nu + @Ns
+			@A = [*0..g.p[:v].length-1].map{|i| 
 		end
 	end
 end
