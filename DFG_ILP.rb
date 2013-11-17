@@ -9,6 +9,7 @@ module DFG_ILP
 		def initialize()
 			@edge = []
 			@vertex = []
+			@vertex_without_D = []
 			@PI = []
 			@PO = []
 			@errB = 10 #error Bound on Primary Output
@@ -49,17 +50,20 @@ module DFG_ILP
 			(section1 == 0 ? [] : [[section2 * vertex2.count, section2 * vertex2.count - 6]])
 			@PI = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[0]}.include?(i) and @vertex[i] != 'D'}
 			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| e[1] == i}.select{|e| @vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
+			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
 		end
 
 		def p
-			{:v => @vertex, :e => @edge, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q, :err => @e, :d =>@d}
+			{:v => @vertex, :e => @edge, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q, :err => @e, :d =>@d, :vNoD => @vertex_without_D}
 		end
 	end
 	
 	class ILP
 		def initialize(g)
 			@end = [*0..g.v.length-1].map{|i| !g.e.map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
-			@end_vertex = 
+			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
+			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI] == true}
+			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO] == true}
 			@Nrow =	
 				g.p[:v].length +
 				g.p[:v].length + 
@@ -94,9 +98,23 @@ module DFG_ILP
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
-				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + sArray
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			[*0..
+			[*0..@end_vertex.length - 1].map{|v|
+				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q]
+				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] - 1}
+				sArray = Array.new(g.p[:v].length,0)
+				sArray[@end_vertex[v]] = 1
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
+			} +
+			[*0..@PI_vertex.length - 1].map{|v|
+				start_point = [*0..@PI_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][@PI_vertex[v]]].length * g.p[:Q]
+				errArray = Array.new(@Nerr, 0)
+				errArray[g.p[:vNoD].index(@PI_vertex[v])] = -1
+				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][@PI_vertex[v]]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+			} +
 		end
 	end
 end
