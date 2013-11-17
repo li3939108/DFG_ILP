@@ -1,5 +1,5 @@
 module DFG_ILP
-	require './ILP.so'#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
+	require './ILP.bundle'#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
 	LE = 1#constant for less than or equal in lp_solve
 	GE = 2#constant for greater than or equal in lp_solve
 	EQ = 3#constant for equal in lp_solve
@@ -52,13 +52,14 @@ module DFG_ILP
 		end
 
 		def p
-			{:v => @v, :e => vertex, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q}
+			{:v => @vertex, :e => @edge, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q, :err => @e, :d =>@d}
 		end
 	end
 	
 	class ILP
 		def initialize(g)
 			@end = [*0..g.v.length-1].map{|i| !g.e.map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
+			@end_vertex = 
 			@Nrow =	
 				g.p[:v].length +
 				g.p[:v].length + 
@@ -69,11 +70,33 @@ module DFG_ILP
 				g.p[:Q] * g.p[:U].values.flatten.length +
 				g.p[:U].values.flatten.length
 			@Nx = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * g.p[:Q]
-			@Ne = g.p[:v].count{|v| v != 'D'}
+			@Nerr = g.p[:v].count{|v| v != 'D'}
 			@Nu = g.p[:U].values.flatten.length 
 			@Ns = g.p[:v].length
-			@Ncolumn = @Nx + @Ne + @Nu + @Ns
-			@A = [*0..g.p[:v].length-1].map{|i| 
+			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
+			@A = 
+			[*0..g.p[:v].length-1].map{|i| 
+				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
+				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
+				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * g.p[:Q], 1) + Array.new(ntail, 0)
+			} +
+			[*0..g.p[:v].length - 1].map{|i|
+				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
+				sArray = Array.new(g.p[:v].length,0)
+				sArray[i] = -1
+				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+			} +
+			[*0..g.p[:e].length - 1].map{|e|
+				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * g.p[:Q]
+				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
+				sArray = Array.new(g.p[:v].length,0)
+				sArray[e[0]] = -1
+				sArray[e[1]] = 1
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + sArray
+			} +
+			[*0..
 		end
 	end
 end
