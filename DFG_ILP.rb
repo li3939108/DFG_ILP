@@ -108,13 +108,51 @@ module DFG_ILP
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			[*0..@PI_vertex.length - 1].map{|v|
+			g.p[:vNoD].map{|v|
 				start_point = [*0..@PI_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][@PI_vertex[v]]].length * g.p[:Q]
 				errArray = Array.new(@Nerr, 0)
-				errArray[g.p[:vNoD].index(@PI_vertex[v])] = -1
+				if g.p[:PI][v] == true 
+					errArray[g.p[:vNoD].index(v)] = -1
+				else
+					g.p[:e].select{|e| e[0] = v}.each{|e| errArray[g.p[:vNoD].index(e[1]) = 1}	
+				end
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][@PI_vertex[v]]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
+			g.p[:PO].map{|v|
+				errArray = Array.new(@Nerr, 0)
+				errArray[g.p[:PO].index(v)] = 1
+				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+			} +
+			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|
+				t = row_i / g.p[:U].values.flatten.length
+				di = row_i % g.p[:U].values.flatten.length
+				d = g.p[:d].values[di]
+				flattenUtype = g.p[:U].keys.map{|k| Array.new(g.p[:U][k].length, k)}.reduce([],:+)}
+				flattenUimplementation = g.p[:U].keys.map{|k| [*0..g.p[:U][k].length - 1]}.reduce([], :+)
+				type = flattenUtype[di]
+				implementation = flattenUimplementation[di]
+				xArray = 
+				[*0..g.p[:v].length - 1].map{|xi|
+					[*0..g.p[:Q].length - 1].map{|xt|
+						[*0..g.p[:U][xi].length - 1].map{|m|
+							if g.p[:v][xi] == type and xt <= t and t <= xt + d - 1 and m == implementation
+								1
+							else
+								0
+							end
+						}
+					}.reduce([],:+)
+				}.reduce([],:+)
+				uArray = Array.new(@Nu, 0)
+				uArray[di] = -1
+				xArray + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0) 
+			} +
+			[*0..g.p[:U].values.flatten.length - 1].map{|u|
+				uArray = Array.new(@Nu, 0)
+				uArray[u] = 1
+				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
+			}
 		end
 	end
 end
