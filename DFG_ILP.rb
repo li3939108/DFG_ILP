@@ -16,7 +16,7 @@ module DFG_ILP
 			@PO = []
 			@errB = 10 #error Bound on Primary Output
 			@Q = 60 #Longest Latency
-			@U = {'+' => [1, 1], 'x' => [1, 1], 'D' => 4} #Resource Bound
+			@U = {'+' => [1, 1], 'x' => [1, 1], 'D' => [4]} #Resource Bound
 			@d = {'+' => [1, 2], 'x' => [2, 3], 'd' => [1]} #delay for every implementation of every operation types
 			@g = {'+' => [2, 5], 'x' => [10, 20], 'D' => [1]} #dynamic energy for every implementation of every operation types
 			@p = {'+' => [1, 3], 'x' => [10, 20], 'D' => [0]} #static power for every implementation of every operation types
@@ -62,7 +62,7 @@ module DFG_ILP
 	
 	class ILP
 		def initialize(g)
-			@end = [*0..g.v.length-1].map{|i| !g.e.map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
+			@end = [*0..g.p[:v].length-1].map{|i| !g.p[:e].map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI] == true}
 			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO] == true}
