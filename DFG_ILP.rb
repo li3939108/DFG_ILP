@@ -1,5 +1,7 @@
 module DFG_ILP
-	require './ILP.so'#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
+	#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
+	#note that this file can only be loaded after the module declaration of DFG_ILP
+	require './ILP.so'
 	LE = 1#constant for less than or equal in lp_solve
 	GE = 2#constant for greater than or equal in lp_solve
 	EQ = 3#constant for equal in lp_solve
