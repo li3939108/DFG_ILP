@@ -11,6 +11,7 @@ require 'mkmf'
 
 
 #create it
-if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy','./lib') 
+if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'make_lp')  #For Debian 7 and packeged library
+#if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy','./lib') #For Ubuntu 13.04 and locally compiled library 
 	create_makefile('ILP')
 end
