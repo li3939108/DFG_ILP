@@ -155,5 +155,8 @@ module DFG_ILP
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
 			}
 		end
+		def A
+			@A
+		end
 	end
 end
