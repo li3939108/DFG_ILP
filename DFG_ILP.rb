@@ -128,15 +128,15 @@ module DFG_ILP
 			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|
 				t = row_i / g.p[:U].values.flatten.length
 				di = row_i % g.p[:U].values.flatten.length
-				d = g.p[:d].values[di]
+				d = g.p[:d].values.flatten[di]
 				flattenUtype = g.p[:U].keys.map{|k| Array.new(g.p[:U][k].length, k)}.reduce([],:+)
 				flattenUimplementation = g.p[:U].keys.map{|k| [*0..g.p[:U][k].length - 1]}.reduce([], :+)
 				type = flattenUtype[di]
 				implementation = flattenUimplementation[di]
 				xArray = 
 				[*0..g.p[:v].length - 1].map{|xi|
-					[*0..g.p[:Q].length - 1].map{|xt|
-						[*0..g.p[:U][xi].length - 1].map{|m|
+					[*0..g.p[:Q] - 1].map{|xt|
+						[*0..g.p[:U][g.p[:v][xi]].length - 1].map{|m|
 							if g.p[:v][xi] == type and xt <= t and t <= xt + d - 1 and m == implementation
 								1
 							else
