@@ -64,8 +64,8 @@ module DFG_ILP
 		def initialize(g)
 			@end = [*0..g.p[:v].length-1].map{|i| !g.p[:e].map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
-			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI] == true}
-			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO] == true}
+			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
+			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO][i] == true}
 			@Nrow =	
 				g.p[:v].length +
 				g.p[:v].length + 
