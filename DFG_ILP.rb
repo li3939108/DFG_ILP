@@ -127,10 +127,10 @@ module DFG_ILP
 				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * g.p[:Q]
 				errArray = Array.new(@Nerr, 0)
-				if g.p[:PI][v] == true 
-					errArray[g.p[:vNoD].index(v)] = -1
+				errArray[g.p[:vNoD].index(v)] = -1
+				if g.p[:PI][v] == false
+					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[g.p[:vNoD].index(e[1])] = 1}	
 				end
-				g.p[:e].select{|e| e[0] == v}.each{|e| errArray[g.p[:vNoD].index(e[1])] = 1}	
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			g.p[:PO].map{|v|			#Formula (8)
