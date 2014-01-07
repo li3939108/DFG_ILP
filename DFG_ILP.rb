@@ -176,8 +176,8 @@ module DFG_ILP
 				g.p[:U].values.flatten
 		end
 
-		def A
-			@A
+		def p
+			{:A => @A, :op => @op, :b => @b}
 		end
 	end
 end
