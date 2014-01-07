@@ -56,7 +56,7 @@ module DFG_ILP
 		end
 
 		def p
-			{:v => @vertex, :e => @edge, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q, :err => @e, :d =>@d, :vNoD => @vertex_without_D}
+			{:h => @vertex, :e => @edge, :PI => @PI, :PO => @PO, :U => @U, :Q =>@Q, :err => @e, :d =>@d, :vNoD => @vertex_without_D, :B => @errB}
 		end
 	end
 	
@@ -162,10 +162,18 @@ module DFG_ILP
 				g.p[:vNoD].map{|v| 							#Formula (6) (7)
 					g.p[:PI][v] == true ? EQ : LE	
 				}							+
-				Array.new(g.p[:PI].length, LE)				+		#Formula (8)
+				Array.new(g.p[:PO].length, LE)				+		#Formula (8)
 				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
 				Array.new(g.p[:U].values.flatten.length, LE)
-
+			@b 	=
+				Array.new(g.p[:v].length, 1)				+		#Formula (2)
+				Array.new(g.p[:v].length, 0)				+		#Formula (3)
+				Array.new(g.p[:e].length, 0)				+		#Formula (4)	
+				Array.new(@end_vertex.length, g.p[:Q])			+		#Formula (5)
+				Array.new(g.p[:vNoD].length , 0)			+		#Formula (6) (7)							
+				Array.new(g.p[:PO].length, g.p[:B])			+		#Formula (8)
+				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, 0)	+		#Formula (9)
+				g.p[:U].values.flatten
 		end
 
 		def A
