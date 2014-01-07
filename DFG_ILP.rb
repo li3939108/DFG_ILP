@@ -154,17 +154,20 @@ module DFG_ILP
 				uArray[u] = 1
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
 			}
-		end
-		@op 	= 	Array.new(EQ, g.p[:v].length)				+		#Formula (2)
-				Array.new(EQ, g.p[:v].length)				+		#Formula (3)
-				Array.new(LE, g.p[:e].length)				+		#Formula (4)	
-				Array.new(LE, @end_vertex.length)			+		#Formula (5)
+			@op 	= 	
+				Array.new(g.p[:v].length, EQ)				+		#Formula (2)
+				Array.new(g.p[:v].length, EQ)				+		#Formula (3)
+				Array.new(g.p[:e].length, LE)				+		#Formula (4)	
+				Array.new(@end_vertex.length, LE )			+		#Formula (5)
 				g.p[:vNoD].map{|v| 							#Formula (6) (7)
 					g.p[:PI][v] == true ? EQ : LE	
 				}							+
-				Array.new(LE, g.p[:PI].length)				+		#Formula (8)
-				Array.new(LE, g.p[:Q] * g.p[:U].values.flatten.length)	+		#Formula (9)
-				Array.new(LE, g.p[:U].values.flatten.length)
+				Array.new(g.p[:PI].length, LE)				+		#Formula (8)
+				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
+				Array.new(g.p[:U].values.flatten.length, LE)
+
+		end
+
 		def A
 			@A
 		end
