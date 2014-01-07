@@ -81,19 +81,19 @@ module DFG_ILP
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
-			[*0..g.p[:v].length-1].map{|i| 
+			[*0..g.p[:v].length-1].map{|i|		#Formula (2)
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
 				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * g.p[:Q], 1) + Array.new(ntail, 0)
 			} +
-			[*0..g.p[:v].length - 1].map{|i|
+			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
-			[*0..g.p[:e].length - 1].map{|e|
+			[*0..g.p[:e].length - 1].map{|e|	#Formula (4)
 				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * g.p[:Q]
 				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
@@ -102,7 +102,7 @@ module DFG_ILP
 				sArray[e[1]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			[*0..@end_vertex.length - 1].map{|v|
+			[*0..@end_vertex.length - 1].map{|v|	#Formula (5)
 				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q]
 				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] - 1}
@@ -110,7 +110,7 @@ module DFG_ILP
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			g.p[:vNoD].map{|v|
+			g.p[:vNoD].map{|v|			#Formula (6) (7)
 				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * g.p[:Q]
 				errArray = Array.new(@Nerr, 0)
@@ -120,12 +120,12 @@ module DFG_ILP
 				g.p[:e].select{|e| e[0] == v}.each{|e| errArray[g.p[:vNoD].index(e[1])] = 1}	
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
-			g.p[:PO].map{|v|
+			g.p[:PO].map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[g.p[:PO].index(v)] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
-			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|
+			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
 				t = row_i / g.p[:U].values.flatten.length
 				di = row_i % g.p[:U].values.flatten.length
 				d = g.p[:d].values.flatten[di]
@@ -155,6 +155,16 @@ module DFG_ILP
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
 			}
 		end
+		@op 	= 	Array.new(EQ, g.p[:v].length)				+		#Formula (2)
+				Array.new(EQ, g.p[:v].length)				+		#Formula (3)
+				Array.new(LE, g.p[:e].length)				+		#Formula (4)	
+				Array.new(LE, @end_vertex.length)			+		#Formula (5)
+				g.p[:vNoD].map{|v| 							#Formula (6) (7)
+					g.p[:PI][v] == true ? EQ : LE	
+				}							+
+				Array.new(LE, g.p[:PI].length)				+		#Formula (8)
+				Array.new(LE, g.p[:Q] * g.p[:U].values.flatten.length)	+		#Formula (9)
+				Array.new(LE, g.p[:U].values.flatten.length)
 		def A
 			@A
 		end
