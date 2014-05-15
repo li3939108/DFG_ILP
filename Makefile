@@ -68,9 +68,9 @@ optflags = -O3
 debugflags = -ggdb
 warnflags = -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration
 CFLAGS   = -fPIC -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wall -fno-strict-aliasing -fPIC $(ARCH_FLAG)
-INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir) -I./include
+INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
-CPPFLAGS =  -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
+CPPFLAGS = -DHAVE_LP_LIB_H -I./include -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
 CXXFLAGS = $(CFLAGS) -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wall -fno-strict-aliasing
 ldflags  = -L. -Wl,-z,relro -rdynamic -Wl,-export-dynamic
 dldflags = 
@@ -102,8 +102,8 @@ COPY = cp
 
 preload = 
 
-libpath = . $(libdir)
-LIBPATH =  -L. -L$(libdir)
+libpath = . $(libdir) /usr/local/lib
+LIBPATH =  -L. -L$(libdir) -Wl,-rpath,/usr/local/lib  -L/usr/local/lib -Wl,-rpath,/usr/local/lib 
 DEFFILE = 
 
 CLEANFILES = mkmf.log
@@ -115,8 +115,8 @@ extout_prefix =
 target_prefix = 
 LOCAL_LIBS = 
 LIBS = $(LIBRUBYARG_SHARED) -llpsolve55  -lpthread -lrt -ldl -lcrypt -lm   -lc
-SRCS = ILP.c main.c
-OBJS = ILP.o main.o
+SRCS = main.c ILP.c
+OBJS = main.o ILP.o
 TARGET = ILP
 DLLIB = $(TARGET).so
 EXTSTATIC = 
