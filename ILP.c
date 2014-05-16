@@ -4,8 +4,12 @@
 #include "lp_lib.h"
 #include "ruby.h"
 
-//#define DISPLAY
+#define DISPLAY
 
+/*
+ * min(max_bar)      c x
+ *               A x op  b
+ */
 static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	Check_Type(A, T_ARRAY) ;
 	Check_Type(op, T_ARRAY) ;
