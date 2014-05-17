@@ -18,6 +18,7 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	int Nrow = RARRAY_LEN(A); 
 	int Ncolumn = RARRAY_LEN(c);
 	int i;
+	int ret ;
 	lprec *lp = NULL;
 	REAL row[1 + Ncolumn] ;
 	REAL result[1 + Nrow + Ncolumn];
@@ -69,11 +70,14 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}
 	
 	set_obj_fn(lp, row);
-
-	solve(lp);
+#ifdef DISPLAY
+	printf("start solve\n");
+#endif
+	ret = solve(lp);
 
 	get_primal_solution(lp, result);
 #ifdef DISPLAY
+	printf("solve return value: %d \n", ret);
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
 			printf("obj: ");

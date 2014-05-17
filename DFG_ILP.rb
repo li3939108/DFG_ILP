@@ -15,14 +15,14 @@ module DFG_ILP
 			@PI = []
 			@PO = []
 			@errB = 10 #error Bound on Primary Output
-			@Q = 60 #Longest Latency
+			@Q = 30 #Longest Latency
 			@U = {'+' => [1, 1], 	'x' => [1, 1], 		'D' => [4]} #Resource Bound
 
 			#delay
-			@d = {'+' => [1, 2], 	'x' => [2, 3], 		'D' => [1]} #delay for every implementation of every operation types
+			@d = {'+' => [1, 2], 	'x' => [1,2], 		'D' => [1]} #delay for every implementation of every operation types
 
 			#power
-			@g = {'+' => [20, 50], 	'x' => [100, 200], 	'D' => [1]} #dynamic energy for every implementation of every operation types
+			@g = {'+' => [20, 50], 	'x' => [100, 200], 	'D' => [10]} #dynamic energy for every implementation of every operation types
 			@p = {'+' => [1, 3], 	'x' => [10, 20], 	'D' => [0]} #static power for every implementation of every operation types
 
 			#error
