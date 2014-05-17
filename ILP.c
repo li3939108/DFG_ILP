@@ -52,7 +52,7 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		int constraint_type ;
 		Check_Type(row_v, T_ARRAY);
 		if(RARRAY_LEN(row_v) != Ncolumn){
-			rb_raise(rb_eArgError, "Length of row %d doen not match that of c, i.e., the objective", i + 1);
+			rb_raise(rb_eArgError, "Length of row %d :%ld doen not match that of c:%d, i.e., the objective", i + 1, RARRAY_LEN(row_v) ,Ncolumn);
 		}
 		for(j = 0; j < Ncolumn; j++){
 			row[j + 1] = NUM2DBL(rb_ary_entry(row_v, j));

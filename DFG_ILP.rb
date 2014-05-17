@@ -100,19 +100,19 @@ module DFG_ILP
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
-			[*0..g.p[:v].length-1].map{|i|		#Formula (2)
+			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  30
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
 				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * g.p[:Q], 1) + Array.new(ntail, 0)
 			} +
-			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)
+			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  30 
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
-			[*0..g.p[:e].length - 1].map{|e|	#Formula (4)
+			[*0..g.p[:e].length - 1].map{|e|	#Formula (4)  41
 				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * g.p[:Q]
 				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
@@ -139,9 +139,9 @@ module DFG_ILP
 				end
 				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
-			g.p[:PO].map{|v|			#Formula (8)
+			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
-				errArray[g.p[:PO].index(v)] = 1
+				errArray[g.p[:vNoD].index(v)] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
@@ -181,7 +181,7 @@ module DFG_ILP
 				g.p[:vNoD].map{|v| 							#Formula (6) (7)
 					g.p[:PI][v] == true ? EQ : LE	
 				}							+
-				Array.new(g.p[:PO].length, LE)				+		#Formula (8)
+				Array.new(@PO_vertex.length, LE)				+		#Formula (8)
 				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
 				Array.new(g.p[:U].values.flatten.length, LE)
 			@b 	=
@@ -190,7 +190,7 @@ module DFG_ILP
 				Array.new(g.p[:e].length, 0)				+		#Formula (4)	
 				Array.new(@end_vertex.length, g.p[:Q])			+		#Formula (5)
 				Array.new(g.p[:vNoD].length , 0)			+		#Formula (6) (7)							
-				Array.new(g.p[:PO].length, g.p[:B])			+		#Formula (8)
+				Array.new(@PO_vertex.length, g.p[:B])			+		#Formula (8)
 				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, 0)	+		#Formula (9)
 				g.p[:U].values.flatten
 			@c	=
@@ -211,6 +211,9 @@ module DFG_ILP
 				:b => @b,
 				:c => @c
 			}
+		end
+		def compute
+			DFG_ILP::ILP(@A, @op, @b, @c, true)
 		end
 	end
 end
