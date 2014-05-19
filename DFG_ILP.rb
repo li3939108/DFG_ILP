@@ -228,8 +228,9 @@ module DFG_ILP
 				schedule = schedule + [{:op => g.p[:v][i], :time => time, :type => type}]				
 				position = position + current_length
 			end
+			print "\n", "optimal value: ", ret[:o], "\n"
 			print schedule , "\n"
-			return schedule
+			return {:opt => ret[:o], :sch => schedule}
 		end
 	end
 end

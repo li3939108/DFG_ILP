@@ -78,6 +78,13 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	get_primal_solution(lp, result);
 #ifdef DISPLAY
 	printf("solve return value: %d \n", ret);
+	switch(ret){
+		case 2: rb_raise(rb_eFatal, "no solution");
+		break ;
+
+		default:
+		break;
+	}
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
 			printf("obj: ");
