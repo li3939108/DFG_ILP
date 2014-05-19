@@ -4,7 +4,7 @@
 #include "lp_lib.h"
 #include "ruby.h"
 
-#define DISPLAY
+//#define DISPLAY
 
 /*
  * min(max_bar)      c x
@@ -45,7 +45,7 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}
 
 	set_add_rowmode(lp, true);
-
+	printf("number of constraints: %d\n", Nrow);
 	for(i = 0; i < Nrow; i++){
 		VALUE row_v = rb_ary_entry(A, i);
 		int j;
@@ -63,20 +63,15 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		add_constraint(lp, row, constraint_type, b_dbl); 
 	}
 	set_add_rowmode(lp, false);
-	
+	printf("number of variables: %d\n", Ncolumn);
 	for(i = 0; i < Ncolumn; i++){
 		row[i + 1] = NUM2DBL(rb_ary_entry(c, i));
 		set_int(lp, i + 1, true);
 	}
 	
 	set_obj_fn(lp, row);
-#ifdef DISPLAY
 	printf("start solve\n");
-#endif
 	ret = solve(lp);
-
-	get_primal_solution(lp, result);
-#ifdef DISPLAY
 	printf("solve return value: %d \n", ret);
 	switch(ret){
 		case 2: rb_raise(rb_eFatal, "no solution");
@@ -85,6 +80,9 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		default:
 		break;
 	}
+	get_primal_solution(lp, result);
+#ifdef DISPLAY
+
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
 			printf("obj: ");

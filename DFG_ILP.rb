@@ -225,7 +225,7 @@ module DFG_ILP
 				index = ret[:v][position, current_length].index(1)
 				time = index/ g.p[:U][g.p[:v][i]].length 
 				type = index% g.p[:U][g.p[:v][i]].length 
-				schedule = schedule + [{:op => g.p[:v][i], :time => time, :type => type}]				
+				schedule = schedule + [{:id => i, :op => g.p[:v][i], :time => time, :type => type}]				
 				position = position + current_length
 			end
 			print "\n", "optimal value: ", ret[:o], "\n"
