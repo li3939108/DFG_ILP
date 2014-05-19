@@ -104,22 +104,22 @@ module DFG_ILP
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
-			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  30
+			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
 				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * q
 				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * q, 1) + Array.new(ntail, 0)
 			} +
-			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  30 
+			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  
 				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * q
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
 				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
-			[*0..g.p[:e].length - 1].map{|e|	#Formula (4)  41
+			g.p[:e].map{|e|	#Formula (4)  41
 				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * q
-				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * q - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
+				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * q - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] }
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
@@ -128,7 +128,7 @@ module DFG_ILP
 			[*0..@end_vertex.length - 1].map{|v|	#Formula (5)
 				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * q
-				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] - 1}
+				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] }
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
