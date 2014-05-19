@@ -16,7 +16,7 @@ module DFG_ILP
 			@PO = []
 			@errB = 10 #error Bound on Primary Output
 			@Q = 30 #Longest Latency
-			@U = {'+' => [1, 1], 	'x' => [1, 1], 		'D' => [4]} #Resource Bound
+			@U = {'+' => [1, 1], 	'x' => [1, 1], 		'D' => [400]} #Resource Bound
 
 			#delay
 			@d = {'+' => [1, 2], 	'x' => [1,2], 		'D' => [1]} #delay for every implementation of every operation types
@@ -80,7 +80,11 @@ module DFG_ILP
 	end
 	
 	class ILP
-		def initialize(g)
+		def initialize(g, q = nil)
+			if q == nil
+				q = g.p[:Q]
+			end
+			@q = q
 			@end = [*0..g.p[:v].length-1].map{|i| !g.p[:e].map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
@@ -92,59 +96,59 @@ module DFG_ILP
 				@end.count(true) +
 				g.p[:v].count{|v| v != 'D'} + #error in D operation is ignored
 				g.p[:PO].count(true) +
-				g.p[:Q] * g.p[:U].values.flatten.length +
+				q * g.p[:U].values.flatten.length +
 				g.p[:U].values.flatten.length
-			@Nx = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * g.p[:Q]
+			@Nx = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * q
 			@Nerr = g.p[:v].count{|v| v != 'D'}
 			@Nu = g.p[:U].values.flatten.length 
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
 			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  30
-				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
-				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
-				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * g.p[:Q], 1) + Array.new(ntail, 0)
+				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * q
+				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * q, 1) + Array.new(ntail, 0)
 			} +
 			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  30 
-				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * g.p[:Q]
+				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * q
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
-				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
 			[*0..g.p[:e].length - 1].map{|e|	#Formula (4)  41
-				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * g.p[:Q]
-				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
+				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * q
+				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * q - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] - 1}
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
 			[*0..@end_vertex.length - 1].map{|v|	#Formula (5)
-				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q]
-				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * g.p[:Q] - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] - 1}
+				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * q
+				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] - 1}
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
 			g.p[:vNoD].map{|v|			#Formula (6) (7)
-				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * g.p[:Q] }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * g.p[:Q]
+				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * q
 				errArray = Array.new(@Nerr, 0)
 				errArray[g.p[:vNoD].index(v)] = -1
 				if g.p[:PI][v] == false
 					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[g.p[:vNoD].index(e[1])] = 1}	
 				end
-				Array.new(start_point, 0) + [*0..g.p[:Q]-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[g.p[:vNoD].index(v)] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
-			[*0..g.p[:Q] * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
+			[*0..q * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
 				t = row_i / g.p[:U].values.flatten.length
 				di = row_i % g.p[:U].values.flatten.length
 				d = g.p[:d].values.flatten[di]
@@ -154,7 +158,7 @@ module DFG_ILP
 				implementation = flattenUimplementation[di]
 				xArray = 
 				[*0..g.p[:v].length - 1].map{|xi|
-					[*0..g.p[:Q] - 1].map{|xt|
+					[*0..q - 1].map{|xt|
 						[*0..g.p[:U][g.p[:v][xi]].length - 1].map{|m|
 							if g.p[:v][xi] == type and xt <= t and t <= xt + d - 1 and m == implementation
 								1
@@ -182,25 +186,25 @@ module DFG_ILP
 					g.p[:PI][v] == true ? EQ : LE	
 				}							+
 				Array.new(@PO_vertex.length, LE)				+		#Formula (8)
-				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
+				Array.new(q * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
 				Array.new(g.p[:U].values.flatten.length, LE)
 			@b 	=
 				Array.new(g.p[:v].length, 1)				+		#Formula (2)
 				Array.new(g.p[:v].length, 0)				+		#Formula (3)
 				Array.new(g.p[:e].length, 0)				+		#Formula (4)	
-				Array.new(@end_vertex.length, g.p[:Q])			+		#Formula (5)
+				Array.new(@end_vertex.length, q)			+		#Formula (5)
 				Array.new(g.p[:vNoD].length , 0)			+		#Formula (6) (7)							
 				Array.new(@PO_vertex.length, g.p[:B])			+		#Formula (8)
-				Array.new(g.p[:Q] * g.p[:U].values.flatten.length, 0)	+		#Formula (9)
+				Array.new(q * g.p[:U].values.flatten.length, 0)	+		#Formula (9)
 				g.p[:U].values.flatten
 			@c	=
 				[*0..g.p[:v].length - 1].map{|xi|
-					[*0..g.p[:Q] - 1].map{|xt|
+					[*0..q - 1].map{|xt|
 						g.p[:g][g.p[:v][xi]]
 					}.reduce([], :+)
 				}.reduce([], :+)					+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				g.p[:p].values.flatten.map{|p| p * g.p[:Q]}		+		#uArray
+				g.p[:p].values.flatten.map{|p| p * q}		+		#uArray
 				Array.new(@Ns, 0)							#sArray
 		end
 
@@ -212,8 +216,20 @@ module DFG_ILP
 				:c => @c
 			}
 		end
-		def compute
-			DFG_ILP::ILP(@A, @op, @b, @c, true)
+		def compute(g)
+			ret = DFG_ILP::ILP(@A, @op, @b, @c, true)
+			position = 0
+			schedule = []
+			for i in [*0..g.p[:v].length-1]	do	#Formula (2)  30
+				current_length = g.p[:U][g.p[:v][i]].length * @q
+				index = ret[:v][position, current_length].index(1)
+				time = index/ g.p[:U][g.p[:v][i]].length 
+				type = index% g.p[:U][g.p[:v][i]].length 
+				schedule = schedule + [{:op => g.p[:v][i], :time => time, :type => type}]				
+				position = position + current_length
+			end
+			print schedule , "\n"
+			return schedule
 		end
 	end
 end

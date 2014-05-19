@@ -91,7 +91,7 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 #endif	
 	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
 		if(i >= 1 && i <= get_Nrows(lp)){
-			rb_ary_store(constraints, i - 1, rb_float_new(result[i]));
+			rb_ary_store(constraints, i - 1, INT2NUM((int)result[i]));
 		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
 			rb_ary_store(variables, i - 1 - get_Nrows(lp), INT2NUM((int)result[i]));
 		}}
