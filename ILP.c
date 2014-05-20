@@ -243,6 +243,7 @@ void Init_ILP(){
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	rb_define_module_function(DFG_ILP_mod, "ILP", ILP, 5);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ALAP", ALAP, 0);
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
 }
