@@ -4,6 +4,58 @@
 #include "lp_lib.h"
 #include "ruby.h"
 
+#include "graph.h"
+
+#include <string.h>
+
+VALUE cGraph ;
+VALUE graph_obj ;
+
+void get_graph(VALUE vlist, VALUE elist) {
+	Graph *G ;
+	int i, elist_len = RARRAY_LEN(elist), vlist_len = RARRAY_LEN(vlist);
+	Vertex *vertex_list[vlist_len] ;
+	char vertices[vlist_len] ;
+	Check_Type(vlist, T_ARRAY) ;
+	Check_Type(elist, T_ARRAY) ;	
+	memset(vertex_list, 0, sizeof vertex_list);
+	for(i = 0; i < vlist; i++){
+		int t ;
+		VALUE op = rb_ary_entry(vlist, i) ;
+		char *opreation ;
+		Check_Type(op, T_STRING) ;
+		RSTRING_GETMEM(op, opreation, t) ;
+		vertices[i] = opreation[0] ;
+	}
+	for(i = 0; i < elist_len; i++){
+		VALUE edge = rb_ary_entry(elist, i) ;
+		int e1, e2 ;
+		Check_Type(edge, T_ARRAY) ;
+		e1 = FIX2INT(rb_ary_entry(edge, 1) ) ;
+		e2 = FIX2INT(rb_ary_entry(edge, 0) );
+		if(vertex_list[e1] == NULL){
+			vertex_list[e1] = new_vertex(e1 + 1) ;
+			vertex_list[e1]->op = vertices[e1] ;
+		}
+		if(vertex_list[e2] == NULL){
+			vertex_list[e2] = new_vertex(e2 + 1) ;
+			vertex_list[e2]->op = vertices[e2] ;
+		};
+		add_adjacency_vertex(vertex_list[e1], e2 + 1, vertices[e2]) ;
+	}
+	G = new_graph(vlist_len, vertex_list);
+	graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, G) ;
+}
+static VALUE ASAP(VALUE self, VALUE vlist, VALUE elist){
+	Graph *G ;
+	Data_Get_Struct(graph_obj, Graph, G) ;
+	if(G == NULL){
+		get_graph(vlist, elist) ;
+		Data_Get_Struct(graph_obj, Graph, G) ;
+	}
+
+}
+
 //#define DISPLAY
 
 /*
@@ -111,5 +163,9 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 
 }
 void Init_ILP(){
+	cGraph = rb_define_class("Graph", rb_cObject) ;
+	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	rb_define_module_function( rb_const_get(rb_cObject, rb_intern("DFG_ILP")),"ILP", ILP, 5);
+	rb_define_method(rb_const_get(rb_cObject, rb_intern("GRAPH")),"ASAP", ASAP, 5);
 }
+
