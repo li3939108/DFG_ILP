@@ -63,7 +63,7 @@ void add_adjacency_vertex(Vertex *v, int label, int weight) {
 
 void pv(Vertex *v, FILE *fp){
 	int i ;
-	fprintf(fp, "%d -> ", v->label) ;
+	fprintf(fp, "(%d %c) -> ", v->label, v->op) ;
 	for(i = 0; i < v->degree; i++){
 		fprintf(fp, "[%d %c] ", v->list[i][0], v->list[i][1]);
 	}

@@ -50,6 +50,7 @@ static VALUE ASAP(VALUE self){
 	Graph *G ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
+	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	if(G == NULL){
@@ -172,5 +173,6 @@ void Init_ILP(){
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	rb_define_module_function(DFG_ILP_mod, "ILP", ILP, 5);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
+	rb_global_variable(&graph_obj) ;
 }
 
