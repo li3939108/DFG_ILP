@@ -65,29 +65,7 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
 	time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( rb_hash_aref(delay, rb_str_new2(op) ), 0) );
 	return time[s_label] ;
 }
-/*
-int dfs(Graph *G, int s_label){
- 	int i, j;
-	if( t_label == s_label ){
-		return bw ;
-	}
- 	for(i = 0; i < G->adj_list[ s_label ]->degree; i++){
- 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
- 		if( adj[0] == t_label){
- 			return bw > adj[1] ? adj[1] : bw ;
- 		}
- 		if(p[ adj[0] ] == 0){
-			int ret ;
- 			p[adj[0] ] = s_label ;
- 			ret = dfs(G, adj[0], t_label, bw > adj[1] ? adj[1] : bw, p ) ;
- 			if(ret != -1){
- 				return ret ;
- 			}
- 		}
- 	}
- 	return -1 ;
- }
- */
+
 static VALUE ASAP(VALUE self){
 	Graph *G, *Gt ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
