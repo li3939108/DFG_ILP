@@ -49,6 +49,22 @@ void get_graph(VALUE vlist, VALUE elist) {
 	graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, G) ;
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, Gt) ;
 }
+int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
+	int i ;
+	char op[2] ;
+	if(time[s_label] != -1){
+		return time[s_label] ;
+	}
+	for(i = 0; i < G->adj_list[s_label]->degree; i++){
+ 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
+ 		int time_step = dfs(G, adj[0], time, delay) ;
+ 		time[s_label] = time[s_label] < time_step ? time_step : time[s_label] ;
+	}
+	op[0] = G->adj_list[s_label]->op ;
+	op[1] = '\0' ;
+	time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( rb_hash_aref(delay, rb_str_new2(op) ), 0) );
+	return time[s_label] ;
+}
 /*
 int dfs(Graph *G, int s_label){
  	int i, j;
@@ -77,7 +93,7 @@ static VALUE ASAP(VALUE self){
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
-
+	int *time, i;
 
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
@@ -86,9 +102,53 @@ static VALUE ASAP(VALUE self){
 		Data_Get_Struct(graph_obj, Graph, G) ;
 		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
 	}
+	time = calloc(G->V + 1, sizeof *time);
+	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
+	printf("\n\n%d\n\n",time[3]) ;
 	pg(G, stdout) ;
 	printf("\n--------\n");
 	pg(Gt, stdout);
+
+	for(i = 1; i <= G->V; i++){
+		dfs(Gt, i, time, delay) ;
+	}
+	for(i = 1; i <= G->V; i++){
+		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
+	}
+
+	free(time) ;
+	return Qnil ;
+}
+
+static VALUE ALAP(VALUE self){
+	Graph *G, *Gt ;
+	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
+	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
+	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	int *time, i;
+
+	Data_Get_Struct(graph_obj, Graph, G) ;
+	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+	if(G == NULL || Gt == NULL){
+		get_graph(vlist, elist) ;
+		Data_Get_Struct(graph_obj, Graph, G) ;
+		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+	}
+	time = calloc(G->V + 1, sizeof *time);
+	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
+	printf("\n\n%d\n\n",time[3]) ;
+	pg(G, stdout) ;
+	printf("\n--------\n");
+	pg(Gt, stdout);
+
+	for(i = 1; i <= G->V; i++){
+		dfs(G, i, time, delay) ;
+	}
+	for(i = 1; i <= G->V; i++){
+		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
+	}
+	
+	free(time) ;
 	return Qnil ;
 }
 
