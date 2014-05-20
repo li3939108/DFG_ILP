@@ -19,7 +19,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 	Check_Type(vlist, T_ARRAY) ;
 	Check_Type(elist, T_ARRAY) ;	
 	memset(vertex_list, 0, sizeof vertex_list);
-	for(i = 0; i < vlist; i++){
+	for(i = 0; i < vlist_len; i++){
 		int t ;
 		VALUE op = rb_ary_entry(vlist, i) ;
 		char *opreation ;
@@ -46,14 +46,18 @@ void get_graph(VALUE vlist, VALUE elist) {
 	G = new_graph(vlist_len, vertex_list);
 	graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, G) ;
 }
-static VALUE ASAP(VALUE self, VALUE vlist, VALUE elist){
+static VALUE ASAP(VALUE self){
 	Graph *G ;
+	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
+	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
+
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	if(G == NULL){
 		get_graph(vlist, elist) ;
 		Data_Get_Struct(graph_obj, Graph, G) ;
 	}
-
+	pg(G, stdout) ;
+	return Qnil ;
 }
 
 //#define DISPLAY
@@ -163,9 +167,10 @@ static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 
 }
 void Init_ILP(){
-	cGraph = rb_define_class("Graph", rb_cObject) ;
+	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
+	cGraph = rb_define_class_under(DFG_ILP_mod, "Graph", rb_cObject) ;
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
-	rb_define_module_function( rb_const_get(rb_cObject, rb_intern("DFG_ILP")),"ILP", ILP, 5);
-	rb_define_method(rb_const_get(rb_cObject, rb_intern("GRAPH")),"ASAP", ASAP, 5);
+	rb_define_module_function(DFG_ILP_mod, "ILP", ILP, 5);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
 }
 
