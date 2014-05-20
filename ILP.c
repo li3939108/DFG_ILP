@@ -10,9 +10,10 @@
 
 VALUE cGraph ;
 VALUE graph_obj ;
+VALUE reverse_graph_obj ;
 
 void get_graph(VALUE vlist, VALUE elist) {
-	Graph *G ;
+	Graph *G, *Gt ;
 	int i, elist_len = RARRAY_LEN(elist), vlist_len = RARRAY_LEN(vlist);
 	Vertex *vertex_list[vlist_len] ;
 	char vertices[vlist_len] ;
@@ -22,10 +23,10 @@ void get_graph(VALUE vlist, VALUE elist) {
 	for(i = 0; i < vlist_len; i++){
 		int t ;
 		VALUE op = rb_ary_entry(vlist, i) ;
-		char *opreation ;
+		char *operation ;
 		Check_Type(op, T_STRING) ;
-		RSTRING_GETMEM(op, opreation, t) ;
-		vertices[i] = opreation[0] ;
+		RSTRING_GETMEM(op, operation, t) ;
+		vertices[i] = operation[0] ;
 	}
 	for(i = 0; i < elist_len; i++){
 		VALUE edge = rb_ary_entry(elist, i) ;
@@ -44,20 +45,50 @@ void get_graph(VALUE vlist, VALUE elist) {
 		add_adjacency_vertex(vertex_list[e1], e2 + 1, vertices[e2]) ;
 	}
 	G = new_graph(vlist_len, vertex_list);
+	Gt = reverse(G) ;
 	graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, G) ;
+	reverse_graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, Gt) ;
 }
+/*
+int dfs(Graph *G, int s_label){
+ 	int i, j;
+	if( t_label == s_label ){
+		return bw ;
+	}
+ 	for(i = 0; i < G->adj_list[ s_label ]->degree; i++){
+ 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
+ 		if( adj[0] == t_label){
+ 			return bw > adj[1] ? adj[1] : bw ;
+ 		}
+ 		if(p[ adj[0] ] == 0){
+			int ret ;
+ 			p[adj[0] ] = s_label ;
+ 			ret = dfs(G, adj[0], t_label, bw > adj[1] ? adj[1] : bw, p ) ;
+ 			if(ret != -1){
+ 				return ret ;
+ 			}
+ 		}
+ 	}
+ 	return -1 ;
+ }
+ */
 static VALUE ASAP(VALUE self){
-	Graph *G ;
+	Graph *G, *Gt ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 
+
 	Data_Get_Struct(graph_obj, Graph, G) ;
-	if(G == NULL){
+	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+	if(G == NULL || Gt == NULL){
 		get_graph(vlist, elist) ;
 		Data_Get_Struct(graph_obj, Graph, G) ;
+		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
 	}
 	pg(G, stdout) ;
+	printf("\n--------\n");
+	pg(Gt, stdout);
 	return Qnil ;
 }
 
@@ -171,8 +202,10 @@ void Init_ILP(){
 	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
 	cGraph = rb_define_class_under(DFG_ILP_mod, "Graph", rb_cObject) ;
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
+	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	rb_define_module_function(DFG_ILP_mod, "ILP", ILP, 5);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
 	rb_global_variable(&graph_obj) ;
+	rb_global_variable(&reverse_graph_obj) ;
 }
 

@@ -61,6 +61,30 @@ void add_adjacency_vertex(Vertex *v, int label, int weight) {
 	v->list[v->degree - 1][1] = weight ;
 }
 
+Graph *reverse(Graph *G){
+	Graph *Gt ;	
+	int i, j;
+	Vertex *vertex_list[G->V] ;
+	memset(vertex_list, 0, sizeof vertex_list);
+	for(i = 1; i <= G->V; i++){
+		Vertex *v = G->adj_list[i] ;
+		if(vertex_list[v->label - 1] == NULL){
+			vertex_list[v->label - 1] = new_vertex(v->label) ;
+			vertex_list[v->label - 1]->op = v->op ;
+		}
+		for(j = 0; j < v->degree; j++ ){
+			int label = v->list[j][0] ;
+			char operation = v->list[j][1] ;
+			if(vertex_list[label - 1] == NULL){
+				vertex_list[label - 1] = new_vertex(label) ;
+				vertex_list[label - 1]->op = operation ;
+			}		
+			add_adjacency_vertex(vertex_list[label - 1], v->label, v->op) ;
+		}
+	}
+	Gt = new_graph(G->V, vertex_list) ;
+	return Gt ;
+}
 void pv(Vertex *v, FILE *fp){
 	int i ;
 	fprintf(fp, "(%d %c) -> ", v->label, v->op) ;

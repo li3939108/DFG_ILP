@@ -26,6 +26,7 @@ typedef struct _Graph{
 #define __GRAPH_FUN__
 
 extern Graph *new_graph(int V, Vertex *vertex_list[]) ;
+extern Graph *reverse(Graph *) ;
 extern Vertex *new_vertex(int label) ;
 extern void free_vertex(Vertex *v);
 extern void free_graph(Graph *G);
