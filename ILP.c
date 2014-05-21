@@ -49,20 +49,26 @@ void get_graph(VALUE vlist, VALUE elist) {
 	graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, G) ;
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, Gt) ;
 }
-int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
+int dfs(Graph *G, int s_label, int time[], VALUE delay, char asap_or_alap){//no cycles
 	int i ;
 	char op[2] ;
+	VALUE d_arr ;
 	if(time[s_label] != -1){
 		return time[s_label] ;
 	}
 	for(i = 0; i < G->adj_list[s_label]->degree; i++){
  		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
- 		int time_step = dfs(G, adj[0], time, delay) ;
+ 		int time_step = dfs(G, adj[0], time, delay, asap_or_alap) ;
  		time[s_label] = time[s_label] < time_step ? time_step : time[s_label] ;
 	}
 	op[0] = G->adj_list[s_label]->op ;
 	op[1] = '\0' ;
-	time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( rb_hash_aref(delay, rb_str_new2(op) ), 0) );
+	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+	if(asap_or_alap == 'S' || asap_or_alap == 's'){
+		time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( d_arr, 0) );
+	}else if(asap_or_alap == 'L' || asap_or_alap == 'l'){
+		time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( d_arr, RARRAY_LEN(d_arr) - 1) );
+	}
 	return time[s_label] ;
 }
 
@@ -88,7 +94,7 @@ static VALUE ASAP(VALUE self){
 	pg(Gt, stdout);
 
 	for(i = 1; i <= G->V; i++){
-		dfs(Gt, i, time, delay) ;
+		dfs(Gt, i, time, delay, 's') ;
 	}
 	for(i = 1; i <= G->V; i++){
 		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
@@ -103,7 +109,7 @@ static VALUE ALAP(VALUE self){
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
-	int *time, i;
+	int *time, i, Q = -1;
 
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
@@ -120,7 +126,11 @@ static VALUE ALAP(VALUE self){
 	pg(Gt, stdout);
 
 	for(i = 1; i <= G->V; i++){
-		dfs(G, i, time, delay) ;
+		int new_Q = dfs(G, i, time, delay, 'L') ;
+		Q = new_Q > Q ? new_Q : Q ;
+	}
+	for(i = 1; i <= G->V; i++){
+		time[i] = Q - time[i] ;
 	}
 	for(i = 1; i <= G->V; i++){
 		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
