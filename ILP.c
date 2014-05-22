@@ -74,6 +74,7 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay, char asap_or_alap){//no 
 
 static VALUE ASAP(VALUE self){
 	Graph *G, *Gt ;
+	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
@@ -88,17 +89,18 @@ static VALUE ASAP(VALUE self){
 	}
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	printf("\n\n%d\n\n",time[3]) ;
-	pg(G, stdout) ;
-	printf("\n--------\n");
-	pg(Gt, stdout);
 
 	for(i = 1; i <= G->V; i++){
 		dfs(Gt, i, time, delay, 's') ;
 	}
 	for(i = 1; i <= G->V; i++){
-		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
+		VALUE d_arr ;
+		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
+		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;
+		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, 0, FIX2INT( rb_ary_entry(d_arr, 0) ), time[i] ) ;
 	}
+	printf("------------\n") ;
 
 	free(time) ;
 	return Qnil ;
@@ -106,6 +108,7 @@ static VALUE ASAP(VALUE self){
 
 static VALUE ALAP(VALUE self){
 	Graph *G, *Gt ;
+	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
@@ -120,10 +123,6 @@ static VALUE ALAP(VALUE self){
 	}
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	printf("\n\n%d\n\n",time[3]) ;
-	pg(G, stdout) ;
-	printf("\n--------\n");
-	pg(Gt, stdout);
 
 	for(i = 1; i <= G->V; i++){
 		int new_Q = dfs(G, i, time, delay, 'L') ;
@@ -133,8 +132,12 @@ static VALUE ALAP(VALUE self){
 		time[i] = Q - time[i] ;
 	}
 	for(i = 1; i <= G->V; i++){
-		printf("(%d %c) to %d)\n", i, G->adj_list[i]->op, time[i] ) ;
+		VALUE d_arr ;
+		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
+		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+		printf("(%d %c\ttype:%ld delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, RARRAY_LEN(d_arr) - 1, FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1) ), time[i] ) ;
 	}
+	printf("------------\n") ;
 	
 	free(time) ;
 	return Qnil ;

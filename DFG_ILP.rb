@@ -18,7 +18,7 @@ module DFG_ILP
 			@U = {'+' => [1, 1], 	'x' => [1, 1], 		'D' => [400]} #Resource Bound
 
 			#delay
-			@d = {'+' => [1, 2], 	'x' => [1,2], 		'D' => [1]} #delay for every implementation of every operation types
+			@d = {'+' => [1, 2], 	'x' => [2, 3], 		'D' => [1]} #delay for every implementation of every operation types
 
 			#power
 			@g = {'+' => [20, 50], 	'x' => [100, 200], 	'D' => [10]} #dynamic energy for every implementation of every operation types
