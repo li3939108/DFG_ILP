@@ -7,6 +7,24 @@ module DFG_ILP
 	MIN = true#constant for minimum linear programming
 	MAX = false#constant for maximum linear programming
 	class GRAPH
+		def self.vs(sch, l)
+			if(sch.empty?)
+				return
+			else
+				print l, "\t|\t"
+				i = 0
+				while i < sch.length do
+					if (sch[i][:time] == l) 
+						print sch[i][:id],': ', sch[i][:op], sch[i][:type], "\t"
+						sch.delete_at(i)
+					else
+						i = i + 1
+					end
+				end
+				print "\n"
+				self.vs(sch, l + 1)
+			end
+		end
 		def initialize()
 			@edge = []
 			@vertex = []
