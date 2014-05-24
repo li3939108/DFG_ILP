@@ -7,6 +7,12 @@ module DFG_ILP
 	MIN = true#constant for minimum linear programming
 	MAX = false#constant for maximum linear programming
 	class GRAPH
+		def dot(out)
+			out.puts "digraph g {", "node [fontcolor=white,style=filled,color=blue2];"
+			[*0..@vertex.length - 1].each{|v| out.puts "node_#{v+1} [label = \"#{@vertex[v]}#{v + 1}\"];"}
+			@edge.each{|e| out.puts "node_#{e[1] + 1} -> node_#{e[0] + 1} ;"}
+			out.puts "}"
+		end
 		def self.vs(sch, l)
 			if(sch.empty?)
 				return
@@ -15,7 +21,7 @@ module DFG_ILP
 				i = 0
 				while i < sch.length do
 					if (sch[i][:time] == l) 
-						print sch[i][:id],': ', sch[i][:op], sch[i][:type], "\t"
+						print sch[i][:id],': ', sch[i][:op], sch[i][:type], 'e', sch[i][:error], "\t"
 						sch.delete_at(i)
 					else
 						i = i + 1
@@ -40,7 +46,7 @@ module DFG_ILP
 
 			#power
 			@g = {'+' => [20, 50], 	'x' => [100, 200], 	'D' => [10]} #dynamic energy for every implementation of every operation types
-			@p = {'+' => [1, 3], 	'x' => [10, 20], 	'D' => [0]} #static power for every implementation of every operation types
+			@p = {'+' => [1, 3], 	'x' => [5, 10], 	'D' => [0]} #static power for every implementation of every operation types
 
 			#error
 			@e = {'+' => [1, 0], 	'x' => [1, 0], 		'D' => [0]} #error for every implementation of every operation types
@@ -116,7 +122,7 @@ module DFG_ILP
 				q * g.p[:U].values.flatten.length +
 				g.p[:U].values.flatten.length
 			@Nx = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * q
-			@Nerr = g.p[:v].count{|v| v != 'D'}
+			@Nerr = g.p[:v].length
 			@Nu = g.p[:U].values.flatten.length 
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
@@ -150,19 +156,19 @@ module DFG_ILP
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			g.p[:vNoD].map{|v|			#Formula (6) (7)
+			[*0..g.p[:v].length - 1].map{|v|			#Formula (6) (7)
 				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
 				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * q
 				errArray = Array.new(@Nerr, 0)
-				errArray[g.p[:vNoD].index(v)] = -1
+				errArray[v] = -1
 				if g.p[:PI][v] == false
-					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[g.p[:vNoD].index(e[1])] = 1}	
+					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[e[1] ] = 1}	
 				end
 				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
-				errArray[g.p[:vNoD].index(v)] = 1
+				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			[*0..q * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
@@ -199,10 +205,8 @@ module DFG_ILP
 				Array.new(g.p[:v].length, EQ)				+		#Formula (3)
 				Array.new(g.p[:e].length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
-				g.p[:vNoD].map{|v| 							#Formula (6) (7)
-					g.p[:PI][v] == true ? EQ : LE	
-				}							+
-				Array.new(@PO_vertex.length, LE)				+		#Formula (8)
+				Array.new(g.p[:v].length, EQ)				+
+				Array.new(@PO_vertex.length, LE)			+		#Formula (8)
 				Array.new(q * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
 				Array.new(g.p[:U].values.flatten.length, LE)
 			@b 	=
@@ -210,9 +214,9 @@ module DFG_ILP
 				Array.new(g.p[:v].length, 0)				+		#Formula (3)
 				Array.new(g.p[:e].length, 0)				+		#Formula (4)	
 				Array.new(@end_vertex.length, q)			+		#Formula (5)
-				Array.new(g.p[:vNoD].length , 0)			+		#Formula (6) (7)							
+				Array.new(g.p[:v].length , 0)				+		#Formula (6) (7)							
 				Array.new(@PO_vertex.length, g.p[:B])			+		#Formula (8)
-				Array.new(q * g.p[:U].values.flatten.length, 0)	+		#Formula (9)
+				Array.new(q * g.p[:U].values.flatten.length, 0)		+		#Formula (9)
 				g.p[:U].values.flatten
 			@c	=
 				[*0..g.p[:v].length - 1].map{|xi|
@@ -221,7 +225,7 @@ module DFG_ILP
 					}.reduce([], :+)
 				}.reduce([], :+)					+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				g.p[:p].values.flatten.map{|p| p * q}		+		#uArray
+				g.p[:p].values.flatten.map{|p| p * q}			+		#uArray
 				Array.new(@Ns, 0)							#sArray
 		end
 
@@ -236,17 +240,20 @@ module DFG_ILP
 		def compute(g)
 			ret = DFG_ILP::ILP(@A, @op, @b, @c, true)
 			position = 0
+			err_position =  @Nx 
 			schedule = []
 			for i in [*0..g.p[:v].length-1]	do	#Formula (2)  30
 				current_length = g.p[:U][g.p[:v][i]].length * @q
 				index = ret[:v][position, current_length].index(1)
 				time = index/ g.p[:U][g.p[:v][i]].length 
 				type = index% g.p[:U][g.p[:v][i]].length 
-				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type}]				
+				error = ret[:v][err_position]
+				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error}]				
 				position = position + current_length
+				err_position = err_position + 1
 			end
 			print "\n", "optimal value: ", ret[:o], "\n"
-			print schedule , "\n"
+			#print schedule , "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
 	end
