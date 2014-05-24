@@ -12,7 +12,7 @@ dir_config('lpsolve55', './include', lpsolve_lib)
 
 #create it
 #if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy')  #For Debian 7 and packeged library
-if have_header('lpsolve/lp_lib.h') and have_library('lpsolve55', 'strcpy') #For Ubuntu 13.04 and locally compiled library 
+if have_header('lp_lib.h') and have_library('lpsolve55', 'strcpy') #For Ubuntu 13.04 and locally compiled library 
 #	RPATHFLAG << " -Wl,-rpath,#{lpsolve_lib} "
 	create_makefile('ILP')
 end
