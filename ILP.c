@@ -164,6 +164,15 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	int Nrow = RARRAY_LEN(A); 
 	int Ncolumn = RARRAY_LEN(c);
 	int i ;
+	
+	VALUE ret_hash = rb_hash_new();
+	VALUE constraints = rb_ary_new2(Nrow);
+	VALUE variables = rb_ary_new2(Ncolumn);
+
+	bool error_set = false ;
+	VALUE error_type = rb_eFatal ;
+	char *error_msg = NULL ;
+	
 
 	char *zprobname = "scheduling" ;
 	int objsen      = 0;
@@ -200,11 +209,13 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}}
 	
 	if(RARRAY_LEN(op) != Nrow){
-		rb_raise(rb_eArgError, "Length of op does not match that of A");
+		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+		goto TERMINATE ;
 	}
 
 	if(RARRAY_LEN(b) != Nrow){
-		rb_raise(rb_eArgError, "Length of b does not match that of A");
+		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+		goto TERMINATE ;
 	}
 
 	for(i = 0; i < Nrow; i++){
@@ -213,7 +224,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		int constraint_type ;
 		Check_Type(row_v, T_ARRAY);
 		if(RARRAY_LEN(row_v) != Ncolumn){
-			rb_raise(rb_eArgError, "Length of row %d :%ld doen not match that of c:%d, i.e., the objective", i + 1, RARRAY_LEN(row_v) ,Ncolumn);
+			error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+			goto TERMINATE ;
 		}
 		for(j = 0; j < Ncolumn; j++){
 			zmatind[j * Nrow + i] = i ;
@@ -235,7 +247,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 			break ;
 			
 			default :
-			rb_raise(rb_eFatal, "unknow contstraint type") ;
+			error_set = true ;error_type = rb_eFatal; error_msg ="unknow contstraint type";
+			goto TERMINATE ;
 			break ;
 		}
 		zrhs[i] = NUM2DBL(rb_ary_entry(b, i));
@@ -261,14 +274,17 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	if ( env == NULL ) {
 		char  errmsg[CPXMESSAGEBUFSIZE];
 		CPXgeterrorstring (env, status, errmsg);
-		rb_raise(rb_eFatal, "Could not open CPLEX environment: %s", errmsg); 
+		fprintf(stderr, "%s", errmsg) ;
+		error_set = true ;error_type = rb_eFatal; error_msg ="Could not open CPLEX environment";
+		goto TERMINATE ;
 	 }
 
 	/* Turn on output to the screen */
 
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_ON);
 	if ( status ) {
-		rb_raise(rb_eFatal, "Failure to turn on screen indicator, error %d", status) ;
+		error_set = true ;error_type = rb_eFatal; error_msg ="Failure to turn on screen indicator, error";
+		goto TERMINATE ;
 	}
 
 	/* Create the problem. */   
@@ -281,33 +297,43 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
            the parameter CPXPARAM_ScreenOutput causes the error message to
            appear on stdout.  */
 	if ( lp == NULL ) {
-		rb_raise(rb_eFatal, "Failed to create LP");
+		error_set = true ;error_type = rb_eFatal; error_msg ="Failed to create LP";
+		goto TERMINATE ;
 	}
 
 	/* Now copy the problem data into the lp */
 	status = CPXcopylp	(env, lp, Ncolumn, Nrow, objsen, zobj, zrhs, zsense, 
 				zmatbeg, zmatcnt, zmatind, zmatval, zlb, zub, NULL) ;
 	if(status){
-		rb_raise(rb_eFatal, "Failed to copy problem data") ;
+		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to copy problem data" ;
+		goto TERMINATE ;
 	}
 	/* Now copy the ctype array */ 
 	status = CPXcopyctype (env, lp, zctype);
 	if ( status ) {
-		rb_raise(rb_eFatal, "Failed to copy ctype");
+		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to copy ctype" ;
+		goto TERMINATE ;
 	}
 	/* Optimize the problem and obtain solution. */
 	status = CPXmipopt (env, lp); 
 	if ( status ) { 
-		rb_raise(rb_eFatal,"Failed to optimize MIP"); 
+		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to optimize MIP" ;
+		goto TERMINATE ;
 	}
 	solstat = CPXgetstat (env, lp);
 	/* Write the output to the screen. */  
+	#ifdef DISPLAY
 	printf ("\nSolution status = %d\n", solstat);
+	#endif
 	status = CPXgetobjval (env, lp, &objval);
 	if ( status ) {  
-		rb_raise(rb_eFatal, "No MIP objective value available.  Exiting...");
+		error_set = true ;error_type = rb_eFatal; error_msg = "No MIP objective value available.  Exiting..." ;
+		goto TERMINATE ;
 	}
+	#ifdef DISPLAY
 	printf ("Solution value  = %f\n\n", objval);
+	#endif
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new( objval) ); 
 	/* The size of the problem should be obtained by asking CPLEX what
            the actual size is, rather than using what was passed to CPXcopylp.
            cur_numrows and cur_numcols store the current number of rows and
@@ -316,25 +342,38 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	cur_numcols = CPXgetnumcols (env, lp);
 	status = CPXgetx (env, lp, x, 0, cur_numcols-1);
 	if ( status ) { 
-		rb_raise(rb_eFatal,"Failed to get optimal integer x.");
+		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to get optimal integer x." ;
+		goto TERMINATE ;
 	}
 	status = CPXgetslack (env, lp, slack, 0, cur_numrows-1); 
 	if ( status ) {      
-		rb_raise(rb_eFatal,"Failed to get optimal slack values.\n"); 
+		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to get optimal slack values" ;
+		goto TERMINATE ;
 	}
 	for (i = 0; i < cur_numrows; i++) {
+		rb_ary_store(constraints, i , INT2NUM( (int)slack[i] ) );
+		#ifdef DISPLAY
 		printf ("Row %d:  Slack = %10f\n", i, slack[i]); 
+		#endif
 	}
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	for (i = 0; i < cur_numcols; i++){
+		rb_ary_store(variables, i, INT2NUM( (int)x[i] ) );
+		#ifdef DISPLAY
 		printf ("Column %d:  Value = %10f\n", i, x[i]); 
+		#endif
 	}
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
 	/* Finally, write a copy of the problem to a file. */
 	status = CPXwriteprob (env, lp, "cplex.lp", NULL);  
 	if ( status ) {
+		#ifdef DISPLAY
 		fprintf (stderr, "Failed to write LP to disk.\n");
+		#endif
 	}
+	
 	/* Free up the problem as allocated by CPXcreateprob, if necessary */
-
+TERMINATE:
 	if ( lp != NULL ) {
 		status = CPXfreeprob (env, &lp);
 		if ( status ) {
@@ -355,9 +394,11 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		if ( status ) {
 			char  errmsg[CPXMESSAGEBUFSIZE];
 			CPXgeterrorstring (env, status, errmsg);
-			rb_raise(rb_eFatal, "Could not close CPLEX environment: %s", errmsg) ;
+			fprintf(stderr, "%s", errmsg) ;
+			error_set = true ;error_type = rb_eFatal; error_msg = "Could not close CPLEX environment" ;
 		}
 	}
+
 
 	/* Free up the problem data arrays, if necessary. */
 
@@ -375,39 +416,11 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	free_and_null ((char **) &x) ;
 	free_and_null ((char **) &slack) ;
 
-
-#ifdef DISPLAY
-/*
-	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
-		if(i == 0){
-			printf("obj: ");
-		}else{if(i >= 1 && i <= get_Nrows(lp)){
-			printf("constraints %d: ", i);
-		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
-			printf("variable %d: ", i - get_Nrows(lp));
-		}}}
-		printf("%f\n", result[i]);
+	if(error_set == true){
+		rb_raise(error_type, "%s", error_msg);
+	}else{
+		return ret_hash ;
 	}
-*/
-#endif	
-/*
-	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
-		if(i >= 1 && i <= get_Nrows(lp)){
-			rb_ary_store(constraints, i - 1, INT2NUM((int)result[i]));
-		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
-			rb_ary_store(variables, i - 1 - get_Nrows(lp), INT2NUM((int)result[i]));
-		}}
-	}
-*/
-/*
-	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new(result[0]));
-	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
-	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
-*/
-	
-	
-	return Qnil;
-
 }
 //#define DISPLAY
 
@@ -450,7 +463,9 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 	}
 
 	set_add_rowmode(lp, true);
+	#ifdef DISPLAY
 	printf("number of constraints: %d\n", Nrow);
+	#endif
 	for(i = 0; i < Nrow; i++){
 		VALUE row_v = rb_ary_entry(A, i);
 		int j;
@@ -468,7 +483,9 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 		add_constraint(lp, row, constraint_type, b_dbl); 
 	}
 	set_add_rowmode(lp, false);
+	#ifdef  DISPLAY
 	printf("number of variables: %d\n", Ncolumn);
+	#endif
 	for(i = 0; i < Ncolumn; i++){
 		row[i + 1] = NUM2DBL(rb_ary_entry(c, i));
 		set_int(lp, i + 1, true);
@@ -486,7 +503,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 		break;
 	}
 	get_primal_solution(lp, result);
-#ifdef DISPLAY
+	#ifdef DISPLAY
 
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
@@ -498,7 +515,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 		}}}
 		printf("%f\n", result[i]);
 	}
-#endif	
+	#endif	
 	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
 		if(i >= 1 && i <= get_Nrows(lp)){
 			rb_ary_store(constraints, i - 1, INT2NUM((int)result[i]));
