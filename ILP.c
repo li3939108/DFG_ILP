@@ -15,6 +15,9 @@
 #define EQ 3
 #endif
 
+
+//#define DISPLAY
+
 VALUE cGraph ;
 VALUE graph_obj ;
 VALUE reverse_graph_obj ;
@@ -280,8 +283,11 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	 }
 
 	/* Turn on output to the screen */
-
+	#ifdef DISPLAY
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_ON);
+	#else
+	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_OFF);
+	#endif
 	if ( status ) {
 		error_set = true ;error_type = rb_eFatal; error_msg ="Failure to turn on screen indicator, error";
 		goto TERMINATE ;
@@ -422,7 +428,6 @@ TERMINATE:
 		return ret_hash ;
 	}
 }
-//#define DISPLAY
 
 /*
  * min(max_bar)      c x
