@@ -252,7 +252,8 @@ module DFG_ILP
 				position = position + current_length
 				err_position = err_position + 1
 			end
-			print "\n", "optimal value: ", ret[:o], "\n"
+			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:v].length, "\n", "number of variables: ", ret[:c].length, "\n", 
+				"----------------------------------", "\n"
 			#print schedule , "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
