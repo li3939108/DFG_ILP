@@ -1,17 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lp_lib.h"
+#include <ilcplex/cplex.h>
+#include <lp_lib.h>
 #include "ruby.h"
 
 #include "graph.h"
 
 #include <string.h>
 
+#ifndef HEADER_lp_lib
+#define LE 1
+#define GE 2
+#define EQ 3
+#endif
+
 VALUE cGraph ;
 VALUE graph_obj ;
 VALUE reverse_graph_obj ;
 
+static void free_and_null (char **ptr){
+	if ( *ptr != NULL ) {
+		free (*ptr);
+		*ptr = NULL;
+	}
+}
 void get_graph(VALUE vlist, VALUE elist) {
 	Graph *G, *Gt ;
 	int i, elist_len = RARRAY_LEN(elist), vlist_len = RARRAY_LEN(vlist);
@@ -143,13 +156,266 @@ static VALUE ALAP(VALUE self){
 	return Qnil ;
 }
 
+static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
+	Check_Type(A, T_ARRAY) ;
+	Check_Type(op, T_ARRAY) ;
+	Check_Type(b, T_ARRAY) ;
+	Check_Type(c, T_ARRAY) ;
+	int Nrow = RARRAY_LEN(A); 
+	int Ncolumn = RARRAY_LEN(c);
+	int i ;
+
+	char *zprobname = "scheduling" ;
+	int objsen      = 0;
+	double *zobj    = (double *) malloc(Ncolumn * sizeof(double));
+	double *zrhs    = (double *)malloc(Nrow * sizeof *zrhs);
+	char *zsense    = (char *)malloc(Nrow * sizeof *zsense) ;
+	int *zmatbeg    = (int *)malloc(Ncolumn * sizeof *zmatbeg) ;
+	int *zmatcnt    = (int *)malloc(Ncolumn * sizeof *zmatcnt) ;
+	int *zmatind    = (int *)malloc(Nrow * Ncolumn * sizeof *zmatind) ;
+	double *zmatval = (double *)malloc(Nrow * Ncolumn * sizeof *zmatval) ;
+	double *zlb     = (double *) malloc(Ncolumn * sizeof *zlb);
+	double *zub     = (double *) malloc(Ncolumn * sizeof *zub);
+	char *zctype    = (char *)malloc(Ncolumn * sizeof * zctype) ;
+	int status      = 0 ;
+
+	/* Declare and allocate space for the variables and arrays where we will
+	   store the optimization results including the status, objective value,
+	   variable values, and row slacks. */
+
+	int      solstat;
+	double   objval;
+	double *x       = (double *)malloc(Ncolumn * sizeof *x);
+	double *slack   = (double *)malloc(Nrow * sizeof *slack) ;
+	int cur_numrows, cur_numcols ;
+
+	CPXENVptr     env = NULL;
+	CPXLPptr      lp = NULL;
+
+
+	if(TYPE(min) == T_TRUE){
+		objsen = CPX_MIN ;
+	}else{if(TYPE(min) == T_FALSE){
+		objsen = CPX_MAX ;
+	}}
+	
+	if(RARRAY_LEN(op) != Nrow){
+		rb_raise(rb_eArgError, "Length of op does not match that of A");
+	}
+
+	if(RARRAY_LEN(b) != Nrow){
+		rb_raise(rb_eArgError, "Length of b does not match that of A");
+	}
+
+	for(i = 0; i < Nrow; i++){
+		VALUE row_v = rb_ary_entry(A, i);
+		int j;
+		int constraint_type ;
+		Check_Type(row_v, T_ARRAY);
+		if(RARRAY_LEN(row_v) != Ncolumn){
+			rb_raise(rb_eArgError, "Length of row %d :%ld doen not match that of c:%d, i.e., the objective", i + 1, RARRAY_LEN(row_v) ,Ncolumn);
+		}
+		for(j = 0; j < Ncolumn; j++){
+			zmatind[j * Nrow + i] = i ;
+			zmatval[j * Nrow + i] = NUM2DBL(rb_ary_entry(row_v, j));
+			
+		}
+		constraint_type = FIX2INT(rb_ary_entry(op,i));
+		switch(constraint_type){
+			case LE : 
+			zsense[i] = 'L' ;
+			break;
+			
+			case EQ :
+			zsense[i] = 'E' ;
+			break ;
+			
+			case GE :
+			zsense[i] = 'G' ;
+			break ;
+			
+			default :
+			rb_raise(rb_eFatal, "unknow contstraint type") ;
+			break ;
+		}
+		zrhs[i] = NUM2DBL(rb_ary_entry(b, i));
+	}
+	for(i = 0; i < Ncolumn; i++){
+		zmatbeg[i] = i * Nrow ;
+		zmatcnt[i] = Nrow ;
+		zlb[i] = 0.0 ;
+		zub[i] = CPX_INFBOUND ;
+		zctype[i] = 'I' ;
+		zobj[i] = NUM2DBL(rb_ary_entry(c, i));
+	}
+	
+	env = CPXopenCPLEX (&status);
+
+	 /* If an error occurs, the status value indicates the reason for
+	    failure.  A call to CPXgeterrorstring will produce the text of
+	    the error message.  Note that CPXopenCPLEX produces no output,
+	    so the only way to see the cause of the error is to use
+	    CPXgeterrorstring.  For other CPLEX routines, the errors will
+	    be seen if the CPXPARAM_ScreenOutput indicator is set to CPX_ON.  */
+
+	if ( env == NULL ) {
+		char  errmsg[CPXMESSAGEBUFSIZE];
+		CPXgeterrorstring (env, status, errmsg);
+		rb_raise(rb_eFatal, "Could not open CPLEX environment: %s", errmsg); 
+	 }
+
+	/* Turn on output to the screen */
+
+	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_ON);
+	if ( status ) {
+		rb_raise(rb_eFatal, "Failure to turn on screen indicator, error %d", status) ;
+	}
+
+	/* Create the problem. */   
+	lp = CPXcreateprob (env, &status, zprobname);
+
+	/* A returned pointer of NULL may mean that not enough memory
+           was available or there was some other problem.  In the case of
+           failure, an error message will have been written to the error
+           channel from inside CPLEX.  In this example, the setting of
+           the parameter CPXPARAM_ScreenOutput causes the error message to
+           appear on stdout.  */
+	if ( lp == NULL ) {
+		rb_raise(rb_eFatal, "Failed to create LP");
+	}
+
+	/* Now copy the problem data into the lp */
+	status = CPXcopylp	(env, lp, Ncolumn, Nrow, objsen, zobj, zrhs, zsense, 
+				zmatbeg, zmatcnt, zmatind, zmatval, zlb, zub, NULL) ;
+	if(status){
+		rb_raise(rb_eFatal, "Failed to copy problem data") ;
+	}
+	/* Now copy the ctype array */ 
+	status = CPXcopyctype (env, lp, zctype);
+	if ( status ) {
+		rb_raise(rb_eFatal, "Failed to copy ctype");
+	}
+	/* Optimize the problem and obtain solution. */
+	status = CPXmipopt (env, lp); 
+	if ( status ) { 
+		rb_raise(rb_eFatal,"Failed to optimize MIP"); 
+	}
+	solstat = CPXgetstat (env, lp);
+	/* Write the output to the screen. */  
+	printf ("\nSolution status = %d\n", solstat);
+	status = CPXgetobjval (env, lp, &objval);
+	if ( status ) {  
+		rb_raise(rb_eFatal, "No MIP objective value available.  Exiting...");
+	}
+	printf ("Solution value  = %f\n\n", objval);
+	/* The size of the problem should be obtained by asking CPLEX what
+           the actual size is, rather than using what was passed to CPXcopylp.
+           cur_numrows and cur_numcols store the current number of rows and
+           columns, respectively.  */
+	cur_numrows = CPXgetnumrows (env, lp);
+	cur_numcols = CPXgetnumcols (env, lp);
+	status = CPXgetx (env, lp, x, 0, cur_numcols-1);
+	if ( status ) { 
+		rb_raise(rb_eFatal,"Failed to get optimal integer x.");
+	}
+	status = CPXgetslack (env, lp, slack, 0, cur_numrows-1); 
+	if ( status ) {      
+		rb_raise(rb_eFatal,"Failed to get optimal slack values.\n"); 
+	}
+	for (i = 0; i < cur_numrows; i++) {
+		printf ("Row %d:  Slack = %10f\n", i, slack[i]); 
+	}
+	for (i = 0; i < cur_numcols; i++){
+		printf ("Column %d:  Value = %10f\n", i, x[i]); 
+	}
+	/* Finally, write a copy of the problem to a file. */
+	status = CPXwriteprob (env, lp, "cplex.lp", NULL);  
+	if ( status ) {
+		fprintf (stderr, "Failed to write LP to disk.\n");
+	}
+	/* Free up the problem as allocated by CPXcreateprob, if necessary */
+
+	if ( lp != NULL ) {
+		status = CPXfreeprob (env, &lp);
+		if ( status ) {
+			fprintf (stderr, "CPXfreeprob failed, error code %d.\n", status);
+		}
+	}
+
+	/* Free up the CPLEX environment, if necessary */
+
+	if ( env != NULL ) {
+		status = CPXcloseCPLEX (&env);
+
+		/* Note that CPXcloseCPLEX produces no output,
+		   so the only way to see the cause of the error is to use
+		   CPXgeterrorstring.  For other CPLEX routines, the errors will
+		   be seen if the CPXPARAM_ScreenOutput indicator is set to CPX_ON. */
+
+		if ( status ) {
+			char  errmsg[CPXMESSAGEBUFSIZE];
+			CPXgeterrorstring (env, status, errmsg);
+			rb_raise(rb_eFatal, "Could not close CPLEX environment: %s", errmsg) ;
+		}
+	}
+
+	/* Free up the problem data arrays, if necessary. */
+
+	free_and_null ((char **) &zobj);
+	free_and_null ((char **) &zrhs);
+	free_and_null ((char **) &zsense);
+	free_and_null ((char **) &zmatbeg);
+	free_and_null ((char **) &zmatcnt);
+	free_and_null ((char **) &zmatind);
+	free_and_null ((char **) &zmatval);
+	free_and_null ((char **) &zlb);
+	free_and_null ((char **) &zub);
+	free_and_null ((char **) &zctype);
+	
+	free_and_null ((char **) &x) ;
+	free_and_null ((char **) &slack) ;
+
+
+#ifdef DISPLAY
+/*
+	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
+		if(i == 0){
+			printf("obj: ");
+		}else{if(i >= 1 && i <= get_Nrows(lp)){
+			printf("constraints %d: ", i);
+		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
+			printf("variable %d: ", i - get_Nrows(lp));
+		}}}
+		printf("%f\n", result[i]);
+	}
+*/
+#endif	
+/*
+	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
+		if(i >= 1 && i <= get_Nrows(lp)){
+			rb_ary_store(constraints, i - 1, INT2NUM((int)result[i]));
+		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
+			rb_ary_store(variables, i - 1 - get_Nrows(lp), INT2NUM((int)result[i]));
+		}}
+	}
+*/
+/*
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new(result[0]));
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
+*/
+	
+	
+	return Qnil;
+
+}
 //#define DISPLAY
 
 /*
  * min(max_bar)      c x
  *               A x op  b
  */
-static VALUE ILP(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
+static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	Check_Type(A, T_ARRAY) ;
 	Check_Type(op, T_ARRAY) ;
 	Check_Type(b, T_ARRAY) ;
@@ -254,7 +520,8 @@ void Init_ILP(){
 	cGraph = rb_define_class_under(DFG_ILP_mod, "Graph", rb_cObject) ;
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
-	rb_define_module_function(DFG_ILP_mod, "ILP", ILP, 5);
+	rb_define_module_function(DFG_ILP_mod, "lpsolve", lpsolve, 5);
+	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 5);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ALAP", ALAP, 0);
 	rb_global_variable(&graph_obj) ;

@@ -238,7 +238,7 @@ module DFG_ILP
 			}
 		end
 		def compute(g)
-			ret = DFG_ILP::ILP(@A, @op, @b, @c, true)
+			ret = DFG_ILP::lpsolve(@A, @op, @b, @c, true)
 			position = 0
 			err_position =  @Nx 
 			schedule = []
