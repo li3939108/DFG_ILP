@@ -70,7 +70,7 @@ warnflags = -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-m
 CFLAGS   = -fPIC -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wall -fno-strict-aliasing -fPIC $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
-CPPFLAGS = -DHAVE_LP_LIB_H -I./include -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
+CPPFLAGS = -DHAVE_LPSOLVE_LP_LIB_H -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
 CXXFLAGS = $(CFLAGS) -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wall -fno-strict-aliasing
 ldflags  = -L. -Wl,-z,relro -rdynamic -Wl,-export-dynamic
 dldflags = 
@@ -102,8 +102,8 @@ COPY = cp
 
 preload = 
 
-libpath = . $(libdir) /usr/local/lib
-LIBPATH =  -L. -L$(libdir) -Wl,-rpath,/usr/local/lib  -L/usr/local/lib -Wl,-rpath,/usr/local/lib 
+libpath = . $(libdir)
+LIBPATH =  -L. -L$(libdir)
 DEFFILE = 
 
 CLEANFILES = mkmf.log
