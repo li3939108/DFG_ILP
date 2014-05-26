@@ -6,7 +6,6 @@
 #include <string.h>
 #include "ruby.h"
 
-//#include "graph.h"
 #include "as_possible.h"
 
 #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
@@ -17,7 +16,7 @@
 #define EQ 3
 #endif
 
-//#define DEBUG
+#define DEBUG
 
 
 VALUE cGraph ;
@@ -48,7 +47,6 @@ static VALUE ASAP(VALUE self){
 		rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
 		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;
 		rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
 		rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
 		rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)0 ) );
@@ -108,8 +106,29 @@ static VALUE ALAP(VALUE self){
 	return ret ;
 }
 
-static VALUE mobility(VALUE self){
-	
+static VALUE M(VALUE self){
+	Graph *G, *Gt ;
+	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
+	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
+	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	int *m, i ;
+	Data_Get_Struct(graph_obj, Graph, G) ;
+	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+	if(G == NULL || Gt == NULL){
+		get_graph(vlist, elist) ;
+		Data_Get_Struct(graph_obj, Graph, G) ;
+		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+	}
+	m = calloc(G->V + 1, sizeof *m);
+	memset(m, 0xFF, (G->V + 1) * sizeof *m) ; //set all entry -1
+	mobility(G, m, delay) ;
+	for(i = 1; i <= G->V; i++){
+		#ifdef DEBUG
+		printf("mobility: %d\n", m[i] );
+		#endif
+	}
+	free(m) ;
+	return Qnil ;
 }
 
 
@@ -506,6 +525,7 @@ void Init_ILP(){
 	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 5);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ALAP", ALAP, 0);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"M", M, 0);
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
 }

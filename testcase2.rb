@@ -7,3 +7,4 @@ ret = g.ASAP
 DFG_ILP::GRAPH.vs(ret, 0)
 ret = g.ALAP
 DFG_ILP::GRAPH.vs(ret, 0)
+g.M
