@@ -3,11 +3,11 @@
 #include <stdbool.h>
 #include <ilcplex/cplex.h>
 #include <lp_lib.h>
+#include <string.h>
 #include "ruby.h"
 
 #include "graph.h"
 
-#include <string.h>
 
 #ifndef HEADER_lp_lib
 #define LE 1
@@ -15,19 +15,14 @@
 #define EQ 3
 #endif
 
+#define DISPLAY
 
-//#define DISPLAY
 
 VALUE cGraph ;
 VALUE graph_obj ;
 VALUE reverse_graph_obj ;
 
-static void free_and_null (char **ptr){
-	if ( *ptr != NULL ) {
-		free (*ptr);
-		*ptr = NULL;
-	}
-}
+
 void get_graph(VALUE vlist, VALUE elist) {
 	Graph *G, *Gt ;
 	int i, elist_len = RARRAY_LEN(elist), vlist_len = RARRAY_LEN(vlist);
@@ -159,6 +154,14 @@ static VALUE ALAP(VALUE self){
 	return Qnil ;
 }
 
+
+
+static void free_and_null (char **ptr){
+	if ( *ptr != NULL ) {
+		free (*ptr);
+		*ptr = NULL;
+	}
+}
 static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	Check_Type(A, T_ARRAY) ;
 	Check_Type(op, T_ARRAY) ;
@@ -332,7 +335,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	printf ("\nSolution status = %d\n", solstat);
 	#endif
 	status = CPXgetobjval (env, lp, &objval);
-	if ( status ) {  
+	if ( status && solstat ) {  
 		error_set = true ;error_type = rb_eFatal; error_msg = "No MIP objective value available.  Exiting..." ;
 		goto TERMINATE ;
 	}
@@ -357,16 +360,16 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		goto TERMINATE ;
 	}
 	for (i = 0; i < cur_numrows; i++) {
-		rb_ary_store(constraints, i , INT2NUM( (int)slack[i] ) );
+		rb_ary_store(constraints, i , INT2NUM( (int)(slack[i] + 0.0001) ) );
 		#ifdef DISPLAY
-		printf ("Row %d:  Slack = %10f\n", i, slack[i]); 
+		printf ("Row %d:  Slack = %f\n", i, slack[i]); 
 		#endif
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		rb_ary_store(variables, i, INT2NUM( (int)x[i] ) );
+		rb_ary_store(variables, i, INT2NUM( (int)(x[i] + 0.0001)  ) ) ;
 		#ifdef DISPLAY
-		printf ("Column %d:  Value = %10f\n", i, x[i]); 
+		printf ("Column %d:  Value = %f\n", i, x[i]); 
 		#endif
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
@@ -549,4 +552,3 @@ void Init_ILP(){
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
 }
-
