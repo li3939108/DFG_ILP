@@ -45,8 +45,8 @@ module DFG_ILP
 			@d = {'+' => [1, 2], 	'x' => [2, 3], 		'D' => [1]} #delay for every implementation of every operation types
 
 			#power
-			@g = {'+' => [20, 50], 	'x' => [100, 200], 	'D' => [10]} #dynamic energy for every implementation of every operation types
-			@p = {'+' => [1, 3], 	'x' => [5, 10], 	'D' => [0]} #static power for every implementation of every operation types
+			@g = {'+' => [200, 500], 	'x' => [1000, 2000], 	'D' => [100]} #dynamic energy for every implementation of every operation types
+			@p = {'+' => [10, 30], 	'x' => [50, 100], 	'D' => [3]} #static power for every implementation of every operation types
 
 			#error
 			@e = {'+' => [1, 0], 	'x' => [1, 0], 		'D' => [0]} #error for every implementation of every operation types
@@ -239,22 +239,31 @@ module DFG_ILP
 		end
 		def compute(g)
 			ret = DFG_ILP::cplex(@A, @op, @b, @c, true)
+			position = ret[:c].length - g.p[:U].values.flatten.length - 1
+			allocation = {}
+			g.p[:U].keys.each{|k|
+				allocation[k] = g.p[:U][k].map{|u|
+					position = position + 1
+					u - ret[:c][position]
+				}
+			}
+			
+			schedule = []
 			position = 0
 			err_position =  @Nx 
-			schedule = []
-			for i in [*0..g.p[:v].length-1]	do	#Formula (2)  30
+			for i in [*0..g.p[:v].length-1]	do
 				current_length = g.p[:U][g.p[:v][i]].length * @q
 				index = ret[:v][position, current_length].index(1)
-				time = index/ g.p[:U][g.p[:v][i]].length 
+				time = index/ g.p[:U][ g.p[:v][i] ].length 
 				type = index% g.p[:U][g.p[:v][i]].length 
 				error = ret[:v][err_position]
 				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error}]				
 				position = position + current_length
 				err_position = err_position + 1
 			end
-			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:v].length, "\n", "number of variables: ", ret[:c].length, "\n", 
+			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:c].length, "\n", "number of variables: ", ret[:v].length, "\n", 
+				"allocation: ", allocation, "\n",
 				"----------------------------------", "\n"
-			#print schedule , "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
 	end
