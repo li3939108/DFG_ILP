@@ -15,7 +15,7 @@
 #define EQ 3
 #endif
 
-#define DISPLAY
+//#define DEBUG
 
 
 VALUE cGraph ;
@@ -89,6 +89,7 @@ static VALUE ASAP(VALUE self){
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	VALUE ret = rb_ary_new();
 	int *time, i;
 
 	Data_Get_Struct(graph_obj, Graph, G) ;
@@ -105,16 +106,26 @@ static VALUE ASAP(VALUE self){
 		dfs(Gt, i, time, delay, 's') ;
 	}
 	for(i = 1; i <= G->V; i++){
-		VALUE d_arr ;
+		VALUE d_arr, sch = rb_hash_new() ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
 		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)0 ) );
+		rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, 0 ) ) ) );
+		rb_ary_push(ret, sch) ;
+		#ifdef DEBUG
 		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, 0, FIX2INT( rb_ary_entry(d_arr, 0) ), time[i] ) ;
+		#endif
 	}
+	#ifdef DEBUG
 	printf("------------\n") ;
+	#endif
 
 	free(time) ;
-	return Qnil ;
+	return ret ;
 }
 
 static VALUE ALAP(VALUE self){
@@ -124,6 +135,7 @@ static VALUE ALAP(VALUE self){
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 	int *time, i, Q = -1;
+	VALUE ret = rb_ary_new();
 
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
@@ -143,17 +155,29 @@ static VALUE ALAP(VALUE self){
 		time[i] = Q - time[i] ;
 	}
 	for(i = 1; i <= G->V; i++){
-		VALUE d_arr ;
+		VALUE d_arr, sch = rb_hash_new();
+		rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
 		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
+		rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)( RARRAY_LEN(d_arr) - 1 ) ) );
+		rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1  ) ) ) );
+		rb_ary_push(ret, sch) ;
+		#ifdef DEBUG
 		printf("(%d %c\ttype:%ld delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, RARRAY_LEN(d_arr) - 1, FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1) ), time[i] ) ;
+		#endif
 	}
+	#ifdef DEBUG
 	printf("------------\n") ;
+	#endif
 	
 	free(time) ;
-	return Qnil ;
+	return ret ;
 }
 
+static VALUE mobility(VALUE self){
+}
 
 
 static void free_and_null (char **ptr){
@@ -286,7 +310,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	 }
 
 	/* Turn on output to the screen */
-	#ifdef DISPLAY
+	#ifdef DEBUG
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_ON);
 	#else
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_OFF);
@@ -331,7 +355,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}
 	solstat = CPXgetstat (env, lp);
 	/* Write the output to the screen. */  
-	#ifdef DISPLAY
+	#ifdef DEBUG
 	printf ("\nSolution status = %d\n", solstat);
 	#endif
 	status = CPXgetobjval (env, lp, &objval);
@@ -339,7 +363,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		error_set = true ;error_type = rb_eFatal; error_msg = "No MIP objective value available.  Exiting..." ;
 		goto TERMINATE ;
 	}
-	#ifdef DISPLAY
+	#ifdef DEBUG
 	printf ("Solution value  = %f\n\n", objval);
 	#endif
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new( objval) ); 
@@ -360,15 +384,15 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		goto TERMINATE ;
 	}
 	for (i = 0; i < cur_numrows; i++) {
-		rb_ary_store(constraints, i , INT2NUM( (int)(slack[i] + 0.0001) ) );
-		#ifdef DISPLAY
+		rb_ary_store(constraints, i , INT2FIX( (int)(slack[i] + 0.0001) ) );
+		#ifdef DEBUG
 		printf ("Row %d:  Slack = %f\n", i, slack[i]); 
 		#endif
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		rb_ary_store(variables, i, INT2NUM( (int)(x[i] + 0.0001)  ) ) ;
-		#ifdef DISPLAY
+		rb_ary_store(variables, i, INT2FIX( (int)(x[i] + 0.0001)  ) ) ;
+		#ifdef DEBUG
 		printf ("Column %d:  Value = %f\n", i, x[i]); 
 		#endif
 	}
@@ -376,7 +400,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	/* Finally, write a copy of the problem to a file. */
 	status = CPXwriteprob (env, lp, "cplex.lp", NULL);  
 	if ( status ) {
-		#ifdef DISPLAY
+		#ifdef DEBUG
 		fprintf (stderr, "Failed to write LP to disk.\n");
 		#endif
 	}
@@ -471,7 +495,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 	}
 
 	set_add_rowmode(lp, true);
-	#ifdef DISPLAY
+	#ifdef DEBUG
 	printf("number of constraints: %d\n", Nrow);
 	#endif
 	for(i = 0; i < Nrow; i++){
@@ -491,7 +515,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 		add_constraint(lp, row, constraint_type, b_dbl); 
 	}
 	set_add_rowmode(lp, false);
-	#ifdef  DISPLAY
+	#ifdef  DEBUG
 	printf("number of variables: %d\n", Ncolumn);
 	#endif
 	for(i = 0; i < Ncolumn; i++){
@@ -511,7 +535,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 		break;
 	}
 	get_primal_solution(lp, result);
-	#ifdef DISPLAY
+	#ifdef DEBUG
 
 	for(i = 0; i < 1+get_Nrows(lp)+get_Ncolumns(lp); i++){
 		if(i == 0){
