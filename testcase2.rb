@@ -3,5 +3,7 @@
 require './DFG_ILP.rb'
 g = DFG_ILP::GRAPH.new
 g.IIR(4)
-g.ASAP
-g.ALAP
+ret = g.ASAP
+DFG_ILP::GRAPH.vs(ret, 0)
+ret = g.ALAP
+DFG_ILP::GRAPH.vs(ret, 0)
