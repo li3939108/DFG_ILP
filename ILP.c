@@ -8,6 +8,7 @@
 
 #include "graph.h"
 
+#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
 #ifndef HEADER_lp_lib
 #define LE 1
@@ -15,7 +16,7 @@
 #define EQ 3
 #endif
 
-//#define DEBUG
+#define DEBUG
 
 
 VALUE cGraph ;
@@ -177,6 +178,7 @@ static VALUE ALAP(VALUE self){
 }
 
 static VALUE mobility(VALUE self){
+	
 }
 
 
@@ -384,14 +386,14 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		goto TERMINATE ;
 	}
 	for (i = 0; i < cur_numrows; i++) {
-		rb_ary_store(constraints, i , INT2FIX( (int)(slack[i] + 0.0001) ) );
+		rb_ary_store(constraints, i , INT2FIX( round(slack[i] ) ) );
 		#ifdef DEBUG
 		printf ("Row %d:  Slack = %f\n", i, slack[i]); 
 		#endif
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		rb_ary_store(variables, i, INT2FIX( (int)(x[i] + 0.0001)  ) ) ;
+		rb_ary_store(variables, i, INT2FIX( round(x[i])  ) ) ;
 		#ifdef DEBUG
 		printf ("Column %d:  Value = %f\n", i, x[i]); 
 		#endif
