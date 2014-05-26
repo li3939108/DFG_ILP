@@ -14,14 +14,18 @@ module DFG_ILP
 			out.puts "}"
 		end
 		def self.vs(sch, l)
+			if(l == 0)
+				print "----------------------------------", "\n"
+			end
 			if(sch.empty?)
+				print "----------------------------------", "\n"
 				return
 			else
 				print l, "\t|\t"
 				i = 0
 				while i < sch.length do
 					if (sch[i][:time] == l) 
-						print sch[i][:id],': ', sch[i][:op], sch[i][:type], 'e', sch[i][:error], "\t"
+						print sch[i][:op],sch[i][:id],': ', 'd', sch[i][:delay], 'e', sch[i][:error], "   "
 						sch.delete_at(i)
 					else
 						i = i + 1
@@ -257,13 +261,12 @@ module DFG_ILP
 				time = index/ g.p[:U][ g.p[:v][i] ].length 
 				type = index% g.p[:U][g.p[:v][i]].length 
 				error = ret[:v][err_position]
-				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error}]				
+				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error, :delay => g.p[:d][ g.p[:v][i] ][ type ] }]				
 				position = position + current_length
 				err_position = err_position + 1
 			end
 			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:c].length, "\n", "number of variables: ", ret[:v].length, "\n", 
-				"allocation: ", allocation, "\n",
-				"----------------------------------", "\n"
+				"allocation: ", allocation, "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
 	end
