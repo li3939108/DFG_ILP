@@ -102,13 +102,12 @@ module DFG_ILP
 			if q == nil
 				@asap = g.ASAP(delay)				
 				@alap = g.ALAP(delay)
-				@mobility = [*0..@asap.length - 1].map{|i| @alap[i] - @asap[i] }
-				alap_endtime = [*0..@alap.length - 1].map{|i| @alap[i] + delay[ g.p[:v][i] ].max }
-				q = alap_endtime.max
-				@q = q
+				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
+				@q = q = @alap.max
 			else
 				@q = q
 			end
+			@mC = mobility_constrainted
 			@U = resource_bound 
 			@d = delay 
 			@g = dynamic_energy
@@ -129,9 +128,12 @@ module DFG_ILP
 				q * @U.values.flatten.length +
 				@U.values.flatten.length
 			if (mobility_constrainted )
-				@Nx = g.p[:v].map.with_index{|v,i| @U[v].length * @mobility[i] }.reduce(:+) 
+				@asap = g.ASAP(delay)				
+				@alap = g.ALAP(delay)
+				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
+				@Nx = g.p[:v].map.with_index{|v,i| @U[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
 			else
-				@Nx = g.p[:v].map{|v| @U[v].length * q}.reduce(:+) 
+				@Nx = g.p[:v].map{|v| @U[v].length * q}.reduce(0,:+) 
 			end
 			@Nerr = g.p[:v].length
 			@Nu = @U.values.flatten.length 
@@ -139,43 +141,75 @@ module DFG_ILP
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
 			g.p[:v].map.with_index{|v,i|		#Formula (2)  
-				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Ncolumn - start_point - @U[ v ].length * q
-				Array.new(start_point, 0) + Array.new(@U[ v ].length * q, 1) + Array.new(ntail, 0)
+				if(mobility_constrainted)
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					ntail = @Ncolumn - start_point - @U[ v ].length * (1 + @mobility[i])
+					Array.new(start_point, 0) + Array.new(@U[ v ].length * (1 + @mobility[i]), 1) + Array.new(ntail, 0)
+				else
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+					ntail = @Ncolumn - start_point - @U[ v ].length * q
+					Array.new(start_point, 0) + Array.new(@U[ v ].length * q, 1) + Array.new(ntail, 0)
+				end
 			} +
 			g.p[:v].map.with_index{|v,i|	#Formula (3)  
-				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - @U[v].length * q
+				if(mobility_constrainted)
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@U[v].length, t)}.reduce([], :+) 
+					ntail = @Nx - start_point - @U[v].length * (1 + @mobility[i] )
+				else
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+					xArray = [*0..q-1].map{|t| Array.new(@U[v].length, t)}.reduce([], :+)
+					ntail = @Nx - start_point - @U[v].length * q
+				end
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
-				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@U[v].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
 			g.p[:e].map{|e|	#Formula (4)  41
-				start_point = [*0..e[1]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - @U[g.p[:v][e[1]]].length * q
-				xArray = [*0..@U[g.p[:v][e[1]]].length * q - 1].map{|i| @d[g.p[:v][e[1]]][i % @U[g.p[:v][e[1]]].length] }
+				if(mobility_constrainted)
+					start_point = [*0..e[1]-1].map{|j| @U[g.p[:v][j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					ntail = @Nx - start_point - @U[g.p[:v][e[1]]].length * (1 + @mobility[e[1]])
+					xArray = [*@asap[e[1]]..@alap[e[1]]].map{|t|     @d[g.p[:v][e[1]]]                  }.reduce([], :+) 
+				else
+					start_point = [*0..e[1]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+					ntail = @Nx - start_point - @U[g.p[:v][e[1]]].length * q
+					xArray = [*0..q-1].map{|t|     @d[g.p[:v][e[1]]]                  }.reduce([], :+) 
+				end
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			[*0..@end_vertex.length - 1].map{|v|	#Formula (5)
-				start_point = [*0..@end_vertex[v]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - @U[g.p[:v][@end_vertex[v]]].length * q
-				xArray = [*0..@U[g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| @d[g.p[:v][@end_vertex[v]]][i % @U[g.p[:v][@end_vertex[v]]].length] }
+			@end_vertex.map.with_index{|v,i|	#Formula (5)
+				if(mobility_constrainted)
+					start_point = [*0..v-1].map{|j| @U[g.p[:v][j]].length * (1+@mobility[j]) }.reduce(0,:+) 
+					ntail = @Nx - start_point - @U[g.p[:v][v]].length * (1+@mobility[v])
+					xArray = [*@asap[v]..@alap[v]].map{|t|          @d[g.p[:v][v]]                      }.reduce([], :+)
+				else
+					start_point = [*0..v-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+					ntail = @Nx - start_point - @U[g.p[:v][v]].length * q
+					xArray = [*0..q-1].map{|t|          @d[g.p[:v][v]]                      }.reduce([], :+)
+				end
 				sArray = Array.new(g.p[:v].length,0)
-				sArray[@end_vertex[v]] = 1
+				sArray[v] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			[*0..g.p[:v].length - 1].map{|v|			#Formula (6) (7)
-				start_point = [*0..v-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - @U[g.p[:v][v]].length * q
-				errArray = Array.new(@Nerr, 0)
-				errArray[v] = -1
-				if g.p[:PI][v] == false
-					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[e[1] ] = 1}	
+			g.p[:v].map.with_index{|v,i|			#Formula (6) (7)
+				if(mobility_constrainted)
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * (1+@mobility[j]) }.reduce(0,:+) 
+					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err[v])}.reduce([], :+) 
+					ntail = @Nx - start_point - @U[v].length * (1+@mobility[i])
+				else
+					start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+					xArray = [*0..q-1].map{|t| Array.new(@err[v])}.reduce([], :+) 
+					ntail = @Nx - start_point - @U[v].length * q
 				end
-				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@err[g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				errArray = Array.new(@Nerr, 0)
+				errArray[i] = -1
+				if g.p[:PI][i] == false
+					g.p[:e].select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
+				end
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
@@ -190,18 +224,13 @@ module DFG_ILP
 				flattenUimplementation = @U.keys.map{|k| [*0..@U[k].length - 1]}.reduce([], :+)
 				type = flattenUtype[di]
 				implementation = flattenUimplementation[di]
-				xArray = 
-				[*0..g.p[:v].length - 1].map{|xi|
-					[*0..q - 1].map{|xt|
-						[*0..@U[g.p[:v][xi]].length - 1].map{|m|
-							if g.p[:v][xi] == type and xt <= t and t <= xt + d - 1 and m == implementation
-								1
-							else
-								0
-							end
-						}
-					}.reduce([],:+)
-				}.reduce([],:+)
+				if(mobility_constrainted) then xArray =	g.p[:v].map.with_index{|v,xi| [*@asap[xi]..@alap[xi]].map{|xt| 
+					@U[v].map.with_index{|u,m| if v == type and xt <= t and t <= xt + d - 1 and m == implementation then 1 else 0 end}
+					}.reduce([],:+)}.reduce([],:+)
+				else xArray = g.p[:v].map.with_index{|v,xi|	[*0..q - 1].map{|xt|
+					@U[v].map.with_index{|u,m| if v == type and m == implementation and xt <= t and t <= xt + d - 1 then 1 else 0 end}
+					}.reduce([],:+)}.reduce([],:+)
+				end
 				uArray = Array.new(@Nu, 0)
 				uArray[di] = -1
 				xArray + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0) 
@@ -218,7 +247,7 @@ module DFG_ILP
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
 				Array.new(g.p[:v].length, EQ)				+
 				Array.new(@PO_vertex.length, LE)			+		#Formula (8)
-				Array.new(q * @U.values.flatten.length, LE)	+		#Formula (9)
+				Array.new(q * @U.values.flatten.length, LE)		+		#Formula (9)
 				Array.new(@U.values.flatten.length, LE)
 			@b 	=
 				Array.new(g.p[:v].length, 1)				+		#Formula (2)
@@ -230,13 +259,13 @@ module DFG_ILP
 				Array.new(q * @U.values.flatten.length, 0)		+		#Formula (9)
 				@U.values.flatten
 			@c	=
-				[*0..g.p[:v].length - 1].map{|xi|
-					[*0..q - 1].map{|xt|
-						@g[g.p[:v][xi]]
-					}.reduce([], :+)
-				}.reduce([], :+)					+		#xArray
+				if(mobility_constrainted)
+					g.p[:v].map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
+				else
+					g.p[:v].map.with_index{|v,xi|   [*0..q-1].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
+				end							+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				@p.values.flatten.map{|p| p * (1 + q) }		+		#uArray
+				@p.values.flatten.map{|p| p * q }			+		#uArray
 				Array.new(@Ns, 0)							#sArray
 		end
 
@@ -264,9 +293,13 @@ module DFG_ILP
 			position = 0
 			err_position =  @Nx 
 			for i in [*0..g.p[:v].length-1]	do
-				current_length = @U[g.p[:v][i]].length * @q
+				if(@mC)
+					current_length = @U[g.p[:v][i]].length * (1+@mobility[i]) 
+				else 
+					current_length = @U[g.p[:v][i]].length * @q
+				end
 				index = ret[:v][position, current_length].index(1)
-				time = index/ @U[ g.p[:v][i] ].length 
+				time = index/ @U[ g.p[:v][i] ].length + @asap[i]
 				type = index% @U[g.p[:v][i]].length 
 				error = ret[:v][err_position]
 				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error, :delay => @d[ g.p[:v][i] ][ type ] }]				
