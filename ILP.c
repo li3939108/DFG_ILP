@@ -16,7 +16,7 @@
 #define EQ 3
 #endif
 
-//#define DEBUG
+#define DEBUG
 
 
 VALUE cGraph ;
@@ -25,7 +25,6 @@ VALUE reverse_graph_obj ;
 
 static VALUE ASAP(VALUE self, VALUE delay){
 	Graph *G, *Gt ;
-	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	//VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
@@ -43,18 +42,19 @@ static VALUE ASAP(VALUE self, VALUE delay){
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
 	asap(Gt, time, delay ) ;
 	for(i = 1; i <= G->V; i++){
-		VALUE d_arr, sch = rb_hash_new() ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
+		//rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
+		//rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)0 ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, 0 ) ) ) );
+		#ifdef DEBUG
+		char op[2] ;
+		VALUE d_arr ;
 		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)0 ) );
-		rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, 0 ) ) ) );
-		rb_ary_push(ret, sch) ;
-		#ifdef DEBUG
 		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, 0, FIX2INT( rb_ary_entry(d_arr, 0) ), time[i] ) ;
 		#endif
+		rb_ary_push(ret, INT2FIX(time[i] ) ) ;
 	}
 	#ifdef DEBUG
 	printf("------------\n") ;
@@ -66,7 +66,6 @@ static VALUE ASAP(VALUE self, VALUE delay){
 
 static VALUE ALAP(VALUE self, VALUE delay){
 	Graph *G, *Gt ;
-	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	//VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
@@ -85,18 +84,20 @@ static VALUE ALAP(VALUE self, VALUE delay){
 	alap(G, time, delay) ;
 
 	for(i = 1; i <= G->V; i++){
-		VALUE d_arr, sch = rb_hash_new();
-		rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("id")), INT2FIX( i ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
+		//rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
+		//rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)( RARRAY_LEN(d_arr) - 1 ) ) );
+		//rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1  ) ) ) );
+		#ifdef DEBUG
+		VALUE d_arr;
+		char op[2] ;
 		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("op") ), rb_str_new2(op ) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("time") ), INT2FIX(time[i] ) ) ;
-		rb_hash_aset(sch, ID2SYM(rb_intern("type") ), INT2FIX( (int)( RARRAY_LEN(d_arr) - 1 ) ) );
-		rb_hash_aset(sch, ID2SYM(rb_intern("delay") ), INT2FIX(  FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1  ) ) ) );
-		rb_ary_push(ret, sch) ;
-		#ifdef DEBUG
-		printf("(%d %c\ttype:%ld delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, RARRAY_LEN(d_arr) - 1, FIX2INT( rb_ary_entry(d_arr, RARRAY_LEN(d_arr) - 1) ), time[i] ) ;
+		VALUE d = rb_funcall(d_arr, rb_intern("max"), 0) ;
+		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
 		#endif
+		rb_ary_push(ret, INT2FIX(time[i]  ) ) ;
 	}
 	#ifdef DEBUG
 	printf("------------\n") ;
