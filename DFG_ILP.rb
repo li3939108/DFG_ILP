@@ -96,9 +96,17 @@ module DFG_ILP
 			dynamic_energy =        {'+' => [200, 500],     'x' => [1000, 2000],    'D' => [100]}, #dynamic energy for every implementation of every operation types
 			static_power =          {'+' => [10, 30],       'x' => [50, 100],       'D' => [3]}, #static power for every implementation of every operation types
 			error =                 {'+' => [1, 0],         'x' => [1, 0],          'D' => [0]}, #error for every implementation of every operation types
-			error_bound =           10 )#error Bound on Primary Output
+			error_bound =           10, #error Bound on Primary Output
+			mobility_constrainted = true)
 			if q == nil
-				
+				@asap = g.ASAP(delay)				
+				@alap = g.ALAP(delay)
+				@mobility = [*0..@asap.length - 1].map{|i| @alap[i] - @asap[i] }
+				alap_endtime = [*0..@alap.length - 1].map{|i| @alap[i] + delay[ g.p[:v][i] ].max }
+				q = alap_endtime.max
+				@q = q
+			else
+				@q = q
 			end
 			@U = resource_bound 
 			@d = delay 
@@ -106,7 +114,6 @@ module DFG_ILP
 			@p = static_power
 			@err = error
 			@errB = error_bound
-			@q = q
 			@end = [*0..g.p[:v].length-1].map{|i| !g.p[:e].map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
@@ -120,7 +127,7 @@ module DFG_ILP
 				g.p[:PO].count(true) +
 				q * @U.values.flatten.length +
 				@U.values.flatten.length
-			@Nx = g.p[:v].map{|v| @U[v].length}.reduce(:+) * q
+			@Nx = g.p[:v].map{|v| @U[v].length * q}.reduce(:+) 
 			@Nerr = g.p[:v].length
 			@Nu = @U.values.flatten.length 
 			@Ns = g.p[:v].length
