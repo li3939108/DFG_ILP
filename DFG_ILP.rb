@@ -243,15 +243,16 @@ module DFG_ILP
 		end
 		def compute(g)
 			ret = DFG_ILP::cplex(@A, @op, @b, @c, true)
-			position = ret[:c].length - g.p[:U].values.flatten.length - 1
+			position = @Nx +@Nerr - 1
+
 			allocation = {}
 			g.p[:U].keys.each{|k|
 				allocation[k] = g.p[:U][k].map{|u|
 					position = position + 1
-					u - ret[:c][position]
+					ret[:v][position]
 				}
 			}
-			
+	
 			schedule = []
 			position = 0
 			err_position =  @Nx 
