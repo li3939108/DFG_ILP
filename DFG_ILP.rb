@@ -91,13 +91,14 @@ module DFG_ILP
 		def initialize(
 			g, 
 			q =                     nil,
+			mobility_constrainted = false,
 			delay =                 {'+' => [1, 2],         'x' => [2, 3],          'D' => [1]}, #delay for every implementation of every operation types
 			resource_bound =        {'+' => [1, 1],         'x' => [1, 1],          'D' => [400]} ,
 			dynamic_energy =        {'+' => [200, 500],     'x' => [1000, 2000],    'D' => [100]}, #dynamic energy for every implementation of every operation types
 			static_power =          {'+' => [10, 30],       'x' => [50, 100],       'D' => [3]}, #static power for every implementation of every operation types
 			error =                 {'+' => [1, 0],         'x' => [1, 0],          'D' => [0]}, #error for every implementation of every operation types
-			error_bound =           10, #error Bound on Primary Output
-			mobility_constrainted = true)
+			error_bound =           10 #error Bound on Primary Output
+			)
 			if q == nil
 				@asap = g.ASAP(delay)				
 				@alap = g.ALAP(delay)
@@ -127,23 +128,27 @@ module DFG_ILP
 				g.p[:PO].count(true) +
 				q * @U.values.flatten.length +
 				@U.values.flatten.length
-			@Nx = g.p[:v].map{|v| @U[v].length * q}.reduce(:+) 
+			if (mobility_constrainted )
+				@Nx = g.p[:v].map.with_index{|v,i| @U[v].length * @mobility[i] }.reduce(:+) 
+			else
+				@Nx = g.p[:v].map{|v| @U[v].length * q}.reduce(:+) 
+			end
 			@Nerr = g.p[:v].length
 			@Nu = @U.values.flatten.length 
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
-			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  
+			g.p[:v].map.with_index{|v,i|		#Formula (2)  
 				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Ncolumn - start_point - @U[g.p[:v][i]].length * q
-				Array.new(start_point, 0) + Array.new(@U[g.p[:v][i]].length * q, 1) + Array.new(ntail, 0)
+				ntail = @Ncolumn - start_point - @U[ v ].length * q
+				Array.new(start_point, 0) + Array.new(@U[ v ].length * q, 1) + Array.new(ntail, 0)
 			} +
-			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  
+			g.p[:v].map.with_index{|v,i|	#Formula (3)  
 				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - @U[g.p[:v][i]].length * q
+				ntail = @Nx - start_point - @U[v].length * q
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
-				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@U[g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@U[v].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
 			g.p[:e].map{|e|	#Formula (4)  41
 				start_point = [*0..e[1]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 

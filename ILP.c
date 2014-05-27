@@ -16,7 +16,7 @@
 #define EQ 3
 #endif
 
-#define DEBUG
+//#define DEBUG
 
 
 VALUE cGraph ;
