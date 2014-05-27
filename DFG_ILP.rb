@@ -41,19 +41,7 @@ module DFG_ILP
 			@vertex_without_D = []
 			@PI = []
 			@PO = []
-			@errB = 10 #error Bound on Primary Output
-			@Q = 30 #Longest Latency
-			@U = {'+' => [1, 1], 	'x' => [1, 1], 		'D' => [400]} #Resource Bound
 
-			#delay
-			@d = {'+' => [1, 2], 	'x' => [2, 3], 		'D' => [1]} #delay for every implementation of every operation types
-
-			#power
-			@g = {'+' => [200, 500], 	'x' => [1000, 2000], 	'D' => [100]} #dynamic energy for every implementation of every operation types
-			@p = {'+' => [10, 30], 	'x' => [50, 100], 	'D' => [3]} #static power for every implementation of every operation types
-
-			#error
-			@e = {'+' => [1, 0], 	'x' => [1, 0], 		'D' => [0]} #error for every implementation of every operation types
 		end
 		
 		def IIR(order)
@@ -94,23 +82,30 @@ module DFG_ILP
 				:e => @edge, 
 				:PI => @PI, 
 				:PO => @PO, 
-				:U => @U, 
-				:Q =>@Q, 
-				:err => @e, 
-				:d =>@d, 
 				:vNoD => @vertex_without_D, 
-				:B => @errB,
-				:g => @g,
-				:p => @p
 			}
 		end
 	end
 	
 	class ILP
-		def initialize(g, q = nil)
+		def initialize(
+			g, 
+			q =                     nil,
+			delay =                 {'+' => [1, 2],         'x' => [2, 3],          'D' => [1]}, #delay for every implementation of every operation types
+			resource_bound =        {'+' => [1, 1],         'x' => [1, 1],          'D' => [400]} ,
+			dynamic_energy =        {'+' => [200, 500],     'x' => [1000, 2000],    'D' => [100]}, #dynamic energy for every implementation of every operation types
+			static_power =          {'+' => [10, 30],       'x' => [50, 100],       'D' => [3]}, #static power for every implementation of every operation types
+			error =                 {'+' => [1, 0],         'x' => [1, 0],          'D' => [0]}, #error for every implementation of every operation types
+			error_bound =           10 )#error Bound on Primary Output
 			if q == nil
-				q = g.p[:Q]
+				
 			end
+			@U = resource_bound 
+			@d = delay 
+			@g = dynamic_energy
+			@p = static_power
+			@err = error
+			@errB = error_bound
 			@q = q
 			@end = [*0..g.p[:v].length-1].map{|i| !g.p[:e].map{|e| e[1]}.include?(i)}#get the vertices without vertices depending on
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
@@ -123,70 +118,70 @@ module DFG_ILP
 				@end.count(true) +
 				g.p[:v].count{|v| v != 'D'} + #error in D operation is ignored
 				g.p[:PO].count(true) +
-				q * g.p[:U].values.flatten.length +
-				g.p[:U].values.flatten.length
-			@Nx = g.p[:v].map{|v| g.p[:U][v].length}.reduce(:+) * q
+				q * @U.values.flatten.length +
+				@U.values.flatten.length
+			@Nx = g.p[:v].map{|v| @U[v].length}.reduce(:+) * q
 			@Nerr = g.p[:v].length
-			@Nu = g.p[:U].values.flatten.length 
+			@Nu = @U.values.flatten.length 
 			@Ns = g.p[:v].length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
 			@A = 
 			[*0..g.p[:v].length-1].map{|i|		#Formula (2)  
-				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Ncolumn - start_point - g.p[:U][g.p[:v][i]].length * q
-				Array.new(start_point, 0) + Array.new(g.p[:U][g.p[:v][i]].length * q, 1) + Array.new(ntail, 0)
+				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Ncolumn - start_point - @U[g.p[:v][i]].length * q
+				Array.new(start_point, 0) + Array.new(@U[g.p[:v][i]].length * q, 1) + Array.new(ntail, 0)
 			} +
 			[*0..g.p[:v].length - 1].map{|i|	#Formula (3)  
-				start_point = [*0..i-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][i]].length * q
+				start_point = [*0..i-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - @U[g.p[:v][i]].length * q
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[i] = -1
-				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:U][g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@U[g.p[:v][i]].length, t)}.reduce([], :+) + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
 			g.p[:e].map{|e|	#Formula (4)  41
-				start_point = [*0..e[1]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][e[1]]].length * q
-				xArray = [*0..g.p[:U][g.p[:v][e[1]]].length * q - 1].map{|i| g.p[:d][g.p[:v][e[1]]][i % g.p[:U][g.p[:v][e[1]]].length] }
+				start_point = [*0..e[1]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - @U[g.p[:v][e[1]]].length * q
+				xArray = [*0..@U[g.p[:v][e[1]]].length * q - 1].map{|i| @d[g.p[:v][e[1]]][i % @U[g.p[:v][e[1]]].length] }
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
 			[*0..@end_vertex.length - 1].map{|v|	#Formula (5)
-				start_point = [*0..@end_vertex[v]-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][@end_vertex[v]]].length * q
-				xArray = [*0..g.p[:U][g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| g.p[:d][g.p[:v][@end_vertex[v]]][i % g.p[:U][g.p[:v][@end_vertex[v]]].length] }
+				start_point = [*0..@end_vertex[v]-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - @U[g.p[:v][@end_vertex[v]]].length * q
+				xArray = [*0..@U[g.p[:v][@end_vertex[v]]].length * q - 1].map{|i| @d[g.p[:v][@end_vertex[v]]][i % @U[g.p[:v][@end_vertex[v]]].length] }
 				sArray = Array.new(g.p[:v].length,0)
 				sArray[@end_vertex[v]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
 			[*0..g.p[:v].length - 1].map{|v|			#Formula (6) (7)
-				start_point = [*0..v-1].map{|j| g.p[:U][g.p[:v][j]].length * q }.reduce(0,:+) 
-				ntail = @Nx - start_point - g.p[:U][g.p[:v][v]].length * q
+				start_point = [*0..v-1].map{|j| @U[g.p[:v][j]].length * q }.reduce(0,:+) 
+				ntail = @Nx - start_point - @U[g.p[:v][v]].length * q
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = -1
 				if g.p[:PI][v] == false
 					g.p[:e].select{|e| e[0] == v}.each{|e| errArray[e[1] ] = 1}	
 				end
-				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(g.p[:err][g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				Array.new(start_point, 0) + [*0..q-1].map{|t| Array.new(@err[g.p[:v][v]])}.reduce([], :+) + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
 			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} +
-			[*0..q * g.p[:U].values.flatten.length - 1].map{|row_i|	#Formula (9)
-				t = row_i / g.p[:U].values.flatten.length
-				di = row_i % g.p[:U].values.flatten.length
-				d = g.p[:d].values.flatten[di]
-				flattenUtype = g.p[:U].keys.map{|k| Array.new(g.p[:U][k].length, k)}.reduce([],:+)
-				flattenUimplementation = g.p[:U].keys.map{|k| [*0..g.p[:U][k].length - 1]}.reduce([], :+)
+			[*0..q * @U.values.flatten.length - 1].map{|row_i|	#Formula (9)
+				t = row_i / @U.values.flatten.length
+				di = row_i % @U.values.flatten.length
+				d = @d.values.flatten[di]
+				flattenUtype = @U.keys.map{|k| Array.new(@U[k].length, k)}.reduce([],:+)
+				flattenUimplementation = @U.keys.map{|k| [*0..@U[k].length - 1]}.reduce([], :+)
 				type = flattenUtype[di]
 				implementation = flattenUimplementation[di]
 				xArray = 
 				[*0..g.p[:v].length - 1].map{|xi|
 					[*0..q - 1].map{|xt|
-						[*0..g.p[:U][g.p[:v][xi]].length - 1].map{|m|
+						[*0..@U[g.p[:v][xi]].length - 1].map{|m|
 							if g.p[:v][xi] == type and xt <= t and t <= xt + d - 1 and m == implementation
 								1
 							else
@@ -199,7 +194,7 @@ module DFG_ILP
 				uArray[di] = -1
 				xArray + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0) 
 			} +
-			[*0..g.p[:U].values.flatten.length - 1].map{|u|
+			[*0..@U.values.flatten.length - 1].map{|u|
 				uArray = Array.new(@Nu, 0)
 				uArray[u] = 1
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
@@ -211,25 +206,25 @@ module DFG_ILP
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
 				Array.new(g.p[:v].length, EQ)				+
 				Array.new(@PO_vertex.length, LE)			+		#Formula (8)
-				Array.new(q * g.p[:U].values.flatten.length, LE)	+		#Formula (9)
-				Array.new(g.p[:U].values.flatten.length, LE)
+				Array.new(q * @U.values.flatten.length, LE)	+		#Formula (9)
+				Array.new(@U.values.flatten.length, LE)
 			@b 	=
 				Array.new(g.p[:v].length, 1)				+		#Formula (2)
 				Array.new(g.p[:v].length, 0)				+		#Formula (3)
 				Array.new(g.p[:e].length, 0)				+		#Formula (4)	
 				Array.new(@end_vertex.length, q)			+		#Formula (5)
 				Array.new(g.p[:v].length , 0)				+		#Formula (6) (7)							
-				Array.new(@PO_vertex.length, g.p[:B])			+		#Formula (8)
-				Array.new(q * g.p[:U].values.flatten.length, 0)		+		#Formula (9)
-				g.p[:U].values.flatten
+				Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
+				Array.new(q * @U.values.flatten.length, 0)		+		#Formula (9)
+				@U.values.flatten
 			@c	=
 				[*0..g.p[:v].length - 1].map{|xi|
 					[*0..q - 1].map{|xt|
-						g.p[:g][g.p[:v][xi]]
+						@g[g.p[:v][xi]]
 					}.reduce([], :+)
 				}.reduce([], :+)					+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				g.p[:p].values.flatten.map{|p| p * (1 + q) }		+		#uArray
+				@p.values.flatten.map{|p| p * (1 + q) }		+		#uArray
 				Array.new(@Ns, 0)							#sArray
 		end
 
@@ -246,8 +241,8 @@ module DFG_ILP
 			position = @Nx +@Nerr - 1
 
 			allocation = {}
-			g.p[:U].keys.each{|k|
-				allocation[k] = g.p[:U][k].map{|u|
+			@U.keys.each{|k|
+				allocation[k] = @U[k].map{|u|
 					position = position + 1
 					ret[:v][position]
 				}
@@ -257,12 +252,12 @@ module DFG_ILP
 			position = 0
 			err_position =  @Nx 
 			for i in [*0..g.p[:v].length-1]	do
-				current_length = g.p[:U][g.p[:v][i]].length * @q
+				current_length = @U[g.p[:v][i]].length * @q
 				index = ret[:v][position, current_length].index(1)
-				time = index/ g.p[:U][ g.p[:v][i] ].length 
-				type = index% g.p[:U][g.p[:v][i]].length 
+				time = index/ @U[ g.p[:v][i] ].length 
+				type = index% @U[g.p[:v][i]].length 
 				error = ret[:v][err_position]
-				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error, :delay => g.p[:d][ g.p[:v][i] ][ type ] }]				
+				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error, :delay => @d[ g.p[:v][i] ][ type ] }]				
 				position = position + current_length
 				err_position = err_position + 1
 			end

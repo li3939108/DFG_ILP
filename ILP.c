@@ -23,12 +23,12 @@ VALUE cGraph ;
 VALUE graph_obj ;
 VALUE reverse_graph_obj ;
 
-static VALUE ASAP(VALUE self){
+static VALUE ASAP(VALUE self, VALUE delay){
 	Graph *G, *Gt ;
 	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
-	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	//VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 	VALUE ret = rb_ary_new();
 	int *time, i;
 
@@ -64,12 +64,12 @@ static VALUE ASAP(VALUE self){
 	return ret ;
 }
 
-static VALUE ALAP(VALUE self){
+static VALUE ALAP(VALUE self, VALUE delay){
 	Graph *G, *Gt ;
 	char op[2] ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
-	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	//VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 	int *time, i ;
 	VALUE ret = rb_ary_new();
 
@@ -106,11 +106,11 @@ static VALUE ALAP(VALUE self){
 	return ret ;
 }
 
-static VALUE M(VALUE self){
+static VALUE M(VALUE self, VALUE delay){
 	Graph *G, *Gt ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
-	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
+	//VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 	int *m, i ;
 	VALUE ret = rb_ary_new() ;
 	Data_Get_Struct(graph_obj, Graph, G) ;
@@ -525,9 +525,9 @@ void Init_ILP(){
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	rb_define_module_function(DFG_ILP_mod, "lpsolve", lpsolve, 5);
 	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 5);
-	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 0);
-	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ALAP", ALAP, 0);
-	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"M", M, 0);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ASAP", ASAP, 1);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"ALAP", ALAP, 1);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"M", M, 1);
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
 }
