@@ -229,7 +229,7 @@ module DFG_ILP
 					}.reduce([], :+)
 				}.reduce([], :+)					+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				g.p[:p].values.flatten.map{|p| p * q}			+		#uArray
+				g.p[:p].values.flatten.map{|p| p * (1 + q) 		+		#uArray
 				Array.new(@Ns, 0)							#sArray
 		end
 
