@@ -16,7 +16,7 @@
 #define EQ 3
 #endif
 
-#define DEBUG
+//#define DEBUG
 
 
 VALUE cGraph ;
@@ -112,6 +112,7 @@ static VALUE M(VALUE self){
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") ) ;
 	int *m, i ;
+	VALUE ret = rb_ary_new() ;
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
 	if(G == NULL || Gt == NULL){
@@ -123,12 +124,13 @@ static VALUE M(VALUE self){
 	memset(m, 0xFF, (G->V + 1) * sizeof *m) ; //set all entry -1
 	mobility(G, m, delay) ;
 	for(i = 1; i <= G->V; i++){
+		rb_ary_push(ret, INT2FIX(m[i] ) ) ;
 		#ifdef DEBUG
-		printf("mobility: %d\n", m[i] );
+		printf("%dm%d  ", i, m[i] );
 		#endif
 	}
 	free(m) ;
-	return Qnil ;
+	return ret ;
 }
 
 
