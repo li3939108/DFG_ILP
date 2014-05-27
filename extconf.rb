@@ -13,7 +13,7 @@ dir_config('cplex1260', './include', './lib')
 
 #create it
 #if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy')  #For Debian 7 and packeged library
-if have_header('lp_lib.h') and have_library('lpsolve55', 'strcpy') and have_header('ilcplex/cplex.h') and have_library('cplex1260', 'CPXopenCPLEX') #For Ubuntu 13.04 and locally compiled library 
+if have_header('lp_lib.h') and have_library('lpsolve55', 'make_lp') and have_header('ilcplex/cplex.h') and have_library('cplex1260', 'CPXcopylp') #For Ubuntu 13.04 and locally compiled library 
 	RPATHFLAG << " -Wl,-rpath,./lib"
 	create_makefile('ILP')
 end
