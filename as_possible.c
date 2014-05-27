@@ -61,7 +61,8 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay, char asap_or_alap){//no 
 	if(asap_or_alap == 'S' || asap_or_alap == 's'){
 		time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( d_arr, 0) );
 	}else if(asap_or_alap == 'L' || asap_or_alap == 'l'){
-		time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( d_arr, RARRAY_LEN(d_arr) - 1) );
+		
+		time[s_label] = time[s_label] + FIX2INT( rb_funcall(d_arr, rb_intern("max"), 0) );
 	}
 	return time[s_label] ;
 }
