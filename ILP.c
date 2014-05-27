@@ -16,7 +16,7 @@
 #define EQ 3
 #endif
 
-//#define DEBUG
+#define DEBUG
 
 
 VALUE cGraph ;
@@ -194,12 +194,12 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}}
 	
 	if(RARRAY_LEN(op) != Nrow){
-		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match: op != Nrow";
 		goto TERMINATE ;
 	}
 
 	if(RARRAY_LEN(b) != Nrow){
-		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+		error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match: b != Nrow";
 		goto TERMINATE ;
 	}
 
@@ -209,7 +209,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		int constraint_type ;
 		Check_Type(row_v, T_ARRAY);
 		if(RARRAY_LEN(row_v) != Ncolumn){
-			error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match";
+			error_set = true ;error_type = rb_eFatal; error_msg ="arguments does not match: row_v != Ncolumn";
 			goto TERMINATE ;
 		}
 		for(j = 0; j < Ncolumn; j++){
