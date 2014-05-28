@@ -21,7 +21,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 		char operation[2] = {'\0','\0'} ;
 		#endif
 		VALUE op = rb_ary_entry(vlist, i) ;
-		#if RUBY_API_VERSION_MINOR == 9
+		#if RUBY_API_VERSION_MINOR == 9 || RUBY_API_VERSION_MAJOR >= 2
 		int t ;
 		char *operation ;
 		#endif
@@ -29,7 +29,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 		#if RUBY_API_VERSION_MINOR == 8
 		strncpy(operation, RSTRING_PTR(op), 1) ;
 		#endif
-		#if RUBY_API_VERSION_MINOR == 9
+		#if RUBY_API_VERSION_MINOR == 9 || RUBY_API_VERSION_MAJOR >= 2
 		RSTRING_GETMEM(op, operation, t) ;
 		#endif
 		vertices[i] = operation[0] ;
