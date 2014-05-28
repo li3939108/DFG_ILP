@@ -1,5 +1,8 @@
+#include <string.h>
+
 #include "graph.h"
 #include "ruby.h"
+#include "ruby/version.h"
 
 extern VALUE cGraph ;
 extern VALUE graph_obj ;
@@ -14,11 +17,21 @@ void get_graph(VALUE vlist, VALUE elist) {
 	Check_Type(elist, T_ARRAY) ;	
 	memset(vertex_list, 0, sizeof vertex_list);
 	for(i = 0; i < vlist_len; i++){
-		int t ;
+		#if RUBY_API_VERSION_MINOR == 8
+		char operation[2] = {'\0','\0'} ;
+		#endif
 		VALUE op = rb_ary_entry(vlist, i) ;
+		#if RUBY_API_VERSION_MINOR == 9
+		int t ;
 		char *operation ;
+		#endif
 		Check_Type(op, T_STRING) ;
+		#if RUBY_API_VERSION_MINOR == 8
+		strncpy(operation, RSTRING_PTR(op), 1) ;
+		#endif
+		#if RUBY_API_VERSION_MINOR == 9
 		RSTRING_GETMEM(op, operation, t) ;
+		#endif
 		vertices[i] = operation[0] ;
 	}
 	for(i = 0; i < elist_len; i++){
