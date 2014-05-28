@@ -92,8 +92,8 @@ module DFG_ILP
 			g, 
 			q =                     nil,
 			mobility_constrainted = false,
-			delay =                 {'+' => [1, 2],         'x' => [2, 3],          'D' => [1]}, #delay for every implementation of every operation types
 			resource_bound =        {'+' => [1, 1],         'x' => [1, 1],          'D' => [400]} ,
+			delay =                 {'+' => [1, 2],         'x' => [2, 3],          'D' => [1]}, #delay for every implementation of every operation types
 			dynamic_energy =        {'+' => [200, 500],     'x' => [1000, 2000],    'D' => [100]}, #dynamic energy for every implementation of every operation types
 			static_power =          {'+' => [10, 30],       'x' => [50, 100],       'D' => [3]}, #static power for every implementation of every operation types
 			error =                 {'+' => [1, 0],         'x' => [1, 0],          'D' => [0]}, #error for every implementation of every operation types
@@ -295,11 +295,13 @@ module DFG_ILP
 			for i in [*0..g.p[:v].length-1]	do
 				if(@mC)
 					current_length = @U[g.p[:v][i]].length * (1+@mobility[i]) 
+					index = ret[:v][position, current_length].index(1)
+					time = index/ @U[ g.p[:v][i] ].length + @asap[i]
 				else 
 					current_length = @U[g.p[:v][i]].length * @q
+					index = ret[:v][position, current_length].index(1)
+					time = index/ @U[ g.p[:v][i] ].length + 0
 				end
-				index = ret[:v][position, current_length].index(1)
-				time = index/ @U[ g.p[:v][i] ].length + @asap[i]
 				type = index% @U[g.p[:v][i]].length 
 				error = ret[:v][err_position]
 				schedule = schedule + [{:id => i + 1, :op => g.p[:v][i], :time => time, :type => type, :error => error, :delay => @d[ g.p[:v][i] ][ type ] }]				
