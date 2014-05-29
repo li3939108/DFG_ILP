@@ -106,8 +106,8 @@ module DFG_ILP
 				q * @U.values.flatten.length +
 				@U.values.flatten.length
 			if (mobility_constrainted )
-				@asap = ASAP(delay)				
-				@alap = ALAP(delay)
+				@asap = self.ASAP
+				@alap = self.ALAP
 				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
 				@Nx = @vertex.map.with_index{|v,i| @U[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
 			else
