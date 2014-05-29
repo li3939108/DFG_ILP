@@ -7,8 +7,8 @@ require 'mkmf'
 #will set the lib and include directory associated with DFG_ILP to ./lib and ./include
 #ruby extconf.rb --with-DFG_ILP-lib=lib will set the lib directory to lib
 #ruby extconf.rb --with-DFG_ILP-include=include will set the include directory to include
-lpsolve_lib = './lib'
-dir_config('lpsolve55', './include', lpsolve_lib)
+#lpsolve_lib = './lib'
+dir_config('lpsolve55', './include', './lib')
 dir_config('cplex1260', './include', './lib')
 
 #create it

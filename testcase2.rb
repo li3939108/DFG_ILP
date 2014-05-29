@@ -1,14 +1,26 @@
 #!/usr/bin/env ruby
-
 require './DFG_ILP.rb'
-delay =       {'+' => [1, 2],         'x' => [2, 3],          'D' => [1]} #delay for every implementation of every operation types
+
 g = DFG_ILP::GRAPH.new
 g.IIR(4)
-ret = g.ASAP(delay)
-print "ASAP: ",ret,"\n"
-#DFG_ILP::GRAPH.vs(ret, 0)
-ret = g.ALAP(delay)
-print "ALAP: ",ret,"\n"
-#DFG_ILP::GRAPH.vs(ret, 0)
-ret = g.M(delay)
-print "Mobility: ", ret, "\n"
+#g.dot(File.open("tmp.dot", "w") )
+ilp = DFG_ILP::ILP.new(
+	g, 
+	ARGV[0] == nil||ARGV[0] == "nil" ? nil : ARGV[0].to_i,
+	ARGV[1] == nil ? false : true)
+ret = ilp.ASAP
+sch = ret.map.with_index{|t,i|
+	{:id => i + 1,
+	:op =>ilp.p[:v][i],
+	:time => t,
+	:delay => ilp.p[:d][ ilp.p[:v][i] ].min}	}
+ilp.vs(sch)
+ret = ilp.ALAP
+sch = ret.map.with_index{|t,i|
+	{:id => i + 1,
+	:op =>ilp.p[:v][i],
+	:time => t,
+	:delay => ilp.p[:d][ ilp.p[:v][i] ].min}	}
+ilp.vs(sch)
+ret = ilp.M
+print ret, "\n"

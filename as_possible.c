@@ -56,27 +56,32 @@ void get_graph(VALUE vlist, VALUE elist) {
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, Gt) ;
 }
 
-int dfs(Graph *G, int s_label, int time[], VALUE delay, char asap_or_alap){//no cycles
+int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
 	int i ;
 	char op[2] ;
-	VALUE d_arr ;
+	VALUE d_arr, d ;
 	if(time[s_label] != -1){
 		return time[s_label] ;
 	}
 	for(i = 0; i < G->adj_list[s_label]->degree; i++){
  		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
- 		int time_step = dfs(G, adj[0], time, delay, asap_or_alap) ;
+ 		int time_step = dfs(G, adj[0], time, delay) ;
  		time[s_label] = time[s_label] < time_step ? time_step : time[s_label] ;
 	}
 	op[0] = G->adj_list[s_label]->op ;
 	op[1] = '\0' ;
 	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+	d = rb_funcall(d_arr, rb_intern("min"), 0) ;
+/*
 	if(asap_or_alap == 'S' || asap_or_alap == 's'){
-		time[s_label] = time[s_label] + FIX2INT( rb_ary_entry( d_arr, 0) );
+*/
+	time[s_label] = time[s_label] + FIX2INT( d );
+/*
 	}else if(asap_or_alap == 'L' || asap_or_alap == 'l'){
 		
 		time[s_label] = time[s_label] + FIX2INT( rb_funcall(d_arr, rb_intern("max"), 0) );
 	}
+*/
 	return time[s_label] ;
 }
 
@@ -88,26 +93,26 @@ int asap(Graph *Gt, int *time, VALUE delay){
 	for(i = 1; i <= Gt->V; i++){
 		op[0] = Gt->adj_list[i]->op ;op[1] = '\0' ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		dfs(Gt, i, time, delay, 's') ;
+		dfs(Gt, i, time, delay) ;
 		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;
 		max = max < time[i] ? time[i] : max ;
 	}
 	return max ;
 }
 
-int alap(Graph *G, int *time, VALUE delay){
-	int i, max = 0, Q = -1 ;
+int alap(Graph *G, int *time, VALUE delay, int Q){
+	int i, max = 0 ;
 	for(i = 1; i <= G->V; i++){
-		int new_Q = dfs(G, i, time, delay, 'L') ;
-		Q = new_Q > Q ? new_Q : Q ;
+		dfs(G, i, time, delay) ;
+	//	Q = new_Q > Q ? new_Q : Q ;
 	}
 	for(i = 1; i <= G->V; i++){
-		time[i] = Q - time[i] ;
+		time[i] = Q - 1 - time[i] ;
 		max = max < time[i] ? time[i] : max ;
 	}
 	return max ;
 }
-void mobility(Graph *G, int *m, VALUE delay){
+void mobility(Graph *G, int *m, VALUE delay, int Q){
 	Graph *Gt = NULL;
 	int *time_s = NULL, *time_l = NULL, i;
 	time_s = calloc(G->V + 1, sizeof *time_s);
@@ -119,7 +124,7 @@ void mobility(Graph *G, int *m, VALUE delay){
 		Gt = reverse(G);
 	}
 	asap (Gt, time_s, delay) ;
-	alap (G, time_l, delay) ;
+	alap (G, time_l, delay, Q) ;
 
 	for(i = 1; i <= G->V; i++){
 		m[i] = time_l[i] - time_s[i] ;
