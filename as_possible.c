@@ -10,7 +10,7 @@ extern VALUE reverse_graph_obj ;
 
 void get_graph(VALUE vlist, VALUE elist) {
 	Graph *G, *Gt ;
-	int i, elist_len = RARRAY_LEN(elist), vlist_len = RARRAY_LEN(vlist);
+	int i, elist_len = (int)RARRAY_LEN(elist), vlist_len = (int)RARRAY_LEN(vlist);
 	Vertex *vertex_list[vlist_len] ;
 	char vertices[vlist_len] ;
 	Check_Type(vlist, T_ARRAY) ;
@@ -22,7 +22,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 		#endif
 		VALUE op = rb_ary_entry(vlist, i) ;
 		#if RUBY_API_VERSION_MINOR == 9 || RUBY_API_VERSION_MAJOR >= 2
-		int t ;
+		long t ;
 		char *operation ;
 		#endif
 		Check_Type(op, T_STRING) ;

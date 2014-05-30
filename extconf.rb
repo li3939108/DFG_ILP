@@ -1,6 +1,5 @@
 require 'mkmf'
 
-#COMPILE_C='icc'
 #ruby extconf.rb --with-DFG_ILP-dir=dir
 #set the lib and include directory associated with DFG_ILP to dir/lib dir/include
 #ruby extconf.rb
@@ -11,12 +10,8 @@ require 'mkmf'
 dir_config('lpsolve55', './include', './lib')
 dir_config('cplex1260', './include', './lib')
 
-#create it
-#if find_header('lp_lib.h', './include') and find_library('lpsolve55', 'strcpy')  #For Debian 7 and packeged library
-if find_executable('icc')
-	CONFIG["CC"] = 'icc'
-end
-if have_header('lp_lib.h') and have_library('lpsolve55', 'make_lp') and have_header('ilcplex/cplex.h') and have_library('cplex1260', 'CPXcopylp') #For Ubuntu 13.04 and locally compiled library 
+
+if have_header('lp_lib.h') and have_library('lpsolve55', 'make_lp') and have_header('ilcplex/cplex.h') and have_library('cplex1260', 'CPXcopylp') 
 	RPATHFLAG << " -Wl,-rpath,./lib"
 	create_makefile('ILP')
 end

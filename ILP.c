@@ -139,8 +139,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	Check_Type(op, T_ARRAY) ;
 	Check_Type(b, T_ARRAY) ;
 	Check_Type(c, T_ARRAY) ;
-	int Nrow = RARRAY_LEN(A); 
-	int Ncolumn = RARRAY_LEN(c);
+	int Nrow = (int)RARRAY_LEN(A); 
+	int Ncolumn = (int)RARRAY_LEN(c);
 	int i ;
 	
 	VALUE ret_hash = rb_hash_new();
@@ -149,10 +149,10 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 
 	bool error_set = false ;
 	VALUE error_type = rb_eFatal ;
-	char *error_msg = NULL ;
+	const char *error_msg = NULL ;
 	
 
-	char *zprobname = "scheduling" ;
+	char zprobname[] = "scheduling" ;
 	int objsen      = 0;
 	double *zobj    = (double *) malloc(Ncolumn * sizeof(double));
 	double *zrhs    = (double *)malloc(Nrow * sizeof *zrhs);
@@ -232,8 +232,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		zrhs[i] = NUM2DBL(rb_ary_entry(b, i));
 	}
 	for(i = 0; i < Ncolumn; i++){
-		zmatbeg[i] = i * Nrow ;
-		zmatcnt[i] = Nrow ;
+		zmatbeg[i] = i * (int)Nrow ;
+		zmatcnt[i] = (int)Nrow ;
 		zlb[i] = 0.0 ;
 		zub[i] = CPX_INFBOUND ;
 		zctype[i] = 'I' ;
@@ -283,7 +283,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	}
 
 	/* Now copy the problem data into the lp */
-	status = CPXcopylp	(env, lp, Ncolumn, Nrow, objsen, zobj, zrhs, zsense, 
+	status = CPXcopylp	(env, lp, (int)Ncolumn, (int)Nrow, objsen, zobj, zrhs, zsense, 
 				zmatbeg, zmatcnt, zmatind, zmatval, zlb, zub, NULL) ;
 	if(status){
 		error_set = true ;error_type = rb_eFatal; error_msg = "Failed to copy problem data" ;
@@ -413,8 +413,8 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 	Check_Type(op, T_ARRAY) ;
 	Check_Type(b, T_ARRAY) ;
 	Check_Type(c, T_ARRAY) ;
-	int Nrow = RARRAY_LEN(A); 
-	int Ncolumn = RARRAY_LEN(c);
+	int Nrow = (int)RARRAY_LEN(A); 
+	int Ncolumn = (int)RARRAY_LEN(c);
 	int i;
 	int ret ;
 	lprec *lp = NULL;
@@ -425,7 +425,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 	VALUE constraints = rb_ary_new2(Nrow);
 	VALUE variables = rb_ary_new2(Ncolumn);
 
-	lp = make_lp(0, Ncolumn);
+	lp = make_lp(0, (int)Ncolumn);
 	set_verbose(lp, SEVERE);
 
 	if(TYPE(min) == T_TRUE){
