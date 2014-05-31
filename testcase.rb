@@ -9,6 +9,6 @@ ilp = DFG_ILP::ILP.new(
 	ARGV[0] == nil||ARGV[0] == "nil" ? nil : ARGV[0].to_i,
 	ARGV[1] == nil ? false : true)
 		
-r = ilp.compute(g, :lpsolve)
-#r = ilp.compute(g, :cplex)
+#r = ilp.compute(g, :lpsolve)
+r = ilp.compute(g, :cplex)
 ilp.vs(r[:sch], 0)
