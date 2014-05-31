@@ -1,3 +1,7 @@
+/*******************************************
+   2014 by Chaofan Li <chaof@tamu.edu>
+********************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

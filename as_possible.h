@@ -1,3 +1,7 @@
+/*******************************************
+   2014 by Chaofan Li <chaof@tamu.edu>
+********************************************/
+
 #ifndef __AS_POSSBLE_H__
 #define __AS_POSSBLE_H__
 
