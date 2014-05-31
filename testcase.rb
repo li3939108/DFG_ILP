@@ -7,8 +7,10 @@ g.IIR(4)
 ilp = DFG_ILP::ILP.new(
 	g, 
 	ARGV[0] == nil||ARGV[0] == "nil" ? nil : ARGV[0].to_i,
-	ARGV[1] == nil ? false : true)
-		
-#r = ilp.compute(g, :lpsolve)
-r = ilp.compute(g, :cplex)
+	ARGV[1] == nil||ARGV[1] == "nil" ? false : true)
+if(ARGV[2] == nil)
+	r = ilp.compute(g, :cplex)
+else
+	r = ilp.compute(g, :lpsolve)
+end
 ilp.vs(r[:sch], 0)

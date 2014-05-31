@@ -8,7 +8,7 @@
 
 #include "as_possible.h"
 
-#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#define round(x,e) ((x)>=0?(long)((x)+(e)):(long)((x)-(e)))
 
 #ifndef HEADER_lp_lib
 #define LE 1
@@ -335,14 +335,14 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 		goto TERMINATE ;
 	}
 	for (i = 0; i < cur_numrows; i++) {
-		rb_ary_store(constraints, i , INT2FIX( round(slack[i] ) ) );
+		rb_ary_store(constraints, i , INT2FIX( round(slack[i],0.5 ) ) );
 		#ifdef DEBUG
 		printf ("Row %d:  Slack = %f\n", i, slack[i]); 
 		#endif
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		rb_ary_store(variables, i, INT2FIX( round(x[i])  ) ) ;
+		rb_ary_store(variables, i, INT2FIX( round(x[i], 0.5)  ) ) ;
 		#ifdef DEBUG
 		printf ("Column %d:  Value = %f\n", i, x[i]); 
 		#endif
@@ -501,13 +501,13 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min)
 	#endif	
 	for(i = 1; i < 1 + get_Nrows(lp) + get_Ncolumns(lp); i++){
 		if(i >= 1 && i <= get_Nrows(lp)){
-			rb_ary_store(constraints, i - 1, INT2NUM((int)result[i]));
+			rb_ary_store(constraints, i - 1, INT2NUM(round(result[i],0.5) ) );
 		}else{if(i >= 1 + get_Nrows(lp) && i <= get_Nrows(lp) + get_Ncolumns(lp)){
-			rb_ary_store(variables, i - 1 - get_Nrows(lp), INT2NUM((int)result[i]));
+			rb_ary_store(variables, i - 1 - get_Nrows(lp), INT2NUM(round(result[i], 0.5)));
 		}}
 	}
 
-	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new(result[0]));
+	rb_hash_aset(ret_hash, ID2SYM(rb_intern("o")), rb_float_new(round(result[0], 0.00001) ) );
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("c")), constraints);
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
 	
