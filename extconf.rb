@@ -11,7 +11,7 @@ dir_config('lpsolve55', './include', './lib')
 dir_config('cplex1260', './include', './lib')
 
 
-if	have_header('lp_lib.h') and have_library('lpsolve55', 'make_lp') and 
+if	have_header('lpsolve/lp_lib.h') and have_library('lpsolve55', 'make_lp') and 
 	have_header('ilcplex/cplex.h') and have_library('cplex1260', 'CPXcopylp') 
 	have_header('pthread.h') and have_library('pthread', 'pthread_create')
 

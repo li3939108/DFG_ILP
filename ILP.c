@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ilcplex/cplex.h>
-#include <lp_lib.h>
+#include <lpsolve/lp_lib.h>
 #include <string.h>
 #include "ruby.h"
 
