@@ -150,6 +150,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	bool error_set = false ;
 	VALUE error_type = rb_eFatal ;
 	const char *error_msg = NULL ;
+	FILE *log = fopen("./CPX.log", "w") ;
 	
 
 	char zprobname[] = "scheduling" ;
@@ -262,6 +263,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE min){
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_ON);
 	#else
 	status = CPXsetintparam (env, CPXPARAM_ScreenOutput, CPX_OFF);
+	if(log != NULL){
+		status = CPXsetlogfile (env, log) ;}
 	#endif
 	if ( status ) {
 		error_set = true ;error_type = rb_eFatal; error_msg ="Failure to turn on screen indicator, error";
@@ -524,4 +527,7 @@ void Init_ILP(){
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"M", M, 0);
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
+	rb_define_const(DFG_ILP_mod, "LE", INT2FIX(1)) ;
+	rb_define_const(DFG_ILP_mod, "GE", INT2FIX(2)) ;
+	rb_define_const(DFG_ILP_mod, "EQ", INT2FIX(3)) ;
 }

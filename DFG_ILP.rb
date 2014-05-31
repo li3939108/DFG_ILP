@@ -1,9 +1,6 @@
 module DFG_ILP
 	#load the C implemented extension ,i.e., ILP.bundle in MAC or ILP.so in others
 	#note that this file can only be loaded after the module declaration of DFG_ILP
-	LE = 1#constant for less than or equal in lp_solve
-	GE = 2#constant for greater than or equal in lp_solve
-	EQ = 3#constant for equal in lp_solve
 	MIN = true#constant for minimum linear programming
 	MAX = false#constant for maximum linear programming
 	class GRAPH
@@ -257,8 +254,8 @@ module DFG_ILP
 				:d => @d 
 			}
 		end
-		def compute(g)
-			ret = DFG_ILP::cplex(@A, @op, @b, @c, true)
+		def compute(g, method)
+			ret = DFG_ILP.send(method, @A, @op, @b, @c, true)
 			position = @Nx +@Nerr - 1
 
 			allocation = {}

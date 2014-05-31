@@ -8,4 +8,4 @@ b=[1, 10, 12]
 c=[0, 1]
 min = false
 
-DFG_ILP::ILP(a,op,b,c,min)
+print DFG_ILP::cplex(a,op,b,c,min)
