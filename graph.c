@@ -2,7 +2,6 @@
    2014 by Chaofan Li <chaof@tamu.edu>
 ********************************************/
 
-#define __GRAPH_FUN__
 #include <string.h>
 #include <math.h>
 #include <time.h>
