@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lp_lib.h"
+#include "lpsolve/lp_lib.h"
 
 #define DISPLAY
 

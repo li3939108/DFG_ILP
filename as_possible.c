@@ -4,9 +4,8 @@
 
 #include <string.h>
 
-#include "graph.h"
-#include "ruby.h"
 #include "ruby/version.h"
+#include "as_possible.h"
 
 extern VALUE cGraph ;
 extern VALUE graph_obj ;

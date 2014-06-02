@@ -255,7 +255,7 @@ module DFG_ILP
 			}
 		end
 		def compute(g, method)
-			ret = DFG_ILP.send(method, @A, @op, @b, @c, true)
+			ret = DFG_ILP.send(method, @A, @op, @b, @c, :min)
 			position = @Nx +@Nerr - 1
 
 			allocation = {}
@@ -285,7 +285,7 @@ module DFG_ILP
 				position = position + current_length
 				err_position = err_position + 1
 			end
-			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:c].length, "\n", "number of variables: ", ret[:v].length, "\n", 
+			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:s].length, "\n", "number of variables: ", ret[:v].length, "\n", 
 				"allocation: ", allocation, "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end

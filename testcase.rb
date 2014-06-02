@@ -11,6 +11,6 @@ ilp = DFG_ILP::ILP.new(
 if(ARGV[2] == nil)
 	r = ilp.compute(g, :cplex)
 else
-	r = ilp.compute(g, :lpsolve)
+	r = ilp.compute(g, :gurobi)
 end
 ilp.vs(r[:sch], 0)
