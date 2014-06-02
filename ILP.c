@@ -16,7 +16,7 @@
 #define __GE 2
 #define __EQ 3
 
-#define DEBUG
+//#define DEBUG
 
 
 VALUE cGraph ;
@@ -730,9 +730,15 @@ void Init_ILP(){
 	cGraph = rb_define_class_under(DFG_ILP_mod, "Graph", rb_cObject) ;
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
+	#ifdef HAVE_LPSOLVE_LP_LIB_H 
 	rb_define_module_function(DFG_ILP_mod, "lpsolve", lpsolve, 5);
+	#endif
+	#ifdef  HAVE_ILCPLEX_CPLEX_H
 	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 5);
+	#endif
+	#ifdef HAVE_GUROBI_GUROBI_C_H 
 	rb_define_module_function(DFG_ILP_mod, "gurobi", gurobi, 5);
+	#endif
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ALAP", ALAP,0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"M", M, 0);
