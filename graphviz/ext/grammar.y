@@ -63,7 +63,7 @@ stmtlist                : stmtlist stmt {
 
 
 
-                        	$$ = ret ;
+                        	$$ = ret_hash ;
                         }
                         | stmt {$$ = $1; } 
                         ;

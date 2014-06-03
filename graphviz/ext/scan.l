@@ -1,5 +1,6 @@
 %{
 #include <string.h>
+#include <grammar.tab.h>
 #define BUFSIZ 4096
 %}
 
