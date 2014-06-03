@@ -313,5 +313,13 @@ module DFG_ILP
 		end
 
 	end
+	class Parser
+		def initialize
+			@id = {}
+			@result = {}
+			@vertex = []
+		end
+	end
 	require_relative 'ILP'
+
 end

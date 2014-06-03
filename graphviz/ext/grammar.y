@@ -6,14 +6,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "grammar.tab.h"
 #ifndef NIL
 #define NIL(type)               ((type)0)
 #endif
 int yylex(void) ;
-void yyerror(const char * ) ;
+void yyerror(VALUE, const char *msg) ;
 VALUE cParser ;
 extern FILE *yyin ;
 %}
+%parse-param {VALUE self}
 %union	{
 	long i ;
 	VALUE val ;
@@ -25,9 +27,9 @@ extern FILE *yyin ;
 %token T_list T_attr
 %token <str> T_atom T_qatom
 
-%type <i>  optstrict graphtype rcompound attrtype 
+%type <i>  optstrict graphtype attrtype 
 %type <str> optsubghdr qatom optmacroname
-%type <val> graph body optstmtlist stmtlist stmt compound attrassignment attritem attrdefs optattrdefs attrlist optattr
+%type <val> graph body optstmtlist stmtlist stmt compound attrassignment attritem attrdefs optattrdefs attrlist optattr rcompound
 %type <id>  simple nodelist node atom  optgraphname
 %%
 
@@ -61,11 +63,10 @@ optstmtlist             : stmtlist  { $$ = $1 ;}
                         ;
 
 stmtlist                : stmtlist stmt {
-                        	VALUE hash1 = $1, hash2 = $2 ;
 				VALUE ret_hash = rb_hash_new(), nap_ary ;
 				nap_ary = rb_ary_plus(
-                        		rb_hash_aref(hash1, ID2SYM(rb_intern("v")) ) ,
-                        		rb_hash_aref(hash2, ID2SYM(rb_intern("v")) ) );
+                        		rb_hash_aref($1, ID2SYM(rb_intern("v")) ) ,
+                        		rb_hash_aref($2, ID2SYM(rb_intern("v")) ) );
                         	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), nap_ary) ;
                         	$$ = ret_hash ;
                         }
@@ -79,9 +80,7 @@ stmt                    :  attrstmt  optsemi { $$ = Qnil ; }
                         ;
 
 compound                : simple rcompound optattr {
-                        	if ($2 != 0){ 
-                        		$$ = 0 ;
-                        	}else if($2 == 0){
+                        	if($2 == Qnil){
 					/* only node declaration */
 					VALUE ret = rb_hash_new() ;
 					VALUE node_attr_pair = rb_ary_new() ;
@@ -105,15 +104,24 @@ compound                : simple rcompound optattr {
                         		rb_ary_push(nap_ary, node_attr_pair) ;
 					rb_hash_aset(ret, ID2SYM(rb_intern("v")), nap_ary ) ;
 					$$ = ret ;
-                        	} }
+                        	}else if ($2 != Qnil){ 
+                        		/* TODO */
+                        	}
+                        }
                         ;
 
 simple                  : nodelist { $$ = $1; }
-                        | subgraph { $$ = 0; }
+                        | subgraph { $$ = Qnil; }
                         ;
 
-rcompound               : T_edgeop {} simple {} rcompound {$$ = 1;}
-                        | {$$ = 0;}
+rcompound               : T_edgeop  simple rcompound {
+                        	if($2 == Qnil){rb_raise(rb_eFatal, "grammar error") ;}
+                        	if ($3 == Qnil){$$ = $2 ;
+                        	}else {
+                        		        
+                        	}
+                        }
+                        | {$$ = Qnil;}
                         ;
 
 
@@ -194,15 +202,6 @@ qatom                   :  T_qatom {$$ = $1;}
                         |  qatom '+' T_qatom {$$ = strcat($1,$3);}
                         ;
 %%
-static VALUE initialize(VALUE self){
-	VALUE id = rb_hash_new(); 
-	VALUE vertex = rb_ary_new() ;
-
-	rb_iv_set(self, "@id", id) ;
-	rb_iv_set(self, "@vertex", vertex) ;
-
-	return self ;
-}
 
 static VALUE parse(VALUE self, VALUE str){
 	FILE *file = fopen(RSTRING_PTR (str), "r") ;
@@ -212,7 +211,7 @@ static VALUE parse(VALUE self, VALUE str){
 	}else{
 		yyin = file ;
 	}
-	if(yyparse() == 0){
+	if(yyparse(self) == 0){
 		rb_ivar_set(self, rb_intern("@result"), rb_cvar_get(cParser, rb_intern("@@result") ) );
 		fclose(file) ;
 		
@@ -228,5 +227,4 @@ void Init_Parser(){
 	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
 	cParser = rb_define_class_under(DFG_ILP_mod, "Parser", rb_cObject) ;
 	rb_define_method(cParser,"parse", parse, 1);
-	rb_define_method(cParser,"initialize", initialize, 0);
 }
