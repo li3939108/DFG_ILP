@@ -313,5 +313,5 @@ module DFG_ILP
 		end
 
 	end
-	require './ILP.so'
+	require_relative 'ILP'
 end

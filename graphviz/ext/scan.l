@@ -1,7 +1,51 @@
 %{
-#include <string.h>
+#include "ruby.h"
+#include <ctype.h>
 #include <grammar.tab.h>
-#define BUFSIZ 4096
+#include <string.h>
+#define _BUFSIZE 4096
+
+static int line_num = 1;
+static int html_nest = 0;  
+static int graphType;
+static char *Sbuf,*Sptr,*Send;
+
+static void beginstr(void) {
+	if (Sbuf == NULL) {
+		Sbuf = malloc(_BUFSIZE);
+		Send = Sbuf + _BUFSIZE;
+	}
+	Sptr = Sbuf;
+	*Sptr = 0;
+}
+static void addstr(const char *src) {
+	char	c;
+	if (Sptr > Sbuf) Sptr--;
+	do {
+		do {c = *Sptr++ = *src++;} while (c && (Sptr < Send));
+		if (c) {
+			long	sz = Send - Sbuf;
+			long	off = Sptr - Sbuf;
+			sz *= 2;
+			Sbuf = (char*)realloc(Sbuf,sz);
+			Send = Sbuf + sz;
+			Sptr = Sbuf + off;
+		}
+	} while (c);
+}
+static void endstr(void) {
+	yylval.str = Sbuf;
+}
+
+static void endstr_html(void) {
+	yylval.str = Sbuf;
+}
+static int chkNum(void) {
+	unsigned char c = (unsigned char)yytext[yyleng-1];   /* last character */
+	if (!isdigit(c) && (c != '.')) {  /* c is letter */
+		return 1;
+	}else {return 0;}
+}
 %}
 
 GRAPH_EOF_TOKEN				[@]	
@@ -79,48 +123,7 @@ ID		({NAME}|{NUMBER})
 <hstring>[<]                    {html_nest++; addstr(yytext);}
 <hstring>[\n]                   {addstr(yytext); line_num++;} /* add newlines */
 <hstring>([^><\n]*)             {addstr(yytext);}
+";"				{return (yytext[0]);}
 .                               {return (yytext[0]);}
 %%
-static int line_num = 1;
-static int html_nest = 0;  /* nesting level for html strings */
-static int graphType;
-/* buffer for arbitrary length strings (longer than BUFSIZ) */
-static char	*Sbuf,*Sptr,*Send;
 
-
-static void beginstr(void) {
-	if (Sbuf == NULL) {
-		Sbuf = malloc(BUFSIZ);
-		Send = Sbuf + BUFSIZ;
-	}
-	Sptr = Sbuf;
-	*Sptr = 0;
-}
-static void addstr(char *src) {
-	char	c;
-	if (Sptr > Sbuf) Sptr--;
-	do {
-		do {c = *Sptr++ = *src++;} while (c && (Sptr < Send));
-		if (c) {
-			long	sz = Send - Sbuf;
-			long	off = Sptr - Sbuf;
-			sz *= 2;
-			Sbuf = (char*)realloc(Sbuf,sz);
-			Send = Sbuf + sz;
-			Sptr = Sbuf + off;
-		}
-	} while (c);
-}
-static void endstr(void) {
-	yylval.str = Sbuf;
-}
-
-static void endstr_html(void) {
-	yylval.str = Sbuf;
-}
-static int chkNum(void) {
-	unsigned char c = (unsigned char)yytext[yyleng-1];   /* last character */
-	if (!isdigit(c) && (c != '.')) {  /* c is letter */
-		return 1;
-	}else {return 0;}
-}

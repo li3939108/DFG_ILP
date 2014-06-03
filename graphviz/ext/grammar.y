@@ -1,16 +1,21 @@
+/************************************
+   2014 Chaofan Li <chaof@tamu.edu>
+ ***********************************/
 %{
+#include "ruby.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "ruby.h"
+#include <string.h>
 #ifndef NIL
 #define NIL(type)               ((type)0)
 #endif
 int yylex(void) ;
 void yyerror(const char * ) ;
-
+VALUE cParser ;
+extern FILE *yyin ;
 %}
 %union	{
-	int i ;
+	long i ;
 	VALUE val ;
 	char *str;
 	ID id ;
@@ -21,17 +26,19 @@ void yyerror(const char * ) ;
 %token <str> T_atom T_qatom
 
 %type <i>  optstrict graphtype rcompound attrtype 
-%type <str> optsubghdr optgraphname optmacroname atom qatom
-%type <val> graph body optstmtlist stmtlist stmt compound
-%type <id>  simple nodelist node
+%type <str> optsubghdr qatom optmacroname
+%type <val> graph body optstmtlist stmtlist stmt compound attrassignment attritem attrdefs optattrdefs attrlist optattr
+%type <id>  simple nodelist node atom  optgraphname
 %%
 
-graph                   : hdr body { $$ = $2 ;}
+graph                   : hdr body { $$ = $2 ; rb_cvar_set(cParser, rb_intern("@@result"), $$); /*rb_funcall(rb_mKernel, rb_intern("print"), 2, ($$), rb_str_new2("\n")   );*/ }
                         | error  { rb_raise( rb_eFatal, "Grammar error") ;}
-                        | {}
+                        | {
+                        	
+                        }
                         ;
 
-body                    : '{' optstmtlist '}' { $$ = $2; }
+body                    : '{' optstmtlist '}' { $$ = $2;}
                         ;
 
 hdr                     : optstrict graphtype optgraphname {}
@@ -57,12 +64,9 @@ stmtlist                : stmtlist stmt {
                         	VALUE hash1 = $1, hash2 = $2 ;
 				VALUE ret_hash = rb_hash_new(), nap_ary ;
 				nap_ary = rb_ary_plus(
-                        		rb_hash_aref(hash1, ID2SYM("v") ) ,
-                        		rb_hash_aref(hash2, ID2SYM("v") ) );
-                        	rb_hash_aset(ret_hash, ID2SYM("v"), nap_ary) ;
-
-
-
+                        		rb_hash_aref(hash1, ID2SYM(rb_intern("v")) ) ,
+                        		rb_hash_aref(hash2, ID2SYM(rb_intern("v")) ) );
+                        	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), nap_ary) ;
                         	$$ = ret_hash ;
                         }
                         | stmt {$$ = $1; } 
@@ -71,7 +75,7 @@ stmtlist                : stmtlist stmt {
 optsemi                 : ';' | ;
 
 stmt                    :  attrstmt  optsemi { $$ = Qnil ; }
-                        |  compound  optsemi { Check_Type($1, T_HASH); $$ = $1 ; }
+                        |  compound  optsemi { Check_Type($1, T_HASH); $$ = $1 ;}
                         ;
 
 compound                : simple rcompound optattr {
@@ -83,12 +87,15 @@ compound                : simple rcompound optattr {
 					VALUE node_attr_pair = rb_ary_new() ;
 					VALUE nap_ary = rb_ary_new() ;
 					VALUE node = ID2SYM($1) ;
-					//VALUE attr = $3 ;
+                        		int attr_len = RARRAY_LEN ($3), i ;
+                        		for (i = 0; i < attr_len; i++){
+                        		}
+					//rb_ary_push(node_attr_pair, attr) ;
 					rb_ary_push(node_attr_pair, node) ;
-					rb_ary_push(node_attr_pair, attr) ;
 					rb_ary_push(nap_ary, node_attr_pair) ;
-					rb_hash_aset(ret, ID2SYM("v"), nap_ary ) ;
+					rb_hash_aset(ret, ID2SYM(rb_intern("v")), nap_ary ) ;
 					$$ = ret ;
+					
                         	} }
                         ;
 
@@ -104,9 +111,12 @@ rcompound               : T_edgeop {} simple {} rcompound {$$ = 1;}
 nodelist                : node { $$ = $1; }
                         | nodelist ',' node ;
 
-node                    : atom { $$ = rb_intern($1); }
-                        | atom ':' atom { $$ = rb_intern($1); } 
-                        | atom ':' atom ':' atom { $$ = rb_intern($1); }
+node                    : atom { 
+                        	$$ = $1; 
+                        	
+                        }
+                        | atom ':' atom { $$ = $1; } 
+                        | atom ':' atom ':' atom { $$ = $1; }
                         ;
 
 attrstmt                :  attrtype optmacroname attrlist {}
@@ -122,24 +132,32 @@ optmacroname            : atom '=' {}
                         | /* empty */ { }
                         ;
 
-optattr                 : attrlist |  /* empty */ ;
-
-attrlist                : optattr '[' optattrdefs ']' ;
-
-optattrdefs             : optattrdefs attrdefs 
-                        | /* empty */ ;
-
-attrdefs                :  attritem optseparator
+optattr                 : attrlist {$$ = $1;}
+                        | { $$ = Qnil;}
                         ;
 
-attritem                : attrassignment | attrmacro ; 
+attrlist                : optattr '[' optattrdefs ']' {
+                        	if($1 == Qnil){ $$ = $3 ;
+                        	}else{ $$ = rb_ary_plus( $1, $3) ;}
+                        }
+                        ;
+
+optattrdefs             : optattrdefs attrdefs { $$ = rb_ary_push($1, $2); }
+                        | {$$ = rb_ary_new() ;}
+                        ;
+
+attrdefs                :  attritem optseparator {$$ = $1 ;}
+                        ;
+
+attritem                : attrassignment {$$ = $1; }
+                        | attrmacro ; 
 
 attrassignment          :  atom '=' atom {
-
-
-
-
-
+                        	VALUE key = rb_id2str($1) ;
+                        	VALUE value = rb_id2str($2) ;
+                        	VALUE ret = rb_ary_new() ;
+                        	rb_ary_push(ret, key) ;
+                        	$$ = rb_ary_push(ret, value) ;
                         }
                         ;
 
@@ -149,7 +167,7 @@ attrmacro               : '@' atom /* not yet impl */
 graphattrdefs           : attrassignment
                         ;
 
-subgraph                : optsubghdr {opensubg($1);} body {closesubg();}
+subgraph                : optsubghdr {} body {}
                         ;
 
 optsubghdr              : T_subgraph atom {}
@@ -159,8 +177,8 @@ optsubghdr              : T_subgraph atom {}
 
 optseparator            :  ';' | ',' | /*empty*/ ;
 
-atom                    :  T_atom {$$ = $1;}
-                        |  qatom {$$ = $1;}
+atom                    :  T_atom {$$ = rb_intern($1); printf("T_atom: %s\n", $1) ; }
+                        |  qatom {$$ = rb_intern($1);}
                         ;
 
 qatom                   :  T_qatom {$$ = $1;}
@@ -181,10 +199,15 @@ static VALUE parse(VALUE self, VALUE str){
 	FILE *file = fopen(RSTRING_PTR (str), "r") ;
 	Check_Type(str, T_STRING) ;
 	if(file == NULL){
-		rb_raise(rb_eFatal, "No such file: %s", RSTRING_PTR) ;
+		rb_raise(rb_eFatal, "No such file: %s", RSTRING_PTR(str) ) ;
+	}else{
+		yyin = file ;
 	}
 	if(yyparse() == 0){
+		rb_ivar_set(self, rb_intern("@result"), rb_cvar_get(cParser, rb_intern("@@result") ) );
 		fclose(file) ;
+		
+		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("result: "),  rb_ivar_get(self, rb_intern("@result")) , rb_str_new2("\n") );
 	}else{
 		fclose(file) ;
 		rb_raise(rb_eFatal, "Parse error") ;
@@ -192,11 +215,9 @@ static VALUE parse(VALUE self, VALUE str){
 	return Qnil ;
 }
 
-
-
 void Init_Parser(){
 	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
 	cParser = rb_define_class_under(DFG_ILP_mod, "Parser", rb_cObject) ;
 	rb_define_method(cParser,"parse", parse, 1);
-	rb_define_method(cParser,"initialize", initialize, 1);
+	rb_define_method(cParser,"initialize", initialize, 0);
 }
