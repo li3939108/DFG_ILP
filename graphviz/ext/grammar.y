@@ -87,15 +87,24 @@ compound                : simple rcompound optattr {
 					VALUE node_attr_pair = rb_ary_new() ;
 					VALUE nap_ary = rb_ary_new() ;
 					VALUE node = ID2SYM($1) ;
-                        		int attr_len = RARRAY_LEN ($3), i ;
-                        		for (i = 0; i < attr_len; i++){
-                        		}
-					//rb_ary_push(node_attr_pair, attr) ;
+                        		VALUE attr_hash = rb_hash_new();
 					rb_ary_push(node_attr_pair, node) ;
-					rb_ary_push(nap_ary, node_attr_pair) ;
+                        		if(TYPE ($3) == T_ARRAY) {
+                        			while (RARRAY_LEN($3) > 0 ){
+                        				VALUE ary = rb_ary_pop( $3 ) ;
+                        				VALUE str2 = rb_ary_pop(ary) ;
+                        				VALUE str1 = rb_ary_pop(ary) ;
+                         				Check_Type(str2, T_STRING) ;
+                        				Check_Type(str1, T_STRING) ;
+                        				rb_hash_aset(attr_hash, str1, str2 ) ;
+                        			}
+                        			rb_ary_push(node_attr_pair, attr_hash) ;
+                        		}else if(TYPE( $3 ) == T_NIL) {
+                        			rb_ary_push(node_attr_pair, rb_ary_new() );
+                        		}else{rb_raise(rb_eFatal, "Grammar error") ;}
+                        		rb_ary_push(nap_ary, node_attr_pair) ;
 					rb_hash_aset(ret, ID2SYM(rb_intern("v")), nap_ary ) ;
 					$$ = ret ;
-					
                         	} }
                         ;
 
@@ -150,11 +159,11 @@ attrdefs                :  attritem optseparator {$$ = $1 ;}
                         ;
 
 attritem                : attrassignment {$$ = $1; }
-                        | attrmacro ; 
+                        | attrmacro {$$ = Qnil;} ; 
 
 attrassignment          :  atom '=' atom {
                         	VALUE key = rb_id2str($1) ;
-                        	VALUE value = rb_id2str($2) ;
+                        	VALUE value = rb_id2str($3) ;
                         	VALUE ret = rb_ary_new() ;
                         	rb_ary_push(ret, key) ;
                         	$$ = rb_ary_push(ret, value) ;
