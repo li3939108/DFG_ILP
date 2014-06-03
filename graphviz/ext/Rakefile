@@ -1,0 +1,26 @@
+$bison = 'bison'
+$flex = 'flex'
+$ruby = 'ruby'
+$make = 'make'
+
+$targets = FileList['*'].exclude('scan.l', 'grammar.y', 'extconf.rb', 'Rakefile') 
+
+task :default => ['Makefile', 'grammar.tab.h', 'grammar.tab.c', 'lex.yy.c'] do
+	sh "#{$make}"
+end
+file 'Makefile' => ['extconf.rb'] do |t|
+	sh "#{$ruby}  #{t.prerequisites.join(' ')}"
+end
+file "grammar.tab.c" => ['grammar.y'] do |t|
+	sh "#{$bison} #{t.prerequisites.join(' ')} -o #{t.name} -d"
+end
+file "grammar.tab.h" => ['grammar.y'] do |t|
+	sh "#{$bison} #{t.prerequisites.join(' ')}  --defines=#{t.name}"
+end
+file 'lex.yy.c' => ['scan.l'] do |t|
+	sh  "#{$flex} #{t.prerequisites.join(' ')}"
+end
+
+task :clean do
+	sh "rm -rf #{$targets}"
+end
