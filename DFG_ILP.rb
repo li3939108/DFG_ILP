@@ -328,6 +328,8 @@ module DFG_ILP
 			v = self.p[:v].map{|attri|
 				if attri["label"].include?("add") or
 					attri["label"].include?("ADD") or 
+					attri["label"].include?("sub") or 
+					attri["label"].include?("SUB") or 
 					attri["label"].include?("+") then "+"
 				elsif attri["label"].include?("MUL") or	
 					attri["label"].include?("mul") or 
