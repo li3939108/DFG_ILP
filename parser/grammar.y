@@ -241,19 +241,12 @@ static VALUE parse(VALUE self, VALUE str){
 		yyin = file ;
 	}
 	if(yyparse(self) == 0){
-		//rb_ivar_set(self, rb_intern("@result"), rb_cvar_get(cParser, rb_intern("@@result") ) );
 		fclose(file) ;
-		/*	
-		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("edge: "),  rb_ivar_get(self, rb_intern("@edge")) , rb_str_new2("\n") );
-		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("vertex: "),  rb_ivar_get(self, rb_intern("@vertex")) , rb_str_new2("\n") );
-		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("id: "),  rb_ivar_get(self, rb_intern("@id")) , rb_str_new2("\n") );
-		*/
-		
 	}else{
 		fclose(file) ;
 		rb_raise(rb_eFatal, "Parse error") ;
 	}
-	return Qnil ;
+	return rb_funcall(self, rb_intern("p"), 0)  ;
 }
 
 void Init_Parser(){
