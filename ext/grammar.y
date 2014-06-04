@@ -246,11 +246,11 @@ static VALUE parse(VALUE self, VALUE str){
 		fclose(file) ;
 		rb_raise(rb_eFatal, "Parse error") ;
 	}
-	return rb_funcall(self, rb_intern("p"), 0)  ;
+	return self ;
 }
 
 void Init_Parser(){
 	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
 	cParser = rb_define_class_under(DFG_ILP_mod, "Parser", rb_cObject) ;
-	rb_define_method(cParser,"parse", parse, 1);
+	rb_define_method(cParser,"_parse", parse, 1);
 }

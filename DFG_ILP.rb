@@ -13,16 +13,17 @@ module DFG_ILP
 			@edge.each{|e| out.puts "node_#{e[1] + 1} -> node_#{e[0] + 1} ;"}
 			out.puts "}"
 		end
-		def initialize()
-			@edge = []
-			@vertex = []
-			@vertex_without_D = []
-			@PI = []
-			@PO = []
+		def initialize(p = nil)
+			if p != nil and p[:e] == nil then @edge = [] 
+			else @edge = p[:e] end
+			if p != nil and p[:v] == nil then @vertex = [] 
+			else @vertex = p[:v] end
+			@PI = @vertex.map.with_index{|v,i| !@edge.map{|e| e[0]}.include?(i) and v != 'D'}
+			@PO = @vertex.map.with_index{|v,i| 
+				@edge.select{|e| e[1] == i}.select{|e| 
+					@vertex[e[0]] != 'D'}.empty? and v != 'D'}
+			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
 
-		end
-		def ewf
-		#	@vertex = [
 		end
 		def IIR(order)
 			vertex2 = ['x', '+', '+', '+', '+', 'D', 'x', 'x', 'D', 'x']
@@ -314,7 +315,12 @@ module DFG_ILP
 
 	end
 	class Parser
-		def initialize
+		def parse(path = nil )
+			if path == nil then self.parse(@target) 
+			else self._parse(path) end
+		end 
+		def initialize(t = nil)
+			@target = t if t != nil
 			@id = {}
 			@result = {}
 			@vertex = []
@@ -341,8 +347,9 @@ module DFG_ILP
 					attri["label"].include?("<") then "<"
 				end
 			}
+			v = v.map{|v| if v == "<" then "+" else v end}
 			e = p[:e].map{|edge| edge.reverse }
-			{:v => v, :e => e}
+			DFG_ILP::GRAPH.new( { :v => v, :e => e} )
 		end
 	end
 	

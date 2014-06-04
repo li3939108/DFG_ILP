@@ -1,6 +1,8 @@
-#  2014 by Chaofan Li <chaof@tamu.edu>
+#
+#  2014, Chaofan Li <chaof@tamu.edu>
+#
 require 'mkmf'
-root_dir = Dir.pwd 
+root_dir = "/home/me/DFG_ILP"
 lpsolve = 'lpsolve'
 cplex = 'cplex'
 gurobi = 'gurobi'
@@ -16,8 +18,8 @@ Dir.entries("#{root_dir}/lib").each{|file|
 		gurobi = file.split('.')[0][3..-1]
 	end
 }
-dir_config(lpsolve, './include', './lib') 
-dir_config(cplex, './include', './lib') 
+dir_config(lpsolve, "#{root_dir}/include", "#{root_dir}/lib") 
+dir_config(cplex, "#{root_dir}/include", "#{root_dir}/lib") 
 have_cplex =  have_library(lpsolve, 'strcpy') and have_header('lpsolve/lp_lib.h') 
 have_lpsolve = have_library(cplex, 'CPXcopylp') and have_header('ilcplex/cplex.h') 
 have_gurobi = have_library(gurobi, 'GRBnewmodel') and have_header('gurobi/gurobi_c.h') 
