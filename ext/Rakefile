@@ -30,5 +30,5 @@ task :clean do
 end
 
 task :test => ['Parser.so'] do
-	sh "#{ruby} test.rb"
+	sh "#{ruby} ../test_parser.rb"
 end

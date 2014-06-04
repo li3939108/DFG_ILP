@@ -1,8 +1,9 @@
-require '../DFG_ILP.rb'
-require './Parser.so'
+require_relative 'DFG_ILP'
+require_relative 'ext/Parser'
 
 p = DFG_ILP::Parser.new
-p.parse "../dot/hal.dot"
+
+p.parse "/home/me/DFG_ILP/dot/hal.dot"
 print "vertices: ", p.p[:v].length, "\n", p.p[:v], "\n"
 print "edges: ", p.p[:e].length, "\n", p.p[:e], "\n"
 print "----------------------\n"
