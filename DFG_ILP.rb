@@ -318,6 +318,7 @@ module DFG_ILP
 			@id = {}
 			@result = {}
 			@vertex = []
+			@edge = []
 		end
 	end
 	require_relative 'ILP'

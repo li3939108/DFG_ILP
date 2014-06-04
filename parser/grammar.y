@@ -116,9 +116,21 @@ simple                  : nodelist { $$ = $1; }
 
 rcompound               : T_edgeop  simple rcompound {
                         	if($2 == Qnil){rb_raise(rb_eFatal, "grammar error") ;}
-                        	if ($3 == Qnil){$$ = $2 ;
+                        	VALUE id = rb_ivar_get(self, rb_intern("@id") ) ;
+                        	VALUE vertex = rb_ivar_get(self, rb_intern("@vertex") );
+                        	VALUE v = rb_hash_aref(id, ID2SYM($2) ) ;
+                        	if(v == Qnil){
+                        		rb_ary_push(vertex , ID2SYM($2) ) ;
+                        		rb_hash_aset( id, ID2SYM($2), INT2NUM( RARRAY_LEN( id ) - 1 ) ) ;
+                        	}
+                        	if ($3 == Qnil){
+                        		$$ = $2 ;
                         	}else {
-                        		        
+                        		VALUE edge = rb_ivar_get(self, rb_intern("@edge") ) ;
+                        		rb_ary_push ( edge, rb_ary_new3(2, 
+                        			rb_hash_aref(id, ID2SYM( $2)), 
+                        			rb_hash_aref(id, ID2SYM( $3))) );
+                        		$$ = $2 ;
                         	}
                         }
                         | {$$ = Qnil;}
@@ -216,6 +228,10 @@ static VALUE parse(VALUE self, VALUE str){
 		fclose(file) ;
 		
 		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("result: "),  rb_ivar_get(self, rb_intern("@result")) , rb_str_new2("\n") );
+		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("edge: "),  rb_ivar_get(self, rb_intern("@edge")) , rb_str_new2("\n") );
+		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("vertex: "),  rb_ivar_get(self, rb_intern("@vertex")) , rb_str_new2("\n") );
+		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("id: "),  rb_ivar_get(self, rb_intern("@id")) , rb_str_new2("\n") );
+		
 	}else{
 		fclose(file) ;
 		rb_raise(rb_eFatal, "Parse error") ;
