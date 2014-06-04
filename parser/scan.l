@@ -123,7 +123,6 @@ ID		({NAME}|{NUMBER})
 <hstring>[<]                    {html_nest++; addstr(yytext);}
 <hstring>[\n]                   {addstr(yytext); line_num++;} /* add newlines */
 <hstring>([^><\n]*)             {addstr(yytext);}
-";"				{return (yytext[0]);}
 .                               {return (yytext[0]);}
 %%
 

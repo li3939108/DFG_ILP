@@ -320,7 +320,11 @@ module DFG_ILP
 			@vertex = []
 			@edge = []
 		end
+		def p
+			{:v => @vertex, :e => @edge }
+		end
 	end
+	
 	require_relative 'ILP'
 
 end

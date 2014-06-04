@@ -28,8 +28,8 @@ extern FILE *yyin ;
 %token <str> T_atom T_qatom
 
 %type <i>  optstrict graphtype attrtype 
-%type <str> optsubghdr qatom optmacroname
-%type <val> attrassignment attritem attrdefs optattrdefs attrlist optattr rcompound
+%type <str> optsubghdr optmacroname
+%type <val> attrassignment attritem attrdefs optattrdefs attrlist optattr rcompound qatom 
 %type <id>  simple nodelist node atom  optgraphname
 %%
 
@@ -224,11 +224,11 @@ optsubghdr              : T_subgraph atom {}
 optseparator            :  ';' | ',' | /*empty*/ ;
 
 atom                    :  T_atom {$$ = rb_intern($1); }
-                        |  qatom {$$ = rb_intern($1);}
+                        |  qatom {$$ = rb_intern_str($1);}
                         ;
 
-qatom                   :  T_qatom {$$ = $1;}
-                        |  qatom '+' T_qatom {$$ = strcat($1,$3);}
+qatom                   :  T_qatom {$$ = rb_str_new2($1) ;}
+                        |  qatom '+' T_qatom {$$ = rb_str_plus($1, rb_str_new2($3) );}
                         ;
 %%
 
@@ -243,11 +243,11 @@ static VALUE parse(VALUE self, VALUE str){
 	if(yyparse(self) == 0){
 		//rb_ivar_set(self, rb_intern("@result"), rb_cvar_get(cParser, rb_intern("@@result") ) );
 		fclose(file) ;
-		
-		//rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("result: "),  rb_ivar_get(self, rb_intern("@result")) , rb_str_new2("\n") );
+		/*	
 		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("edge: "),  rb_ivar_get(self, rb_intern("@edge")) , rb_str_new2("\n") );
 		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("vertex: "),  rb_ivar_get(self, rb_intern("@vertex")) , rb_str_new2("\n") );
 		rb_funcall(rb_mKernel, rb_intern("print"), 3, rb_str_new2("id: "),  rb_ivar_get(self, rb_intern("@id")) , rb_str_new2("\n") );
+		*/
 		
 	}else{
 		fclose(file) ;
