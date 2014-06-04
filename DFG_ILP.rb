@@ -321,26 +321,29 @@ module DFG_ILP
 			@edge = []
 		end
 		def p
-			v = @vertex.map{|vertex|
-				vertex[1]
-			}
+			v = @vertex.map{|vertex| vertex[1] }
 			{:v => v, :e => @edge }
 		end
 		def to_DFG
 			v = self.p[:v].map{|attri|
-				if attri["label"].include?("add") or	attri["label"].include?("ADD") or attri["label"].include?("+") then "+"
-				elsif attri["label"].include?("MUL") or	attri["label"].include?("mul") or attri["label"].include?("x") then "x"
-				elsif attri["label"].include?("les") or attri["label"].include?("LES") or
-				      attri["label"].include?("LE") or attri["label"].include?("le") or attri["label"].include?("<") then "<"
+				if attri["label"].include?("add") or
+					attri["label"].include?("ADD") or 
+					attri["label"].include?("+") then "+"
+				elsif attri["label"].include?("MUL") or	
+					attri["label"].include?("mul") or 
+					attri["label"].include?("x") then "x"
+				elsif attri["label"].include?("les") or 
+					attri["label"].include?("LES") or
+					attri["label"].include?("LE") or 
+					attri["label"].include?("le") or 
+					attri["label"].include?("<") then "<"
 				end
 			}
-			e = p[:e].map{|edge|
-				edge.reverse
-			}
+			e = p[:e].map{|edge| edge.reverse }
 			{:v => v, :e => e}
 		end
 	end
 	
-	require_relative 'ILP'
 
 end
+require_relative 'ILP'
