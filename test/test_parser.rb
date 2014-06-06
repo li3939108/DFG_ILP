@@ -1,5 +1,4 @@
-require_relative 'DFG_ILP'
-require_relative 'ext/Parser'
+require 'dfg_ilp'
 
 p = DFG_ILP::Parser.new
 

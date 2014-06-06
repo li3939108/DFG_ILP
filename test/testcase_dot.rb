@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require './DFG_ILP.rb'
+require 'dfg_ilp'
 
 root_dir = "/home/me/DFG_ILP"
 g = DFG_ILP::Parser.new("#{root_dir}/dot/hal.dot").parse.to_DFG

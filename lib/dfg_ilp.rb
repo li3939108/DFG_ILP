@@ -14,16 +14,21 @@ module DFG_ILP
 			out.puts "}"
 		end
 		def initialize(p = nil)
-			if p != nil and p[:e] == nil then @edge = [] 
-			else @edge = p[:e] end
-			if p != nil and p[:v] == nil then @vertex = [] 
-			else @vertex = p[:v] end
-			@PI = @vertex.map.with_index{|v,i| !@edge.map{|e| e[0]}.include?(i) and v != 'D'}
-			@PO = @vertex.map.with_index{|v,i| 
+			if p != nil and p[:e] == nil then @edge = p[:e]
+			else @edge = [] end
+			if p != nil and p[:v] == nil then @vertex = p[:v] 
+			else @vertex = [] end
+			if @edge.length != 0 and @vertex.length != 0
+				@PI = @vertex.map.with_index{|v,i| !@edge.map{|e| e[0]}.include?(i) and v != 'D'}
+				@PO = @vertex.map.with_index{|v,i| 
 				@edge.select{|e| e[1] == i}.select{|e| 
 					@vertex[e[0]] != 'D'}.empty? and v != 'D'}
-			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
-
+				@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
+			else
+				@PI = []
+				@PO = []
+				@vertex_without_D = [] 
+			end
 		end
 		def IIR(order)
 			vertex2 = ['x', '+', '+', '+', '+', 'D', 'x', 'x', 'D', 'x']
