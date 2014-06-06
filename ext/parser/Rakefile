@@ -1,0 +1,34 @@
+bison = 'bison'
+flex = 'flex'
+#ruby = "/usr/bin/ruby"
+ruby = "ruby"
+make = 'make'
+cc = ""
+warnflags = ["-Wimplicit-function-declaration"].join(" ")
+
+targets = FileList['*'].exclude('scan.l', 'grammar.y', 'extconf.rb', 'Rakefile', 'test.rb') 
+task :default => ['Parser.so']
+file 'Parser.so' => ['grammar.tab.h', 'grammar.tab.c', 'lex.yy.c','Makefile'] do
+	sh "#{make} #{"CC="+ cc if defined? cc and cc != "" and cc != nil} "+
+	   "#{"warnflags="+ warnflags if defined? warnflags and warnflags != "" and warnflags != nil}"
+end
+file 'Makefile' => ["extconf.rb", "grammar.tab.c", "grammar.tab.h", "lex.yy.c"] do |t|
+	sh "#{ruby}  #{t.prerequisites.join(' ')}"
+end
+file "grammar.tab.c" => ["grammar.y"] do |t|
+	sh "#{bison} #{t.prerequisites.join(' ')} -o #{t.name} -d"
+end
+file "grammar.tab.h" => ["grammar.y"] do |t|
+	sh "#{bison} #{t.prerequisites.join(' ')}  --defines=#{t.name}"
+end
+file 'lex.yy.c' => ["scan.l"] do |t|
+	sh  "#{flex} #{t.prerequisites.join(' ')}"
+end
+
+task :clean do
+	sh "rm -rf #{targets}"
+end
+
+task :test => ['Parser.so'] do
+	sh "#{ruby} ../test_parser.rb"
+end
