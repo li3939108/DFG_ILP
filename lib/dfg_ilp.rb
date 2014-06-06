@@ -355,5 +355,5 @@ module DFG_ILP
 	
 
 end
-require_relative 'ILP'
-require_relative 'ext/Parser'
+require 'dfg_ilp/ilp'
+require 'dfg_ilp/parser'
