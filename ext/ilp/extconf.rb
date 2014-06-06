@@ -5,7 +5,8 @@ require 'mkmf'
 root_dir = "/home/me/DFG_ILP"
 ext_dir = root_dir + "/ext"
 ilp_dir = ext_dir + "/ilp"
-lib_dir = ext_dir + "/lib"
+
+lib_dir = root_dir + "/lib"
 include_dir = ext_dir + "/include"
 lpsolve = 'lpsolve'
 cplex = 'cplex'
