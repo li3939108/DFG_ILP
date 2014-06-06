@@ -3,6 +3,7 @@
 #
 
 require "rake/extensiontask"
+
 root_dir = Dir.pwd
 rake = "rake"
 Rake::ExtensionTask.new "ilp" do |ext|
