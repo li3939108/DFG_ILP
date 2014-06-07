@@ -144,12 +144,8 @@ static void free_and_null (char **ptr){
  *                    x    >=    0
  */
 static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
-	Check_Type(A, T_ARRAY) ;
-	Check_Type(op, T_ARRAY) ;
-	Check_Type(b, T_ARRAY) ;
-	Check_Type(c, T_ARRAY) ;
-	int Nrow = (int)RARRAY_LEN(A); 
-	int Ncolumn = (int)RARRAY_LEN(c);
+	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
+	int Ncolumn = (Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i ;
 	
 	VALUE ret_hash = rb_hash_new();
@@ -189,6 +185,9 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symb
 	CPXENVptr     env = NULL;
 	CPXLPptr      lp = NULL;
 
+
+	Check_Type(op, T_ARRAY) ;
+	Check_Type(b, T_ARRAY) ;
 
 	if(TYPE(m_symbol) == T_SYMBOL){
 		ID m =  rb_to_id (m_symbol)  ;
@@ -434,12 +433,8 @@ TERMINATE:
  */
 
 static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
-	Check_Type(A, T_ARRAY) ;
-	Check_Type(op, T_ARRAY) ;
-	Check_Type(b, T_ARRAY) ;
-	Check_Type(c, T_ARRAY) ;
-	int Nrow = (int)RARRAY_LEN(A); 
-	int Ncolumn = (int)RARRAY_LEN(c);
+	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
+	int Ncolumn = (Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i;
 	int ret ;
 	REAL row[1 + Ncolumn] ;
@@ -450,9 +445,14 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_sy
 	VALUE constraints = rb_ary_new2(Nrow);
 	VALUE variables = rb_ary_new2(Ncolumn);
 
+
 	lprec *lp = NULL;
 	lp = make_lp(0, (int)Ncolumn);
 	set_verbose(lp, SEVERE);
+
+	Check_Type(op, T_ARRAY) ;
+	Check_Type(b, T_ARRAY) ;
+	
 
 	if(TYPE(m_symbol) == T_SYMBOL){
 		ID m =  rb_to_id (m_symbol)  ;
@@ -550,12 +550,10 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_sy
 #include "gurobi/gurobi_c.h"
 
 VALUE gurobi(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
-	Check_Type(A, T_ARRAY) ;
-	Check_Type(op, T_ARRAY) ;
-	Check_Type(b, T_ARRAY) ;
-	Check_Type(c, T_ARRAY) ;
-	int Nrow = (int)RARRAY_LEN(A); 
-	int Ncolumn = (int)RARRAY_LEN(c);
+	
+	
+	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
+	int Ncolumn = ( Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i;
 
 	VALUE ret_hash = rb_hash_new();
@@ -573,6 +571,9 @@ VALUE gurobi(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
 	char      vtype[Ncolumn];
 	int       optimstatus;
 	double    objval;
+
+	Check_Type(op, T_ARRAY) ;
+	Check_Type(b, T_ARRAY) ;
 
 	/* Create environment */
 
