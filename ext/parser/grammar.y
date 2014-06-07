@@ -94,13 +94,7 @@ compound                : simple rcompound optattr {
                         	}
                         	if($2 == Qnil){
 					/* only node declaration */
-/*
-					VALUE ret = rb_hash_new() ;
-					VALUE node_attr_pair = rb_ary_new() ;
-					VALUE nap_ary = rb_ary_new() ;
-					VALUE node = ID2SYM($1) ;
-					rb_ary_push(node_attr_pair, node) ;
-*/
+
                         		VALUE attr_hash = rb_ary_entry( 
                          			rb_ary_entry( vertex, FIX2LONG (rb_hash_aref(id, ID2SYM($1)) ) ), 1 );
                         		if(TYPE ($3) == T_ARRAY) {
@@ -249,8 +243,7 @@ static VALUE parse(VALUE self, VALUE str){
 	return self ;
 }
 
-void Init_parser(){
+void Init_parser_ext(){
 	VALUE DFG_ILP_mod = rb_const_get(rb_cObject, rb_intern("DFG_ILP")) ;
-	cParser = rb_define_class_under(DFG_ILP_mod, "Parser", rb_cObject) ;
-	rb_define_method(cParser,"_parse", parse, 1);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("Parser")),"_parse", parse, 1);
 }

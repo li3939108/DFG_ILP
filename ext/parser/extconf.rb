@@ -2,5 +2,5 @@
 require 'mkmf'
 
 if have_library("fl" ) 
-	create_makefile('dfg_ilp/parser')
+	create_makefile('dfg_ilp/parser_ext')
 end

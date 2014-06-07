@@ -2,7 +2,7 @@ require 'dfg_ilp'
 
 p = DFG_ILP::Parser.new
 
-p.parse "/home/me/DFG_ILP/dot/hal.dot"
+p.parse "/home/me/DFG_ILP/test/dot/hal.dot"
 print "vertices: ", p.p[:v].length, "\n", p.p[:v], "\n"
 print "edges: ", p.p[:e].length, "\n", p.p[:e], "\n"
 print "----------------------\n"

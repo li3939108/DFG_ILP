@@ -34,7 +34,7 @@ if	(have_lpsolve or have_cplex or have_gurobi) and
 
 	RPATHFLAG << " -Wl,-rpath,"+relative_lib_dir
 	create_header
-	create_makefile("dfg_ilp/ilp")
+	create_makefile("dfg_ilp/ilp_ext")
 else
 	raise "no LP solver found, you must have at least one solver"
 end

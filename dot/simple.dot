@@ -1,5 +1,0 @@
- digraph graphname {
-	b_23 -> dds_323 -> sd;
-	aidf_23 [name = "mul"]  ;
-	c ;
- }
