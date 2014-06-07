@@ -1,7 +1,0 @@
-#ifndef EXTCONF_H
-#define EXTCONF_H
-#define HAVE_LPSOLVE_LP_LIB_H 1
-#define HAVE_ILCPLEX_CPLEX_H 1
-#define HAVE_GUROBI_GUROBI_C_H 1
-#define HAVE_PTHREAD_H 1
-#endif
