@@ -7,6 +7,7 @@ ext_dir = root_dir + "/ext"
 ilp_dir = ext_dir + "/ilp"
 
 lib_dir = root_dir + "/lib"
+relative_lib_dir = ".."
 include_dir = ext_dir + "/include"
 lpsolve = 'lpsolve'
 cplex = 'cplex'
@@ -31,9 +32,9 @@ have_gurobi = have_library(gurobi, 'GRBnewmodel') and have_header('gurobi/gurobi
 if	(have_lpsolve or have_cplex or have_gurobi) and
 	have_library('pthread', 'pthread_create') and have_header('pthread.h') 
 
-	RPATHFLAG << " -Wl,-rpath,"+lib_dir
+	RPATHFLAG << " -Wl,-rpath,"+relative_lib_dir
 	create_header
-	create_makefile('ilp/ilp')
+	create_makefile("dft_ilp/ilp")
 else
 	raise "no LP solver found, you must have at least one solver"
 end
