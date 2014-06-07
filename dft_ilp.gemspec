@@ -10,5 +10,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Chaofan Li"]
   s.email       = "chaof@tamu.edu"
   s.files       = FileList["lib/*/*", "lib/*", "ext/*", "ext/*/*", "ext/include/*", "Rakefile"].to_a
-  s.extensions << "ext/ilp/extconf.rb"<<"ext/parser/extconf.rb"
+  s.extensions  << "ext/ilp/extconf.rb"<<"ext/parser/extconf.rb"
+  s.platform    =Gem::Platform::CURRENT
+  s.requirements<< 'CPLEX or gurobi or lp_solve'
 end
