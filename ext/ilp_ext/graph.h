@@ -13,7 +13,7 @@ typedef struct _Vertex{
 	int degree ;
 	int label ;
 	int rank ;//for use with Make-Set-Find 
-	char op ;
+	char *op ;
 	int (*list)[2];//[label, operation] 
 	struct _Vertex *parent ;//for use with Make-Set-Find
 } Vertex;

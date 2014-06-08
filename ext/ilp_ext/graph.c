@@ -77,12 +77,12 @@ Graph *reverse(Graph *G){
 		}
 		for(j = 0; j < v->degree; j++ ){
 			int label = v->list[j][0] ;
-			char operation = v->list[j][1] ;
+			char *operation = G->adj_list[v->list[j][0] ]->op;
 			if(vertex_list[label - 1] == NULL){
 				vertex_list[label - 1] = new_vertex(label) ;
 				vertex_list[label - 1]->op = operation ;
 			}		
-			add_adjacency_vertex(vertex_list[label - 1], v->label, v->op) ;
+			add_adjacency_vertex(vertex_list[label - 1], v->label, (long)v->op) ;
 		}
 	}
 	Gt = new_graph(G->V, vertex_list) ;
@@ -90,9 +90,9 @@ Graph *reverse(Graph *G){
 }
 void pv(Vertex *v, FILE *fp){
 	int i ;
-	fprintf(fp, "(%d %c) -> ", v->label, v->op) ;
+	fprintf(fp, "(%d %s) -> ", v->label, v->op) ;
 	for(i = 0; i < v->degree; i++){
-		fprintf(fp, "[%d %c] ", v->list[i][0], v->list[i][1]);
+		fprintf(fp, "[%d %s] ", v->list[i][0], v->list[i][1]);
 	}
 	fputc('\n', fp);
 }

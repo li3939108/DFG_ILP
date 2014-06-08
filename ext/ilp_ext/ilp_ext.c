@@ -43,12 +43,12 @@ static VALUE ASAP(VALUE self){
 	asap(Gt, time, delay ) ;
 	for(i = 1; i <= G->V; i++){
 		#ifdef DEBUG
-		char op[2] ;
+		char *op ;
 		VALUE d_arr, d ;
-		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
+		op = G->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		d = rb_funcall(d_arr, rb_intern("min"), 0) ;
-		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) ), FIX2INT(d), time[i] ) ;
+		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) ), FIX2INT(d), time[i] ) ;
 		#endif
 		rb_ary_push(ret, INT2FIX(time[i] ) ) ;
 	}
@@ -83,11 +83,11 @@ static VALUE ALAP(VALUE self ){
 	for(i = 1; i <= G->V; i++){
 		#ifdef DEBUG
 		VALUE d_arr,d;
-		char op[2] ;
-		op[0] = G->adj_list[i]->op ;op[1] = '\0' ;
+		char *op ;
+		op = G->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		d = rb_funcall(d_arr, rb_intern("max"), 0) ;
-		printf("(%d %c\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
+		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
 		#endif
 		rb_ary_push(ret, INT2FIX(time[i]  ) ) ;
 	}

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require './DFG_ILP.rb'
+require 'dfg_ilp'
 
 g = DFG_ILP::GRAPH.new
 g.IIR(4)

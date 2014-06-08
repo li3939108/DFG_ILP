@@ -15,27 +15,14 @@ void get_graph(VALUE vlist, VALUE elist) {
 	Graph *G, *Gt ;
 	int i, elist_len = (int)RARRAY_LEN(elist), vlist_len = (int)RARRAY_LEN(vlist);
 	Vertex *vertex_list[vlist_len] ;
-	char vertices[vlist_len] ;
+	char *vertices[vlist_len] ;
 	Check_Type(vlist, T_ARRAY) ;
 	Check_Type(elist, T_ARRAY) ;	
 	memset(vertex_list, 0, sizeof vertex_list);
 	for(i = 0; i < vlist_len; i++){
-		#if RUBY_API_VERSION_MINOR == 8
-		char operation[2] = {'\0','\0'} ;
-		#endif
 		VALUE op = rb_ary_entry(vlist, i) ;
-		#if RUBY_API_VERSION_MINOR == 9 || RUBY_API_VERSION_MAJOR >= 2
-		long t ;
-		char *operation ;
-		#endif
 		Check_Type(op, T_STRING) ;
-		#if RUBY_API_VERSION_MINOR == 8
-		strncpy(operation, RSTRING_PTR(op), 1) ;
-		#endif
-		#if RUBY_API_VERSION_MINOR == 9 || RUBY_API_VERSION_MAJOR >= 2
-		RSTRING_GETMEM(op, operation, t) ;
-		#endif
-		vertices[i] = operation[0] ;
+		vertices[i] = strdup(RSTRING_PTR(op) ) ;
 	}
 	for(i = 0; i < elist_len; i++){
 		VALUE edge = rb_ary_entry(elist, i) ;
@@ -51,7 +38,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 			vertex_list[e2] = new_vertex(e2 + 1) ;
 			vertex_list[e2]->op = vertices[e2] ;
 		};
-		add_adjacency_vertex(vertex_list[e1], e2 + 1, vertices[e2]) ;
+		add_adjacency_vertex(vertex_list[e1], e2 + 1, (long)vertices[e2]) ;
 	}
 	G = new_graph(vlist_len, vertex_list);
 	Gt = reverse(G) ;
@@ -61,7 +48,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 
 int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
 	int i ;
-	char op[2] ;
+	char *op ;
 	VALUE d_arr, d ;
 	if(time[s_label] != -1){
 		return time[s_label] ;
@@ -71,30 +58,20 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
  		int time_step = dfs(G, adj[0], time, delay) ;
  		time[s_label] = time[s_label] < time_step ? time_step : time[s_label] ;
 	}
-	op[0] = G->adj_list[s_label]->op ;
-	op[1] = '\0' ;
+	op = G->adj_list[s_label]->op ;
 	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 	d = rb_funcall(d_arr, rb_intern("min"), 0) ;
-/*
-	if(asap_or_alap == 'S' || asap_or_alap == 's'){
-*/
 	time[s_label] = time[s_label] + FIX2INT( d );
-/*
-	}else if(asap_or_alap == 'L' || asap_or_alap == 'l'){
-		
-		time[s_label] = time[s_label] + FIX2INT( rb_funcall(d_arr, rb_intern("max"), 0) );
-	}
-*/
 	return time[s_label] ;
 }
 
 
 int asap(Graph *Gt, int *time, VALUE delay){
 	int i, max = 0 ;
-	char op[2] ;
+	char *op ;
 	VALUE d_arr ;
 	for(i = 1; i <= Gt->V; i++){
-		op[0] = Gt->adj_list[i]->op ;op[1] = '\0' ;
+		op = Gt->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		dfs(Gt, i, time, delay) ;
 		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;

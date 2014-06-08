@@ -22,6 +22,7 @@ module DFG_ILP
 			:g    => [20],
 			:p    => [3],
 			:err  => [0] },
+		
 		'@' => {
 			:type => ["accurate"],
 			:u    => [Float::INFINITY],
