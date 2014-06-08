@@ -1,8 +1,9 @@
+#! /usr/bin/env ruby
 require 'dfg_ilp'
 
 p = DFG_ILP::Parser.new
 
-p.parse "/home/me/DFG_ILP/test/dot/hal.dot"
+p.parse ARGV[0]
 print "vertices: ", p.p[:v].length, "\n", p.p[:v], "\n"
 print "edges: ", p.p[:e].length, "\n", p.p[:e], "\n"
 print "----------------------\n"
