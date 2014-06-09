@@ -13,16 +13,17 @@ extern VALUE reverse_graph_obj ;
 
 void get_graph(VALUE vlist, VALUE elist) {
 	Graph *G, *Gt ;
-	int i, elist_len = (int)RARRAY_LEN(elist), vlist_len = (int)RARRAY_LEN(vlist);
+	int i, elist_len =( Check_Type(elist, T_ARRAY), (int)RARRAY_LEN(elist)), 
+		vlist_len = ( Check_Type(vlist, T_ARRAY), (int)RARRAY_LEN(vlist) );
 	Vertex *vertex_list[vlist_len] ;
 	char *vertices[vlist_len] ;
-	Check_Type(vlist, T_ARRAY) ;
-	Check_Type(elist, T_ARRAY) ;	
 	memset(vertex_list, 0, sizeof vertex_list);
 	for(i = 0; i < vlist_len; i++){
 		VALUE op = rb_ary_entry(vlist, i) ;
 		Check_Type(op, T_STRING) ;
-		vertices[i] = strdup(RSTRING_PTR(op) ) ;
+		//vertices[i] = RSTRING_PTR(op) ;
+		vertex_list[i] = new_vertex(i + 1) ;
+		vertex_list[i]->op = RSTRING_PTR(op) ;
 	}
 	for(i = 0; i < elist_len; i++){
 		VALUE edge = rb_ary_entry(elist, i) ;
@@ -30,6 +31,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 		Check_Type(edge, T_ARRAY) ;
 		e1 = FIX2INT(rb_ary_entry(edge, 1) ) ;
 		e2 = FIX2INT(rb_ary_entry(edge, 0) );
+/*
 		if(vertex_list[e1] == NULL){
 			vertex_list[e1] = new_vertex(e1 + 1) ;
 			vertex_list[e1]->op = vertices[e1] ;
@@ -38,6 +40,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 			vertex_list[e2] = new_vertex(e2 + 1) ;
 			vertex_list[e2]->op = vertices[e2] ;
 		};
+*/
 		add_adjacency_vertex(vertex_list[e1], e2 + 1, (long)vertices[e2]) ;
 	}
 	G = new_graph(vlist_len, vertex_list);
@@ -77,10 +80,10 @@ int asap(Graph *Gt, int *time, VALUE delay){
 		op = Gt->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		d = rb_funcall(d_arr, rb_intern("min"), 0) ;
-		time[i] = time[i] + 1 - FIX2INT( d ) ;
 		max = (max < time[i] ? time[i] : max );
+		time[i] = time[i] + 1 - FIX2INT( d ) ;
 	}
-	return max ;
+	return max+1 ;
 }
 
 int alap(Graph *G, int *time, VALUE delay, int Q){
