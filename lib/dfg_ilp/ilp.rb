@@ -15,6 +15,14 @@ module DFG_ILP
 			:g    => [200, 500],
 			:p    => [10, 30],
 			:err  => [1, 0] },
+		'ALU' => {
+			:type => ["approximate", "accurate"], 
+			:u    => [1, 1],
+			:d    => [1, 2], 
+			:g    => [200, 500],
+			:p    => [10, 30],
+			:err  => [1, 0] },
+	
 		'D' => {
 			:type => ["accurate"],
 			:u    => [Float::INFINITY],
@@ -33,14 +41,23 @@ module DFG_ILP
 		}
 		MIN = true#constant for minimum linear programming
 		MAX = false#constant for maximum linear programming
-		def initialize(
-			g, 
-			q                     = 20,
-			mobility_constrainted = false,
-			operations            = [] ,
-			#error Bound on Primary Output
-			error_bound           = 10 
-			)
+		def initialize(g, parameters = {} )
+			mobility_constrainted = true
+			no_resource_limit = true
+			error_bound = 10
+			if parameters[:q] == nil then q = nil else q = parameters[:q] end
+
+			if parameters[:mobility_constrainted] == nil then mobility_constrainted = mobility_constrainted
+			else mobility_constrainted = false end
+
+			if parameters[:no_resource_limit] == nil then no_resource_limit = no_resource_limit
+			else no_resource_limit = true end
+
+			operations            = [] 
+
+			if parameters[:error_bound] == nil then error_bound = 10
+			else error_bound = parameters[:error_bound] end
+
 			@q = q
 			@vertex = g.p[:v]
 			@edge   = g.p[:e]
@@ -57,6 +74,18 @@ module DFG_ILP
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
 			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO][i] == true}
+			if (mobility_constrainted )
+				ret = self.ASAP
+				@critical_length = ret[:latency]
+				if( @q == nil) then q = @q = @critical_length * 2 end
+				@asap = ret[:schedule]
+				@alap = self.ALAP
+				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
+				@Nx = @vertex.map.with_index{|v,i| @u[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
+			else
+				@Nx = @vertex.map{|v| @u[v].length * q}.reduce(0,:+) 
+				if( q == nil) then q = 40 end
+			end
 			@Nrow =	
 				@vertex.length +
 				@vertex.length + 
@@ -66,14 +95,7 @@ module DFG_ILP
 				g.p[:PO].count(true) +
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
-			if (mobility_constrainted )
-				@asap = self.ASAP[:schedule]
-				@alap = self.ALAP
-				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
-				@Nx = @vertex.map.with_index{|v,i| @u[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
-			else
-				@Nx = @vertex.map{|v| @u[v].length * q}.reduce(0,:+) 
-			end
+			
 			@Nerr = @vertex.length
 			@Nu = @u.values.flatten.length 
 			@Ns = @vertex.length
@@ -174,11 +196,11 @@ module DFG_ILP
 				uArray[di] = -1
 				xArray + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0) 
 			} +
-			[*0..@u.values.flatten.length - 1].map{|u|
+			( if no_resource_limit == false then [*0..@u.values.flatten.length - 1].map{|u|
 				uArray = Array.new(@Nu, 0)
 				uArray[u] = 1
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
-			}
+			} else [] end)
 			@op 	= 	
 				Array.new(@vertex.length, EQ)				+		#Formula (2)
 				Array.new(@vertex.length, EQ)				+		#Formula (3)
@@ -187,7 +209,7 @@ module DFG_ILP
 				Array.new(@vertex.length, EQ)				+
 				Array.new(@PO_vertex.length, LE)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
-				Array.new(@u.values.flatten.length, LE)
+				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
 				Array.new(@vertex.length, 1)				+		#Formula (2)
 				Array.new(@vertex.length, 0)				+		#Formula (3)
@@ -196,7 +218,7 @@ module DFG_ILP
 				Array.new(@vertex.length , 0)				+		#Formula (6) (7)							
 				Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, 0)		+		#Formula (9)
-				@u.values.flatten
+				( if no_resource_limit == false then @u.values.flatten else [] end) 
 			@c	=
 				if(mobility_constrainted)
 					@vertex.map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
