@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.date        = '2014-05-06'
   s.authors     = ["Chaofan Li"]
   s.email       = "chaof@tamu.edu"
-  s.files       = FileList["lib/*/*", "lib/*", "ext/*", "ext/*/*", "ext/include/*", "Rakefile"].to_a
-  s.extensions  << "ext/ilp_ext/extconf.rb"<<"ext/parser_ext/extconf.rb"
+  s.files       = FileList["lib/*/*", "lib/*", "ext/*", "ext/include/ilcplex/*", "ext/include/gurobi/*", "Rakefile"].to_a
+#  s.extensions  << "ext/ilp_ext/extconf.rb"<<"ext/parser_ext/extconf.rb"
   s.platform    =Gem::Platform::CURRENT
   s.requirements<< 'CPLEX or gurobi or lp_solve'
   s.required_ruby_version = ">= 1.9.3"

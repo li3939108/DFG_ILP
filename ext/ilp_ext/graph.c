@@ -92,7 +92,7 @@ void pv(Vertex *v, FILE *fp){
 	int i ;
 	fprintf(fp, "(%d %s) -> ", v->label, v->op) ;
 	for(i = 0; i < v->degree; i++){
-		fprintf(fp, "[%d %s] ", v->list[i][0], v->list[i][1]);
+		fprintf(fp, "%d  ", v->list[i][0]);
 	}
 	fputc('\n', fp);
 }

@@ -3,8 +3,7 @@
 require 'dfg_ilp'
 
 root_dir = "/home/me/DFG_ILP"
-g = DFG_ILP::Parser.new("#{root_dir}/test/dot/hal.dot").parse.to_DFG
-#g.dot(File.open("tmp.dot", "w") )
+g = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 ilp = DFG_ILP::ILP.new(
 	g, 
 	ARGV[0] == nil||ARGV[0] == "nil" ? nil : ARGV[0].to_i,

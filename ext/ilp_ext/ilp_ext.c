@@ -28,19 +28,17 @@ static VALUE ASAP(VALUE self){
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") );
-	VALUE ret = rb_ary_new();
-	int *time, i;
+	VALUE sch = rb_ary_new();
+	VALUE ret = rb_hash_new();
+	int *time, i, critical_length;
 
-	Data_Get_Struct(graph_obj, Graph, G) ;
-	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	if(G == NULL || Gt == NULL){
 		get_graph(vlist, elist) ;
 		Data_Get_Struct(graph_obj, Graph, G) ;
 		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	}
+
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	asap(Gt, time, delay ) ;
+	critical_length = asap(Gt, time, delay ) ;
 	for(i = 1; i <= G->V; i++){
 		#ifdef DEBUG
 		char *op ;
@@ -50,8 +48,10 @@ static VALUE ASAP(VALUE self){
 		d = rb_funcall(d_arr, rb_intern("min"), 0) ;
 		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) ), FIX2INT(d), time[i] ) ;
 		#endif
-		rb_ary_push(ret, INT2FIX(time[i] ) ) ;
+		rb_ary_push(sch, INT2FIX(time[i] ) ) ;
 	}
+	rb_hash_aset(ret, ID2SYM( rb_intern("latency") ), INT2FIX(critical_length)) ;
+	rb_hash_aset(ret, ID2SYM( rb_intern("schedule") ), sch) ;
 	#ifdef DEBUG
 	printf("------------\n") ;
 	#endif
@@ -69,13 +69,10 @@ static VALUE ALAP(VALUE self ){
 	int *time, i ;
 	VALUE ret = rb_ary_new();
 
+	get_graph(vlist, elist) ;
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	if(G == NULL || Gt == NULL){
-		get_graph(vlist, elist) ;
-		Data_Get_Struct(graph_obj, Graph, G) ;
-		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	}
+
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
 	alap(G, time, delay, FIX2INT(Q ) ) ;
@@ -107,13 +104,13 @@ static VALUE M(VALUE self){
 	VALUE Q = rb_ivar_get(self, rb_intern("@q") ) ;
 	int *m, i ;
 	VALUE ret = rb_ary_new() ;
+//	Data_Get_Struct(graph_obj, Graph, G) ;
+//	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
+
+	get_graph(vlist, elist) ;
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	if(G == NULL || Gt == NULL){
-		get_graph(vlist, elist) ;
-		Data_Get_Struct(graph_obj, Graph, G) ;
-		Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
-	}
+
 	m = calloc(G->V + 1, sizeof *m);
 	memset(m, 0xFF, (G->V + 1) * sizeof *m) ; //set all entry -1
 	mobility(G, m, delay, FIX2INT(Q ) ) ;

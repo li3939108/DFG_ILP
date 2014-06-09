@@ -56,7 +56,7 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
 	for(i = 0; i < G->adj_list[s_label]->degree; i++){
  		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
  		int time_step = dfs(G, adj[0], time, delay) ;
- 		time[s_label] = time[s_label] < time_step ? time_step : time[s_label] ;
+ 		time[s_label] = (time[s_label] < time_step ? time_step : time[s_label] );
 	}
 	op = G->adj_list[s_label]->op ;
 	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
@@ -69,28 +69,31 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay){//no cycles
 int asap(Graph *Gt, int *time, VALUE delay){
 	int i, max = 0 ;
 	char *op ;
-	VALUE d_arr ;
 	for(i = 1; i <= Gt->V; i++){
+		dfs(Gt, i, time, delay) ;
+	}
+	for(i = 1; i <= Gt->V; i++){
+		VALUE d_arr, d ;
 		op = Gt->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		dfs(Gt, i, time, delay) ;
-		time[i] = time[i] + 1 - FIX2INT( rb_ary_entry(d_arr, 0) ) ;
-		max = max < time[i] ? time[i] : max ;
+		d = rb_funcall(d_arr, rb_intern("min"), 0) ;
+		time[i] = time[i] + 1 - FIX2INT( d ) ;
+		max = (max < time[i] ? time[i] : max );
 	}
 	return max ;
 }
 
 int alap(Graph *G, int *time, VALUE delay, int Q){
-	int i, max = 0 ;
+	int i, min = Q ;
 	for(i = 1; i <= G->V; i++){
 		dfs(G, i, time, delay) ;
 	//	Q = new_Q > Q ? new_Q : Q ;
 	}
 	for(i = 1; i <= G->V; i++){
 		time[i] = Q - 1 - time[i] ;
-		max = max < time[i] ? time[i] : max ;
+		min = (min > time[i] ? time[i] : min) ;
 	}
-	return max ;
+	return min ;
 }
 void mobility(Graph *G, int *m, VALUE delay, int Q){
 	Graph *Gt = NULL;

@@ -67,7 +67,7 @@ module DFG_ILP
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
 			if (mobility_constrainted )
-				@asap = self.ASAP
+				@asap = self.ASAP[:schedule]
 				@alap = self.ALAP
 				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
 				@Nx = @vertex.map.with_index{|v,i| @u[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
