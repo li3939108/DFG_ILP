@@ -8,14 +8,14 @@ module DFG_ILP
 			:g    => [1000, 2000],
 			:p    => [50, 100],
 			:err  => [1, 0] },
-		'+' => {
+		'ALU' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
 			:err  => [1, 0] },
-		'ALU' => {
+		'+' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
@@ -45,6 +45,7 @@ module DFG_ILP
 			mobility_constrainted = true
 			no_resource_limit = true
 			error_bound = 10
+			tq = 2
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
 
 			if parameters[:mobility_constrainted] == nil then mobility_constrainted = mobility_constrainted
@@ -57,6 +58,9 @@ module DFG_ILP
 
 			if parameters[:error_bound] == nil then error_bound = 10
 			else error_bound = parameters[:error_bound] end
+
+			if parameters[:times_q] == nil then tq = parameters[:times_q] 
+			else tq = 2 end
 
 			@q = q
 			@vertex = g.p[:v]
@@ -77,7 +81,7 @@ module DFG_ILP
 			if (mobility_constrainted )
 				ret = self.ASAP
 				@critical_length = ret[:latency]
-				if( @q == nil) then q = @q = @critical_length * 2 end
+				if( @q == nil) then q = @q = @critical_length * tq end
 				@asap = ret[:schedule]
 				@alap = self.ALAP
 				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }

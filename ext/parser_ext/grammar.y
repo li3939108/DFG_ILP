@@ -33,21 +33,24 @@ extern FILE *yyin ;
 %type <id>  simple nodelist node atom  optgraphname
 %%
 
-graph                   : hdr body {/* $$ = $2 ; rb_ivar_set(cParser, rb_intern("@result"), $$);*/ /*rb_funcall(rb_mKernel, rb_intern("print"), 2, ($$), rb_str_new2("\n")   );*/ }
+graph                   : hdr body {YYACCEPT ;/* $$ = $2 ; rb_ivar_set(cParser, rb_intern("@result"), $$);*/ /*rb_funcall(rb_mKernel, rb_intern("print"), 2, ($$), rb_str_new2("\n")   );*/ }
                         | error  { rb_raise( rb_eFatal, "Grammar error") ;}
                         | {
                         	
                         }
                         ;
 
-body                    : '{' optstmtlist '}' {/* $$ = $2;*/YYACCEPT ;}
+body                    : '{' optstmtlist '}' {}
                         ;
 
 hdr                     : optstrict graphtype optgraphname {}
                         ;
 
-optgraphname            : atom {$$=$1;} 
-                        | {$$=0;} 
+optgraphname            : atom {
+				VALUE name = rb_id2str($1) ;
+                        	rb_ivar_set(self, rb_intern("@name"), name ) ;
+                        } 
+                        | {rb_ivar_set(self, rb_intern("@name"), Qnil) ;} 
                         ;
 
 optstrict               : T_strict  {$$=1;} 
@@ -62,17 +65,8 @@ optstmtlist             : stmtlist  {/* $$ = $1 ;*/}
                         | {}
                         ;
 
-stmtlist                : stmtlist stmt {
-/*
-				VALUE ret_hash = rb_hash_new(), nap_ary ;
-				nap_ary = rb_ary_plus(
-                        		rb_hash_aref($1, ID2SYM(rb_intern("v")) ) ,
-                        		rb_hash_aref($2, ID2SYM(rb_intern("v")) ) );
-                        	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), nap_ary) ;
-                        	$$ = ret_hash ;
-*/
-                        }
-                        | stmt {/*$$ = $1;*/ } 
+stmtlist                : stmtlist stmt {}
+                        | stmt {} 
                         ;
 
 optsemi                 : ';' | ;

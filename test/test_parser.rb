@@ -10,3 +10,4 @@ print "----------------------\n"
 g = p.to_DFG
 print "vertices: ", g.p[:v].length, "\n", g.p[:v], "\n"
 print "edges: ", g.p[:e].length, "\n", g.p[:e], "\n"
+print "name: ", g.p[:name], "\n"

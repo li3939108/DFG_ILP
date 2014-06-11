@@ -459,13 +459,13 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    36,    36,    37,    38,    43,    46,    49,    50,    53,
-      54,    57,    58,    61,    62,    65,    75,    78,    78,    80,
-      81,    84,   122,   123,   126,   147,   151,   152,   154,   158,
-     159,   162,   163,   166,   167,   168,   171,   172,   175,   176,
-     179,   185,   186,   189,   192,   193,   195,   204,   207,   210,
-     210,   213,   214,   215,   218,   218,   218,   220,   221,   224,
-     225
+       0,    36,    36,    37,    38,    43,    46,    49,    53,    56,
+      57,    60,    61,    64,    65,    68,    69,    72,    72,    74,
+      75,    78,   116,   117,   120,   141,   145,   146,   148,   152,
+     153,   156,   157,   160,   161,   162,   165,   166,   169,   170,
+     173,   179,   180,   183,   186,   187,   189,   198,   201,   204,
+     204,   207,   208,   209,   212,   212,   212,   214,   215,   218,
+     219
 };
 #endif
 
@@ -1458,7 +1458,7 @@ yyreduce:
 
 /* Line 1806 of yacc.c  */
 #line 36 "grammar.y"
-    {/* $$ = $2 ; rb_ivar_set(cParser, rb_intern("@result"), $$);*/ /*rb_funcall(rb_mKernel, rb_intern("print"), 2, ($$), rb_str_new2("\n")   );*/ }
+    {YYACCEPT ;/* $$ = $2 ; rb_ivar_set(cParser, rb_intern("@result"), $$);*/ /*rb_funcall(rb_mKernel, rb_intern("print"), 2, ($$), rb_str_new2("\n")   );*/ }
     break;
 
   case 3:
@@ -1481,7 +1481,7 @@ yyreduce:
 
 /* Line 1806 of yacc.c  */
 #line 43 "grammar.y"
-    {/* $$ = $2;*/YYACCEPT ;}
+    {}
     break;
 
   case 6:
@@ -1495,99 +1495,93 @@ yyreduce:
 
 /* Line 1806 of yacc.c  */
 #line 49 "grammar.y"
-    {(yyval.id)=(yyvsp[(1) - (1)].id);}
+    {
+				VALUE name = rb_id2str((yyvsp[(1) - (1)].id)) ;
+                        	rb_ivar_set(self, rb_intern("@name"), name ) ;
+                        }
     break;
 
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 50 "grammar.y"
-    {(yyval.id)=0;}
+#line 53 "grammar.y"
+    {rb_ivar_set(self, rb_intern("@name"), Qnil) ;}
     break;
 
   case 9:
 
 /* Line 1806 of yacc.c  */
-#line 53 "grammar.y"
+#line 56 "grammar.y"
     {(yyval.i)=1;}
     break;
 
   case 10:
 
 /* Line 1806 of yacc.c  */
-#line 54 "grammar.y"
+#line 57 "grammar.y"
     {(yyval.i)=0;}
     break;
 
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 57 "grammar.y"
+#line 60 "grammar.y"
     {(yyval.i) = 0;}
     break;
 
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 58 "grammar.y"
+#line 61 "grammar.y"
     {(yyval.i) = 1;}
     break;
 
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 61 "grammar.y"
+#line 64 "grammar.y"
     {/* $$ = $1 ;*/}
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 62 "grammar.y"
+#line 65 "grammar.y"
     {}
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 65 "grammar.y"
-    {
-/*
-				VALUE ret_hash = rb_hash_new(), nap_ary ;
-				nap_ary = rb_ary_plus(
-                        		rb_hash_aref($1, ID2SYM(rb_intern("v")) ) ,
-                        		rb_hash_aref($2, ID2SYM(rb_intern("v")) ) );
-                        	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), nap_ary) ;
-                        	$$ = ret_hash ;
-*/
-                        }
+#line 68 "grammar.y"
+    {}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 75 "grammar.y"
-    {/*$$ = $1;*/ }
+#line 69 "grammar.y"
+    {}
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 80 "grammar.y"
+#line 74 "grammar.y"
     {/* $$ = Qnil ;*/ }
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 81 "grammar.y"
+#line 75 "grammar.y"
     {/* Check_Type($1, T_HASH); $$ = $1 ;*/}
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 84 "grammar.y"
+#line 78 "grammar.y"
     {
                         	if((yyvsp[(1) - (3)].id) == Qnil){rb_raise(rb_eFatal, "grammar error") ;}
 
@@ -1629,21 +1623,21 @@ yyreduce:
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 122 "grammar.y"
+#line 116 "grammar.y"
     { (yyval.id) = (yyvsp[(1) - (1)].id); }
     break;
 
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 123 "grammar.y"
+#line 117 "grammar.y"
     { (yyval.id) = Qnil; }
     break;
 
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 126 "grammar.y"
+#line 120 "grammar.y"
     {
                         	if((yyvsp[(2) - (3)].id) == Qnil){rb_raise(rb_eFatal, "grammar error") ;}
                         	VALUE id = rb_ivar_get(self, rb_intern("@id") ) ;
@@ -1670,21 +1664,21 @@ yyreduce:
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 147 "grammar.y"
+#line 141 "grammar.y"
     {(yyval.val) = Qnil;}
     break;
 
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 151 "grammar.y"
+#line 145 "grammar.y"
     { (yyval.id) = (yyvsp[(1) - (1)].id); }
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 154 "grammar.y"
+#line 148 "grammar.y"
     { 
                         	(yyval.id) = (yyvsp[(1) - (1)].id); 
                         	
@@ -1694,84 +1688,84 @@ yyreduce:
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 158 "grammar.y"
+#line 152 "grammar.y"
     { (yyval.id) = (yyvsp[(1) - (3)].id); }
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 159 "grammar.y"
+#line 153 "grammar.y"
     { (yyval.id) = (yyvsp[(1) - (5)].id); }
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 162 "grammar.y"
+#line 156 "grammar.y"
     {}
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 163 "grammar.y"
+#line 157 "grammar.y"
     {}
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 166 "grammar.y"
+#line 160 "grammar.y"
     {(yyval.i) = T_graph;}
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 167 "grammar.y"
+#line 161 "grammar.y"
     {(yyval.i) = T_node;}
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 168 "grammar.y"
+#line 162 "grammar.y"
     {(yyval.i) = T_edge;}
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 171 "grammar.y"
+#line 165 "grammar.y"
     {}
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 172 "grammar.y"
+#line 166 "grammar.y"
     { }
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 175 "grammar.y"
+#line 169 "grammar.y"
     {(yyval.val) = (yyvsp[(1) - (1)].val);}
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 176 "grammar.y"
+#line 170 "grammar.y"
     { (yyval.val) = Qnil;}
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 179 "grammar.y"
+#line 173 "grammar.y"
     {
                         	if((yyvsp[(1) - (4)].val) == Qnil){ (yyval.val) = (yyvsp[(3) - (4)].val) ;
                         	}else{ (yyval.val) = rb_ary_plus( (yyvsp[(1) - (4)].val), (yyvsp[(3) - (4)].val)) ;}
@@ -1781,42 +1775,42 @@ yyreduce:
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 185 "grammar.y"
+#line 179 "grammar.y"
     { (yyval.val) = rb_ary_push((yyvsp[(1) - (2)].val), (yyvsp[(2) - (2)].val)); }
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 186 "grammar.y"
+#line 180 "grammar.y"
     {(yyval.val) = rb_ary_new() ;}
     break;
 
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 189 "grammar.y"
+#line 183 "grammar.y"
     {(yyval.val) = (yyvsp[(1) - (2)].val) ;}
     break;
 
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 192 "grammar.y"
+#line 186 "grammar.y"
     {(yyval.val) = (yyvsp[(1) - (1)].val); }
     break;
 
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 193 "grammar.y"
+#line 187 "grammar.y"
     {(yyval.val) = Qnil;}
     break;
 
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 195 "grammar.y"
+#line 189 "grammar.y"
     {
                         	VALUE key = rb_id2str((yyvsp[(1) - (3)].id)) ;
                         	VALUE value = rb_id2str((yyvsp[(3) - (3)].id)) ;
@@ -1829,70 +1823,70 @@ yyreduce:
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 210 "grammar.y"
+#line 204 "grammar.y"
     {}
     break;
 
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 210 "grammar.y"
+#line 204 "grammar.y"
     {}
     break;
 
   case 51:
 
 /* Line 1806 of yacc.c  */
-#line 213 "grammar.y"
+#line 207 "grammar.y"
     {}
     break;
 
   case 52:
 
 /* Line 1806 of yacc.c  */
-#line 214 "grammar.y"
+#line 208 "grammar.y"
     {}
     break;
 
   case 53:
 
 /* Line 1806 of yacc.c  */
-#line 215 "grammar.y"
+#line 209 "grammar.y"
     {}
     break;
 
   case 57:
 
 /* Line 1806 of yacc.c  */
-#line 220 "grammar.y"
+#line 214 "grammar.y"
     {(yyval.id) = rb_intern((yyvsp[(1) - (1)].str)); }
     break;
 
   case 58:
 
 /* Line 1806 of yacc.c  */
-#line 221 "grammar.y"
+#line 215 "grammar.y"
     {(yyval.id) = rb_intern_str((yyvsp[(1) - (1)].val));}
     break;
 
   case 59:
 
 /* Line 1806 of yacc.c  */
-#line 224 "grammar.y"
+#line 218 "grammar.y"
     {(yyval.val) = rb_str_new2((yyvsp[(1) - (1)].str)) ;}
     break;
 
   case 60:
 
 /* Line 1806 of yacc.c  */
-#line 225 "grammar.y"
+#line 219 "grammar.y"
     {(yyval.val) = rb_str_plus((yyvsp[(1) - (3)].val), rb_str_new2((yyvsp[(3) - (3)].str)) );}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1896 "grammar.tab.c"
+#line 1890 "grammar.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2123,7 +2117,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 227 "grammar.y"
+#line 221 "grammar.y"
 
 
 static VALUE parse(VALUE self, VALUE str){

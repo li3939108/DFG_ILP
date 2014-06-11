@@ -104,8 +104,6 @@ static VALUE M(VALUE self){
 	VALUE Q = rb_ivar_get(self, rb_intern("@q") ) ;
 	int *m, i ;
 	VALUE ret = rb_ary_new() ;
-//	Data_Get_Struct(graph_obj, Graph, G) ;
-//	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
 
 	get_graph(vlist, elist) ;
 	Data_Get_Struct(graph_obj, Graph, G) ;

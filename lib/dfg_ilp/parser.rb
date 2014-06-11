@@ -10,10 +10,11 @@ module DFG_ILP
 			@result = {}
 			@vertex = []
 			@edge = []
+			@name = nil
 		end
 		def p
 			v = @vertex.map{|vertex| vertex[1] }
-			{:v => v, :e => @edge }
+			{:v => v, :e => @edge, :name => @name }
 		end
 		def to_DFG
 			v = self.p[:v].map{|attri|
@@ -21,20 +22,20 @@ module DFG_ILP
 					attri["label"].include?("ADD") or 
 					attri["label"].include?("sub") or 
 					attri["label"].include?("SUB") or 
-					attri["label"].include?("+") then "+"
-				elsif attri["label"].include?("MUL") or	
-					attri["label"].include?("mul") or 
-					attri["label"].include?("x") then "x"
-				elsif attri["label"].include?("les") or 
+					attri["label"].include?("+") or 
+					attri["label"].include?("les") or 
 					attri["label"].include?("LES") or
 					attri["label"].include?("LE") or 
 					attri["label"].include?("le") or 
-					attri["label"].include?("<") then "<"
+					attri["label"].include?("<") then "ALU"
+				elsif attri["label"].include?("MUL") or	
+					attri["label"].include?("mul") or 
+					attri["label"].include?("x") then "x"
+				else "@"
 				end
 			}
-			v = v.map{|v| if v == "<" then "+" else v end}
-			e = p[:e].map{|edge| edge.reverse }
-			DFG_ILP::GRAPH.new( { :v => v, :e => e} )
+			e = @edge.map{|edge| edge.reverse }
+			DFG_ILP::GRAPH.new( { :v => v, :e => e, :name => @name} )
 		end
 		require 'dfg_ilp/parser_ext'
 	end

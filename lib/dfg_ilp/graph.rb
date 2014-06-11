@@ -14,6 +14,8 @@ module DFG_ILP
 			else @edge = [] end
 			if p != nil and p[:v] != nil then @vertex = p[:v] 
 			else @vertex = [] end
+			if p != nil and p[:name] != nil then @name = p[:name] 
+			else @name = nil end
 			if @edge.length != 0 and @vertex.length != 0
 				@PI = @vertex.map.with_index{|v,i| !@edge.map{|e| e[0]}.include?(i) and v != 'D'}
 				@PO = @vertex.map.with_index{|v,i| 
@@ -56,6 +58,7 @@ module DFG_ILP
 			@PI = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[0]}.include?(i) and @vertex[i] != 'D'}
 			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| e[1] == i}.select{|e| @vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
 			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
+			@name = "IIR4"
 		end
 	
 		def p
@@ -65,6 +68,7 @@ module DFG_ILP
 				:PI => @PI, 
 				:PO => @PO, 
 				:vNoD => @vertex_without_D, 
+				:name => @name,
 			}
 		end
 	end
