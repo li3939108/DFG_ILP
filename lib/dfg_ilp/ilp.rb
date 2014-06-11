@@ -59,8 +59,8 @@ module DFG_ILP
 			if parameters[:error_bound] == nil then error_bound = 10
 			else error_bound = parameters[:error_bound] end
 
-			if parameters[:times_q] == nil then tq = parameters[:times_q] 
-			else tq = 2 end
+			if parameters[:times_q] == nil then tq = 2
+			else tq = parameters[:times_q]  end
 
 			@q = q
 			@vertex = g.p[:v]
