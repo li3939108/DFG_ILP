@@ -138,7 +138,7 @@ static void free_and_null (char **ptr){
  *               Int  x
  *                    x    >=    0
  */
-static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
+static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c,  VALUE integer, VALUE lb, VALUE ub, VALUE m_symbol){
 	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
 	int Ncolumn = (Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i ;
@@ -240,8 +240,18 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symb
 	for(i = 0; i < Ncolumn; i++){
 		zmatbeg[i] = i * (int)Nrow ;
 		zmatcnt[i] = (int)Nrow ;
+		//TODO
 		zlb[i] = 0.0 ;
 		zub[i] = CPX_INFBOUND ;
+		/*  
+		
+		CPX_CONTINUOUS	'C'	continuous variable
+		CPX_BINARY	'B'	binary variable
+		CPX_INTEGER	'I'	general integer variable
+		CPX_SEMICONT	'S'	semi-continuous variable
+		CPX_SEMIINT	'N'	semi-integer variable
+
+		*/
 		zctype[i] = 'I' ;
 		zobj[i] = NUM2DBL(rb_ary_entry(c, i));
 	}
@@ -427,7 +437,7 @@ TERMINATE:
  *                    x    >=    0
  */
 
-static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
+static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE integer, VALUE lb, VALUE ub, VALUE m_symbol){
 	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
 	int Ncolumn = (Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i;
@@ -544,7 +554,7 @@ static VALUE lpsolve(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_sy
 #ifdef HAVE_GUROBI_GUROBI_C_H 
 #include "gurobi/gurobi_c.h"
 
-VALUE gurobi(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE m_symbol){
+VALUE gurobi(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c,  VALUE integer, VALUE lb, VALUE ub, VALUE m_symbol){
 	
 	
 	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 

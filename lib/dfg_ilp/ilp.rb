@@ -232,6 +232,22 @@ module DFG_ILP
 				Array.new(@Nerr, 0)					+		#errArray
 				@p.values.flatten.map{|p| p * q }			+		#uArray
 				Array.new(@Ns, 0)							#sArray
+			@int	=
+				Array.new(@Nx, 'B')					+
+				Array.new(@Nerr, 'C')					+
+				Array.new(@Nu, 'I')					+ 
+				Array.new(@Ns, 'I')
+			@lb	=
+				Array.new(@Nx, 0)					+
+				Array.new(@Nerr, -Float::INFINITY)			+
+				Array.new(@Nu, 0)					+
+				Array.new(@Ns, 0)					
+			@ub	=
+				Array.new(@Nx, Float::INFINITY)				+
+				Array.new(@Nerr, 0)					+
+				Array.new(@Nu, Float::INFINITY)				+
+				Array.new(@Ns, Float::INFINITY)
+			
 		end
 	
 		def p
@@ -244,6 +260,7 @@ module DFG_ILP
 				:d => @d 
 			}
 		end
+
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, :min)
 			position = @Nx +@Nerr - 1
