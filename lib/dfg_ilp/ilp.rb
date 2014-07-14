@@ -7,21 +7,21 @@ module DFG_ILP
 			:d    => [2, 3], 
 			:g    => [1000, 2000],
 			:p    => [50, 100],
-			:err  => [1, 0] },
+			:err  => [Math::log(1 - 0.2), Math::log(1 - 0)] },
 		'ALU' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [1, 0] },
+			:err  => [Math::log(1 - 0.2),Math::log(1 - 0)] },
 		'+' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [1, 0] },
+			:err  => [Math::log(1 - 0.2),Math::log(1 - 0)] },
 	
 		'D' => {
 			:type => ["accurate"],
@@ -29,7 +29,7 @@ module DFG_ILP
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:err  => [0] },
+			:err  => [Math::log(1 - 0)] },
 		
 		'@' => {
 			:type => ["accurate"],
@@ -37,7 +37,7 @@ module DFG_ILP
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:err  => [0] }
+			:err  => [Math::log(1 - 0)] }
 		}
 		MIN = true#constant for minimum linear programming
 		MAX = false#constant for maximum linear programming
@@ -211,7 +211,7 @@ module DFG_ILP
 				Array.new(@edge.length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
 				Array.new(@vertex.length, EQ)				+
-				Array.new(@PO_vertex.length, LE)			+		#Formula (8)
+				Array.new(@PO_vertex.length, GE)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=

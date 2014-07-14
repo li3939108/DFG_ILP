@@ -240,11 +240,9 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE intege
 	for(i = 0; i < Ncolumn; i++){
 		zmatbeg[i] = i * (int)Nrow ;
 		zmatcnt[i] = (int)Nrow ;
-		//TODO
-		zlb[i] = 0.0 ;
-		zlb[i] = NUM2DBL(rb_ary_entry(lb, i) ) ;
-		zub[i] = CPX_INFBOUND ;
+
 		/*  
+		zlb[i] = 0.0 ;
 		
 		CPX_CONTINUOUS	'C'	continuous variable
 		CPX_BINARY	'B'	binary variable
@@ -254,6 +252,8 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE intege
 
 		zctype[i] = 'I' ;
 		*/
+		zlb[i] = NUM2DBL(rb_ary_entry(lb, i) ) ;
+		zub[i] = NUM2DBL(rb_ary_entry(ub, i) ) ;
 		zctype[i] = RSTRING_PTR( rb_ary_entry(integer, i) ) [0] ;
 		zobj[i] = NUM2DBL(rb_ary_entry(c, i));
 	}
