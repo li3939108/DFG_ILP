@@ -138,7 +138,7 @@ static void free_and_null (char **ptr){
  *               Int  x
  *                    x    >=    0
  */
-static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c,  VALUE integer, VALUE lb, VALUE ub, VALUE m_symbol){
+static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE integer, VALUE lb, VALUE ub, VALUE m_symbol){
 	int Nrow = (Check_Type(A, T_ARRAY), (int)RARRAY_LEN(A) ); 
 	int Ncolumn = (Check_Type(c, T_ARRAY), (int)RARRAY_LEN(c) );
 	int i ;
@@ -242,6 +242,7 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c,  VALUE integ
 		zmatcnt[i] = (int)Nrow ;
 		//TODO
 		zlb[i] = 0.0 ;
+		zlb[i] = NUM2DBL(rb_ary_entry(lb, i) ) ;
 		zub[i] = CPX_INFBOUND ;
 		/*  
 		
@@ -251,8 +252,9 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c,  VALUE integ
 		CPX_SEMICONT	'S'	semi-continuous variable
 		CPX_SEMIINT	'N'	semi-integer variable
 
-		*/
 		zctype[i] = 'I' ;
+		*/
+		zctype[i] = RSTRING_PTR( rb_ary_entry(integer, i) ) [0] ;
 		zobj[i] = NUM2DBL(rb_ary_entry(c, i));
 	}
 	
