@@ -360,10 +360,17 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE intege
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("s")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		rb_ary_store(variables, i, INT2FIX( round(x[i], 0.5)  ) ) ;
-		#ifdef DEBUG
-		printf ("Column %d:  Value = %ld\n", i, round(x[i], 0.5)); 
-		#endif
+		if(zctype[i] == 'I'||zctype == 'B'){
+			rb_ary_store(variables, i, INT2FIX( round(x[i], 0.5)  ) ) ;
+			#ifdef DEBUG
+			printf ("Column %d:  Value = %ld\n", i, round(x[i], 0.5)); 
+			#endif
+		}else if(zctype[i] == 'C'){
+			rb_ary_store(variables, i, DBL2NUM(x[i] ) ) ;
+			#ifdef DEBUG
+			printf ("Column %d:  Value = %ld\n", i, DBL2NUM(x[i]) ); 
+			#endif
+		}
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("v")), variables);
 	/* Finally, write a copy of the problem to a file. */
@@ -739,13 +746,13 @@ void Init_ilp_ext(){
 	graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, NULL, free_graph, NULL) ;
 	#ifdef HAVE_LPSOLVE_LP_LIB_H 
-	rb_define_module_function(DFG_ILP_mod, "lpsolve", lpsolve, 5);
+	rb_define_module_function(DFG_ILP_mod, "lpsolve", lpsolve, 8);
 	#endif
 	#ifdef  HAVE_ILCPLEX_CPLEX_H
-	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 5);
+	rb_define_module_function(DFG_ILP_mod, "cplex", cplex, 8);
 	#endif
 	#ifdef HAVE_GUROBI_GUROBI_C_H 
-	rb_define_module_function(DFG_ILP_mod, "gurobi", gurobi, 5);
+	rb_define_module_function(DFG_ILP_mod, "gurobi", gurobi, 8);
 	#endif
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ALAP", ALAP,0);
