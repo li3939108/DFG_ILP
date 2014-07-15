@@ -360,7 +360,13 @@ static VALUE cplex(VALUE self, VALUE A, VALUE op, VALUE b, VALUE c, VALUE intege
 	}
 	rb_hash_aset(ret_hash, ID2SYM(rb_intern("s")), constraints);
 	for (i = 0; i < cur_numcols; i++){
-		if(zctype[i] == 'I'||zctype == 'B'){
+/*
+		rb_ary_store(variables, i, INT2FIX( round(x[i], 0.5)  ) ) ;
+		#ifdef DEBUG
+		printf ("Column %d:  Value = %ld\n", i, round(x[i], 0.5)); 
+		#endif
+*/
+		if(zctype[i] == 'I'||zctype[i] == 'B'){
 			rb_ary_store(variables, i, INT2FIX( round(x[i], 0.5)  ) ) ;
 			#ifdef DEBUG
 			printf ("Column %d:  Value = %ld\n", i, round(x[i], 0.5)); 
