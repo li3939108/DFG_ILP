@@ -44,7 +44,7 @@ module DFG_ILP
 		def initialize(g, parameters = {} )
 			mobility_constrainted = true
 			no_resource_limit = true
-			error_bound = 10
+			error_bound = Math::log(1 - 0.8) 
 			tq = 2
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
 
@@ -56,7 +56,7 @@ module DFG_ILP
 
 			operations            = [] 
 
-			if parameters[:error_bound] == nil then error_bound = 10
+			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.8)
 			else error_bound = parameters[:error_bound] end
 
 			if parameters[:times_q] == nil then tq = 2
