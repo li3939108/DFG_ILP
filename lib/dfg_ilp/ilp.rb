@@ -234,18 +234,18 @@ module DFG_ILP
 				Array.new(@Ns, 0)							#sArray
 			@int	=
 				Array.new(@Nx, 'B')					+
-				Array.new(@Nerr, 'C')					+
+				Array.new(@Nerr, 'C')				+
 				Array.new(@Nu, 'I')					+ 
 				Array.new(@Ns, 'I')
 			@lb	=
 				Array.new(@Nx, 0)					+
-				Array.new(@Nerr, -Float::INFINITY)			+
+				Array.new(@Nerr, -Float::INFINITY)	+
 				Array.new(@Nu, 0)					+
 				Array.new(@Ns, 0)					
 			@ub	=
-				Array.new(@Nx, Float::INFINITY)				+
-				Array.new(@Nerr, 0)					+
-				Array.new(@Nu, Float::INFINITY)				+
+				Array.new(@Nx, Float::INFINITY)    +
+				Array.new(@Nerr, 0)                +
+				Array.new(@Nu, Float::INFINITY)    +
 				Array.new(@Ns, Float::INFINITY)
 			
 		end
@@ -262,7 +262,7 @@ module DFG_ILP
 		end
 
 		def compute(g, method)
-			ret = DFG_ILP.send(method, @A, @op, @b, @c, :min)
+			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			position = @Nx +@Nerr - 1
 	
 			allocation = {}
