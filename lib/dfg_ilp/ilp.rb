@@ -7,21 +7,21 @@ module DFG_ILP
 			:d    => [2, 3], 
 			:g    => [1000, 2000],
 			:p    => [50, 100],
-			:err  => [Math::log(1 - 0.2), Math::log(1 - 0)] },
+			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] },
 		'ALU' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.2),Math::log(1 - 0)] },
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] },
 		'+' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.2),Math::log(1 - 0)] },
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] },
 	
 		'D' => {
 			:type => ["accurate"],
@@ -44,7 +44,7 @@ module DFG_ILP
 		def initialize(g, parameters = {} )
 			mobility_constrainted = true
 			no_resource_limit = true
-			error_bound = Math::log(1 - 0.8) 
+			error_bound = Math::log(1 - 0.01) 
 			tq = 2
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
 
@@ -56,7 +56,7 @@ module DFG_ILP
 
 			operations            = [] 
 
-			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.8)
+			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.01)
 			else error_bound = parameters[:error_bound] end
 
 			if parameters[:times_q] == nil then tq = 2
@@ -314,7 +314,7 @@ module DFG_ILP
 				i = 0
 				while i < sch.length do
 					if (sch[i][:time] == l) 
-						print sch[i][:op],sch[i][:id],': ', 'd', sch[i][:delay], 'e', sch[i][:error], "   "
+						print sch[i][:op],sch[i][:id],': ', 'd', sch[i][:delay], 'e', 1 - Math::E**sch[i][:error], "   "
 						sch.delete_at(i)
 					else
 						i = i + 1
