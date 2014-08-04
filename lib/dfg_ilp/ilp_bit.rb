@@ -10,7 +10,7 @@ module DFG_ILP
 			:n    => [32,32,32,16,16,8],
 			:errs => [16,8,0,8,0,0] },
 		'ALU' => {
-			:type => [],
+			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY],
 			:d    => [],
 			:g    => [],
@@ -19,7 +19,7 @@ module DFG_ILP
 			:errs => [16,8,0,8,0,0]},
 
 		'+' => {
-			:type => [],
+			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY],
 			:d    => [],
 			:g    => [],
@@ -103,7 +103,6 @@ module DFG_ILP
 				g.p[:PO].count(true) +
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
-			
 			@Nerr = @vertex.length
 			@Nu = @u.values.flatten.length 
 			@Ns = @vertex.length
