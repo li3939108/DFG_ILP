@@ -74,7 +74,6 @@ module DFG_ILP
 			@ui     = @vertex.map{|v,i| 
 				[*0..DEFAULT_OPERATION_PARAMETERS[v][:n].length - 1].select{|ii| 
 					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= g.p[:n][i] }}
-			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, vkkkkk
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
 			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
@@ -114,13 +113,14 @@ module DFG_ILP
 			@A = 
 			@vertex.map.with_index{|v,i|		#Formula (2)  
 				if(mobility_constrainted)
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
-					ntail = @Ncolumn - start_point - @u[ v ].length * (1 + @mobility[i])
-					Array.new(start_point, 0) + Array.new(@u[ v ].length * (1 + @mobility[i]), 1) + Array.new(ntail, 0)
+					start_point = [*0..i-1].map{|j| @ui[j].length * (1 + @mobility[j])  }.reduce(0, :+)
+					#start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					ntail = @Ncolumn - start_point - @ui[ j ].length * (1 + @mobility[i])
+					Array.new(start_point, 0) + Array.new(@ui[ i ].length * (1 + @mobility[i]), 1) + Array.new(ntail, 0)
 				else
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
-					ntail = @Ncolumn - start_point - @u[ v ].length * q
-					Array.new(start_point, 0) + Array.new(@u[ v ].length * q, 1) + Array.new(ntail, 0)
+					start_point = [*0..i-1].map{|j| @ui[j].length * q }.reduce(0,:+) 
+					ntail = @Ncolumn - start_point - @ui[ i ].length * q
+					Array.new(start_point, 0) + Array.new(@ui[ i ].length * q, 1) + Array.new(ntail, 0)
 				end
 			} +
 			@vertex.map.with_index{|v,i|	#Formula (3)  
