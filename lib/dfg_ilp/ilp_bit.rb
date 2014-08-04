@@ -125,9 +125,9 @@ module DFG_ILP
 			} +
 			@vertex.map.with_index{|v,i|	#Formula (3)  
 				if(mobility_constrainted)
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
-					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@u[v].length, t)}.reduce([], :+) 
-					ntail = @Nx - start_point - @u[v].length * (1 + @mobility[i] )
+					start_point = [*0..i-1].map{|j| @ui[j].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@ui[i].length, t)}.reduce([], :+) 
+					ntail = @Nx - start_point - @ui[i].length * (1 + @mobility[i] )
 				else
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
 					xArray = [*0..q-1].map{|t| Array.new(@u[v].length, t)}.reduce([], :+)
