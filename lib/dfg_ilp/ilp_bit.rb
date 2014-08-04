@@ -3,7 +3,7 @@ module DFG_ILP
 		DEFAULT_OPERATION_PARAMETERS = {
 		'x' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
-			:u    => [Float::INFINITY],
+			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY],
 			:d    => [],
 			:g    => [],
 			:p    => [],
@@ -11,7 +11,7 @@ module DFG_ILP
 			:errs => [16,8,0,8,0,0] },
 		'ALU' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
-			:u    => [Float::INFINITY],
+			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY],
 			:d    => [],
 			:g    => [],
 			:p    => []
@@ -20,7 +20,7 @@ module DFG_ILP
 
 		'+' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
-			:u    => [Float::INFINITY],
+			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, ],
 			:d    => [],
 			:g    => [],
 			:p    => []
@@ -34,7 +34,7 @@ module DFG_ILP
 			:p    => [3],
 			:n    => [32]
 			:errs => [0] },
-		'D' => {
+		'@' => {
 			:type => ["accurate"],
 			:u    => [Float::INFINITY],
 			:d    => [1],
@@ -71,6 +71,10 @@ module DFG_ILP
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
+			@ui     = @vertex.map{|v,i| 
+				[*0..DEFAULT_OPERATION_PARAMETERS[v][:n].length - 1].select{|ii| 
+					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= g.p[:n][i] }}
+			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, vkkkkk
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
 			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
