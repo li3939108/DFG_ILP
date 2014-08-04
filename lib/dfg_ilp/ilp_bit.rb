@@ -74,9 +74,15 @@ module DFG_ILP
 			@ui     = @vertex.map{|v,i| 
 				[*0..DEFAULT_OPERATION_PARAMETERS[v][:n].length - 1].select{|ii| 
 					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= g.p[:n][i] }}
-			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
-			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
-			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
+#			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
+			@di     = @ui.map{ |uii,i|
+				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i]][:d][u] } }
+		#	@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
+			@gi     = @ui.map{ |uii,i|
+				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i]][:g][u] } }
+		#	@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
+			@pi     = @ui.map{ |uii,i|
+				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i][:p][u]] } }
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
 			@errB = error_bound
 
@@ -92,9 +98,9 @@ module DFG_ILP
 				@asap = ret[:schedule]
 				@alap = self.ALAP
 				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
-				@Nx = @vertex.map.with_index{|v,i| @u[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
+				@Nx = @vertex.map.with_index{|v,i| @ui[i].length * (1 + @mobility[i]) }.reduce(0,:+) 
 			else
-				@Nx = @vertex.map{|v| @u[v].length * q}.reduce(0,:+) 
+				@Nx = @vertex.map{|v| @ui[i].length * q}.reduce(0,:+) 
 				if( q == nil) then q = 40 end
 			end
 			@Nrow =	
@@ -168,13 +174,13 @@ module DFG_ILP
 			} +
 			@vertex.map.with_index{|v,i|			#Formula (6) (7)
 				if(mobility_constrainted)
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
-					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err[v])}.reduce([], :+) 
+					start_point = [*0..i-1].map{|j| @ui[j].length * (1+@mobility[j]) }.reduce(0,:+) 
+					xArray = [*@asap[i]..@alap[i]].map{|t| #Array.new(@err[v])}.reduce([], :+) 
 					ntail = @Nx - start_point - @u[v].length * (1+@mobility[i])
 				else
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
-					xArray = [*0..q-1].map{|t| Array.new(@err[v])}.reduce([], :+) 
-					ntail = @Nx - start_point - @u[v].length * q
+					start_point = [*0..i-1].map{|j| @ui[j].length * q }.reduce(0,:+) 
+					xArray = [*0..q-1].map{|t| #Array.new(@err[v])}.reduce([], :+) 
+					ntail = @Nx - start_point - @ui[i].length * q
 				end
 				errArray = Array.new(@Nerr, 0)
 				errArray[i] = -1
