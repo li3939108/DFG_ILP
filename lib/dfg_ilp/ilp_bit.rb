@@ -129,9 +129,9 @@ module DFG_ILP
 					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@ui[i].length, t)}.reduce([], :+) 
 					ntail = @Nx - start_point - @ui[i].length * (1 + @mobility[i] )
 				else
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
-					xArray = [*0..q-1].map{|t| Array.new(@u[v].length, t)}.reduce([], :+)
-					ntail = @Nx - start_point - @u[v].length * q
+					start_point = [*0..i-1].map{|j| @ui[j].length * q }.reduce(0,:+) 
+					xArray = [*0..q-1].map{|t| Array.new(@ui[i].length, t)}.reduce([], :+)
+					ntail = @Nx - start_point - @ui[i].length * q
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[i] = -1
@@ -139,13 +139,13 @@ module DFG_ILP
 			} +
 			@edge.map{|e|	#Formula (4)  41
 				if(mobility_constrainted)
-					start_point = [*0..e[1]-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
-					ntail = @Nx - start_point - @u[@vertex[e[1]]].length * (1 + @mobility[e[1]])
-					xArray = [*@asap[e[1]]..@alap[e[1]]].map{|t|     @d[@vertex[e[1]]]                  }.reduce([], :+) 
+					start_point = [*0..e[1]-1].map{|j| @ui[j].length * (1 + @mobility[j]) }.reduce(0,:+) 
+					ntail = @Nx - start_point - @ui[ e[1] ].length * (1 + @mobility[e[1]])
+					xArray = [*@asap[e[1]]..@alap[e[1]]].map{|t| #    @d[@vertex[e[1]]]                  }.reduce([], :+) 
 				else
-					start_point = [*0..e[1]-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
-					ntail = @Nx - start_point - @u[@vertex[e[1]]].length * q
-					xArray = [*0..q-1].map{|t|     @d[@vertex[e[1]]]                  }.reduce([], :+) 
+					start_point = [*0..e[1]-1].map{|j| @ui[ j ].length * q }.reduce(0,:+) 
+					ntail = @Nx - start_point - @ui[ e[1] ].length * q
+					xArray = [*0..q-1].map{|t|    # @d[@vertex[e[1]]]                  }.reduce([], :+) 
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[e[0]] = -1
@@ -154,13 +154,13 @@ module DFG_ILP
 			} +
 			@end_vertex.map.with_index{|v,i|	#Formula (5)
 				if(mobility_constrainted)
-					start_point = [*0..v-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
-					ntail = @Nx - start_point - @u[@vertex[v]].length * (1+@mobility[v])
-					xArray = [*@asap[v]..@alap[v]].map{|t|          @d[@vertex[v]]                      }.reduce([], :+)
+					start_point = [*0..v-1].map{|j| @ui[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
+					ntail = @Nx - start_point - @ui[v].length * (1+@mobility[v])
+					xArray = [*@asap[v]..@alap[v]].map{|t|  #        @d[@vertex[v]]                      }.reduce([], :+)
 				else
-					start_point = [*0..v-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
-					ntail = @Nx - start_point - @u[@vertex[v]].length * q
-					xArray = [*0..q-1].map{|t|          @d[@vertex[v]]                      }.reduce([], :+)
+					start_point = [*0..v-1].map{|j| @ui[ j ].length * q }.reduce(0,:+) 
+					ntail = @Nx - start_point - @ui[ v ].length * q
+					xArray = [*0..q-1].map{|t|         # @d[@vertex[v]]                      }.reduce([], :+)
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[v] = 1
