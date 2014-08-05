@@ -203,10 +203,10 @@ module DFG_ILP
 				type = flattenUtype[di]
 				implementation = flattenUimplementation[di]
 				if(mobility_constrainted) then xArray =	@vertex.map.with_index{|v,xi| [*@asap[xi]..@alap[xi]].map{|xt| 
-					@u[v].map.with_index{|u,m| if v == type and xt <= t and t <= xt + d - 1 and m == implementation then 1 else 0 end}
+					@ui[xi].map.with_index{|u,m| if v == type and xt <= t and t <= xt + d - 1 and u == implementation then 1 else 0 end}
 					}.reduce([],:+)}.reduce([],:+)
 				else xArray = @vertex.map.with_index{|v,xi|	[*0..q - 1].map{|xt|
-					@u[v].map.with_index{|u,m| if v == type and m == implementation and xt <= t and t <= xt + d - 1 then 1 else 0 end}
+					@ui[xi].map.with_index{|u,m| if v == type and u == implementation and xt <= t and t <= xt + d - 1 then 1 else 0 end}
 					}.reduce([],:+)}.reduce([],:+)
 				end
 				uArray = Array.new(@Nu, 0)
