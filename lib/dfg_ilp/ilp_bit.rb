@@ -71,10 +71,10 @@ module DFG_ILP
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
-			@ui     = @vertex.map{|v,i| 
+			@ui     = @vertex.map{|v,i| # the index of implementation
 				[*0..DEFAULT_OPERATION_PARAMETERS[v][:n].length - 1].select{|ii| 
 					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= g.p[:n][i] }}
-#			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
+			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
 			@di     = @ui.map{ |uii,i|
 				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i]][:d][u] } }
 		#	@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
@@ -147,11 +147,11 @@ module DFG_ILP
 				if(mobility_constrainted)
 					start_point = [*0..e[1]-1].map{|j| @ui[j].length * (1 + @mobility[j]) }.reduce(0,:+) 
 					ntail = @Nx - start_point - @ui[ e[1] ].length * (1 + @mobility[e[1]])
-					xArray = [*@asap[e[1]]..@alap[e[1]]].map{|t| #    @d[@vertex[e[1]]]                  }.reduce([], :+) 
+					xArray = [*@asap[e[1]]..@alap[e[1]]].map{|t|     @di[ e[1] ]                  }.reduce([], :+) 
 				else
 					start_point = [*0..e[1]-1].map{|j| @ui[ j ].length * q }.reduce(0,:+) 
 					ntail = @Nx - start_point - @ui[ e[1] ].length * q
-					xArray = [*0..q-1].map{|t|    # @d[@vertex[e[1]]]                  }.reduce([], :+) 
+					xArray = [*0..q-1].map{|t|     @di[ e[1] ]                  }.reduce([], :+) 
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[e[0]] = -1
@@ -162,11 +162,11 @@ module DFG_ILP
 				if(mobility_constrainted)
 					start_point = [*0..v-1].map{|j| @ui[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
 					ntail = @Nx - start_point - @ui[v].length * (1+@mobility[v])
-					xArray = [*@asap[v]..@alap[v]].map{|t|  #        @d[@vertex[v]]                      }.reduce([], :+)
+					xArray = [*@asap[v]..@alap[v]].map{|t|          @di[ v ]                      }.reduce([], :+)
 				else
 					start_point = [*0..v-1].map{|j| @ui[ j ].length * q }.reduce(0,:+) 
 					ntail = @Nx - start_point - @ui[ v ].length * q
-					xArray = [*0..q-1].map{|t|         # @d[@vertex[v]]                      }.reduce([], :+)
+					xArray = [*0..q-1].map{|t|          @di[v ]                      }.reduce([], :+)
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[v] = 1
