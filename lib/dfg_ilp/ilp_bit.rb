@@ -32,7 +32,7 @@ module DFG_ILP
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:n    => [32]
+			:n    => [32],
 			:errs => [0] },
 		'@' => {
 			:type => ["accurate"],
@@ -40,7 +40,7 @@ module DFG_ILP
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:n    => [32]
+			:n    => [32],
 			:errs => [0] },
 		}
 		MIN = true#constant for minimum linear programming
