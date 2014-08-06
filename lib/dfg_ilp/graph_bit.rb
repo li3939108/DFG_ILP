@@ -38,6 +38,7 @@ module DFG_ILP
 			section2 = order / 2
 			section1 = order % 2
 			@vertex = vertex2 * section2 + vertex1 * section1
+			@number_of_bits = bits2 * section2 + bits1 * section1
 			@edge = 
 			[*0..section2-1].map{|x| #[0,1,2,...,section2 - 1]
 				edge2.map{|edge|
