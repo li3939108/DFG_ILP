@@ -4,26 +4,26 @@ module DFG_ILP
 		'x' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY],
-			:d    => [],
-			:g    => [],
-			:p    => [],
+			:d    => [3, 4, 5, 3, 4, 3],
+			:g    => [3000, 4000, 5000, 1000, 2000, 1000],
+			:p    => [150, 200, 250, 50, 100, 50],
 			:n    => [32,32,32,16,16,8],
 			:errs => [16,8,0,8,0,0] },
 		'ALU' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY],
-			:d    => [],
-			:g    => [],
-			:p    => []
+			:d    => [2,3,4,1,2,1],
+			:g    => [500, 700,1000,200,500,200],
+			:p    => [30,40,50,10,30,10],
 			:n    => [32,32,32,16,16,8],
 			:errs => [16,8,0,8,0,0]},
 
 		'+' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, ],
-			:d    => [],
-			:g    => [],
-			:p    => []
+			:d    => [2,3,4,1,2,1],
+			:g    => [500, 700,1000,200,500,200],
+			:p    => [30,40,50,10,30,10],
 			:n    => [32,32,32,16,16,8],
 			:errs => [16,8,0,8,0,0]},
 		'D' => {
@@ -172,7 +172,7 @@ module DFG_ILP
 				sArray[v] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			@vertex.map.with_index{|v,i|			#Formula (6) (7)
+			@vertex.map.with_index{|v,i|			#Formula (6) (7) error
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @ui[j].length * (1+@mobility[j]) }.reduce(0,:+) 
 					xArray = [*@asap[i]..@alap[i]].map{|t| #Array.new(@err[v])}.reduce([], :+) 
@@ -292,12 +292,12 @@ module DFG_ILP
 			for i in [*0..@vertex.length-1]	do
 				if(@mC)
 					current_length = @u[@vertex[i]].length * (1+@mobility[i]) 
-					index = ret[:v][position, current_length].index(1)
-					time = index/ @u[ @vertex[i] ].length + @asap[i]
+					index = ret[:v][position, current_length].index(1) 
+					time = index/ @u[ @vertex[i] ].length + @asap[i]#TODO need change
 				else 
 					current_length = @u[@vertex[i]].length * @q
 					index = ret[:v][position, current_length].index(1)
-					time = index/ @u[ @vertex[i] ].length + 0
+					time = index/ @u[ @vertex[i] ].length + 0#TODO need change
 				end
 				type = index% @u[@vertex[i]].length 
 				error = ret[:v][err_position]
