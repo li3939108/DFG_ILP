@@ -17,7 +17,6 @@ module DFG_ILP
 			:p    => [30,40,50,10,30,10],
 			:n    => [32,32,32,16,16,8],
 			:errs => [16,8,0,8,0,0]},
-
 		'+' => {
 			:type => ["approximate", "approximate", "accurate", "approximate", "accurate", "accurate"],
 			:u    => [Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, Float::INFINITY, ],
@@ -67,21 +66,22 @@ module DFG_ILP
 			else tq = parameters[:times_q]  end
 
 			@q = q
+			@bits = g.p[:n]
 			@vertex = g.p[:v]
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
-			@ui     = @vertex.map{|v,i| # the index of implementation
+			@ui     = @vertex.map.with_index {|v,i| # the index of implementation
 				[*0..DEFAULT_OPERATION_PARAMETERS[v][:n].length - 1].select{|ii| 
-					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= g.p[:n][i] }}
+					DEFAULT_OPERATION_PARAMETERS[v][:n][ii] >= @bits[i] }}
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
-			@di     = @ui.map{ |uii,i|
+			@di     = @ui.map.with_index{ |uii,i|
 				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i]][:d][u] } }
 		#	@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
-			@gi     = @ui.map{ |uii,i|
+			@gi     = @ui.map.with_index{ |uii,i|
 				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i]][:g][u] } }
 		#	@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
-			@pi     = @ui.map{ |uii,i|
+			@pi     = @ui.map.with_index{ |uii,i|
 				uii.map{|u,ii| DEFAULT_OPERATION_PARAMETERS[@vertex[i][:p][u]] } }
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
 			@errB = error_bound
