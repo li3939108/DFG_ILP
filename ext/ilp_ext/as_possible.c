@@ -31,16 +31,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 		Check_Type(edge, T_ARRAY) ;
 		e1 = FIX2INT(rb_ary_entry(edge, 1) ) ;
 		e2 = FIX2INT(rb_ary_entry(edge, 0) );
-/*
-		if(vertex_list[e1] == NULL){
-			vertex_list[e1] = new_vertex(e1 + 1) ;
-			vertex_list[e1]->op = vertices[e1] ;
-		}
-		if(vertex_list[e2] == NULL){
-			vertex_list[e2] = new_vertex(e2 + 1) ;
-			vertex_list[e2]->op = vertices[e2] ;
-		};
-*/
+
 		add_adjacency_vertex(vertex_list[e1], e2 + 1, (long)vertices[e2]) ;
 	}
 	G = new_graph(vlist_len, vertex_list);

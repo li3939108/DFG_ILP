@@ -223,8 +223,8 @@ module DFG_ILP
 				Array.new(@vertex.length, EQ)				+		#Formula (3)
 				Array.new(@edge.length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
-				Array.new(@vertex.length, EQ)				+
-				Array.new(@PO_vertex.length, GE)			+		#Formula (8)
+				#Array.new(@vertex.length, EQ)				+		#Formula (6) (7)
+				#Array.new(@PO_vertex.length, GE)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
@@ -232,8 +232,8 @@ module DFG_ILP
 				Array.new(@vertex.length, 0)				+		#Formula (3)
 				Array.new(@edge.length, 0)				+		#Formula (4)	
 				Array.new(@end_vertex.length, q)			+		#Formula (5)
-				Array.new(@vertex.length , 0)				+		#Formula (6) (7)							
-				Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
+				#Array.new(@vertex.length , 0)				+		#Formula (6) (7)
+				#Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, 0)		+		#Formula (9)
 				( if no_resource_limit == false then @u.values.flatten else [] end) 
 			@c	=
