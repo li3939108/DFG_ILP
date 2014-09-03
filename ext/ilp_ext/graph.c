@@ -14,6 +14,7 @@ Vertex *new_vertex(int label){
 	v->degree = 0;
 	v->label = label;
 	v->list = NULL;
+	v->paths = 0 ; // initialize paths to 0, meaning no dfs has been performed to determine the value
 	return  v ;
 }
 Graph *new_graph(int V, Vertex *vertex_list[]){

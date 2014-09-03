@@ -11,6 +11,7 @@
 
 typedef struct _Vertex{
 	int degree ;
+	int paths ; //Distinct Paths to Primary Outputs
 	int label ;
 	int rank ;//for use with Make-Set-Find 
 	char *op ;

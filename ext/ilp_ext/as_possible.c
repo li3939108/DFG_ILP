@@ -109,4 +109,8 @@ void mobility(Graph *G, int *m, VALUE delay, int Q){
 	free(time_l) ;
 }
 void number_of_distinct_paths(Graph *G){
+	int i = 1 ;
+	for ( i = 1; i <= G->V; i++){
+		
+	}
 }
