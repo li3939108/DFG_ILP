@@ -21,7 +21,6 @@ void get_graph(VALUE vlist, VALUE elist) {
 	for(i = 0; i < vlist_len; i++){
 		VALUE op = rb_ary_entry(vlist, i) ;
 		Check_Type(op, T_STRING) ;
-		//vertices[i] = RSTRING_PTR(op) ;
 		vertex_list[i] = new_vertex(i + 1) ;
 		vertex_list[i]->op = RSTRING_PTR(op) ;
 	}
@@ -81,7 +80,6 @@ int alap(Graph *G, int *time, VALUE delay, int Q){
 	int i, min = Q ;
 	for(i = 1; i <= G->V; i++){
 		dfs(G, i, time, delay) ;
-	//	Q = new_Q > Q ? new_Q : Q ;
 	}
 	for(i = 1; i <= G->V; i++){
 		time[i] = Q - 1 - time[i] ;
@@ -109,4 +107,6 @@ void mobility(Graph *G, int *m, VALUE delay, int Q){
 	}
 	free(time_s) ;
 	free(time_l) ;
+}
+void number_of_distinct_paths(Graph *G){
 }
