@@ -29,6 +29,7 @@ static VALUE npaths(VALUE self) {
 	/* G is the graph and Gt is the reverse graph */
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
+	VALUE paths = rb_ary_new() ;
 
 	get_graph(vlist, elist) ;
 	Data_Get_Struct(graph_obj, Graph, G) ;
@@ -37,8 +38,9 @@ static VALUE npaths(VALUE self) {
 	number_of_distinct_paths(G) ;
 
 	for (i = 1; i <= G->V; i++){
-		printf("[%d]: %d ", i, G->adj_list[i]->paths ) ;
+		rb_ary_push(paths, INT2FIX(G->adj_list[i]->paths ) ) ;
 	}
+	return paths ;
 }
 
 static VALUE ASAP(VALUE self){

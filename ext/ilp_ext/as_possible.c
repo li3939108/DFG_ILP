@@ -120,11 +120,9 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 		}
 		if(sum == 0 && i == 0){ 
 			G->adj_list[s_label]->paths = 1 ;
-			printf("%d set to %d, ", s_label, G->adj_list[s_label]->paths ) ;
 			return 1;
 		}else{
 			G->adj_list[s_label]->paths = sum ;
-			printf("%d set to %d, ", s_label, G->adj_list[s_label]->paths ) ;
 			return sum ;
 		}
 	}
