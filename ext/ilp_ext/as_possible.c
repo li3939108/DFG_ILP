@@ -108,9 +108,23 @@ void mobility(Graph *G, int *m, VALUE delay, int Q){
 	free(time_s) ;
 	free(time_l) ;
 }
+int dfs_paths(Graph *G, int s_label){//dfs only for DAG 
+	int number_of_paths = G->adj_list[s_label]->paths ;
+	if( number_of_paths != 0){	
+		return number_of_paths ;
+	}else{
+		int sum = 0 ;
+		for(i = 0; i < G->adj_list[s_label]->degree; i++){
+	 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
+			sum += dfs_paths(G, adj[0]) ;
+		}
+		if(sum == 0){ return 1;
+		}else{return sum ;}
+	}
+}
 void number_of_distinct_paths(Graph *G){
 	int i = 1 ;
 	for ( i = 1; i <= G->V; i++){
-		
+		dfs_paths(G, i) ;
 	}
 }
