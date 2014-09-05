@@ -25,7 +25,8 @@ VALUE reverse_graph_obj ;
 
 static VALUE npaths(VALUE self) {
 	int i ;
-	Graph *G, *Gt ;
+	Graph *G, *Gt ; 
+	/* G is the graph and Gt is the reverse graph */
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 
@@ -33,14 +34,16 @@ static VALUE npaths(VALUE self) {
 	Data_Get_Struct(graph_obj, Graph, G) ;
 	Data_Get_Struct(reverse_graph_obj, Graph, Gt) ;
 	
-	number_of_distinct_paths(Gt) ;
-	for (i = 1; i < G->V; i++){
-	}
+	number_of_distinct_paths(G) ;
 
+	for (i = 1; i <= G->V; i++){
+		printf("[%d]: %d ", i, G->adj_list[i]->paths ) ;
+	}
 }
 
 static VALUE ASAP(VALUE self){
 	Graph *G, *Gt ;
+	/* G is the graph and Gt is the reverse graph */
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
 	VALUE delay = rb_ivar_get(self, rb_intern("@d") );
@@ -779,7 +782,7 @@ void Init_ilp_ext(){
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ALAP", ALAP,0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"M", M, 0);
-	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"npaths", npaths, 0) ;
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"npaths", npaths, 0) ;
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
 	rb_define_const(rb_const_get(DFG_ILP_mod, rb_intern("ILP")), "LE", INT2FIX(1)) ;

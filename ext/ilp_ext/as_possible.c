@@ -113,13 +113,20 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 	if( number_of_paths != 0){	
 		return number_of_paths ;
 	}else{
-		int sum = 0 ;
+		int sum = 0, i  ;
 		for(i = 0; i < G->adj_list[s_label]->degree; i++){
 	 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
 			sum += dfs_paths(G, adj[0]) ;
 		}
-		if(sum == 0){ return 1;
-		}else{return sum ;}
+		if(sum == 0 && i == 0){ 
+			G->adj_list[s_label]->paths = 1 ;
+			printf("%d set to %d, ", s_label, G->adj_list[s_label]->paths ) ;
+			return 1;
+		}else{
+			G->adj_list[s_label]->paths = sum ;
+			printf("%d set to %d, ", s_label, G->adj_list[s_label]->paths ) ;
+			return sum ;
+		}
 	}
 }
 void number_of_distinct_paths(Graph *G){
