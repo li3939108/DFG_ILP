@@ -8,8 +8,15 @@
 #define MAX_EDGE_WEIGHT 5000000
 #include <stdio.h>
 
-
+typedef struct _Internal{
+	int PO_label ;
+	int count ;
+	struct _Internal *next ;
+} Internal ;
 typedef struct _Vertex{
+	int PO ;
+	int PO_count ;
+	Internal *in_count ;		
 	int degree ;
 	int paths ; //Distinct Paths to Primary Outputs
 	int label ;

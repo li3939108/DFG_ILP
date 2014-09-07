@@ -8,13 +8,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "graph.h"
-
+Internal *new_internal(int label, int count ){
+	Internal *in = (Internal *)malloc(sizeof (Internal)) ;
+	in->label = label ;
+	in->count = count ;
+	in->next = NULL ;
+	return  in ;
+}
 Vertex *new_vertex(int label){
 	Vertex *v = (Vertex *)malloc( sizeof (Vertex)) ;
 	v->degree = 0;
 	v->label = label;
 	v->list = NULL;
-	v->paths = 0 ; // initialize paths to 0, meaning no dfs has been performed to determine the value
+	v->paths = 0 ; 
+	// initialize paths to 0, meaning no dfs has been performed to determine the value
+	v->PO_count = 0 ;
+	v->in_count = NULL ;
+	v->PO =  0 ;
 	return  v ;
 }
 Graph *new_graph(int V, Vertex *vertex_list[]){

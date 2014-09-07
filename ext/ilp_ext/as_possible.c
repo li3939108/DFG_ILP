@@ -116,12 +116,35 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 		int sum = 0, i  ;
 		for(i = 0; i < G->adj_list[s_label]->degree; i++){
 	 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
-			sum += dfs_paths(G, adj[0]) ;
+			int allPO = dfs_paths(G, adj[0]) ;
+			Internal *current = G->adj_list[adj[0] ]->in_count ;
+			while (current != NULL){
+				Internal *in = G->adj_list[s_label]->in_count ;
+				Internal *previous = NULL ;
+				while (in != NULL ){
+					if( in->PO_label == current->PO_label){
+						in->count += current->count ;
+						break ;
+					}
+					previous = in ;
+					in = in->next ;
+				}
+				if(in == NULL){
+					previous->next = 
+					new_internal(current->PO_label, current->count ) ;
+				}
+				current = current->next ;
+			}
+			sum += allPO ;
+			
 		}
 		if(sum == 0 && i == 0){ 
+		 	G->adj_list[s_label]->PO = 1 ;
+			G->adj_list[s_label]->in_count = new_internal(s_label, 1 ) ;
 			G->adj_list[s_label]->paths = 1 ;
 			return 1;
 		}else{
+			
 			G->adj_list[s_label]->paths = sum ;
 			return sum ;
 		}
