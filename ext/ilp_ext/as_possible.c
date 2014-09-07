@@ -130,8 +130,13 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 					in = in->next ;
 				}
 				if(in == NULL){
-					previous->next = 
-					new_internal(current->PO_label, current->count ) ;
+					if( previous == NULL){
+						G->adj_list[s_label]->in_count = 
+						new_internal(current->PO_label, current->count) ;
+					}else{
+						previous->next = 
+						new_internal(current->PO_label, current->count ) ;
+					}
 				}
 				current = current->next ;
 			}
