@@ -10,7 +10,7 @@
 #include "graph.h"
 Internal *new_internal(int label, int count ){
 	Internal *in = (Internal *)malloc(sizeof (Internal)) ;
-	in->label = label ;
+	in->PO_label = label ;
 	in->count = count ;
 	in->next = NULL ;
 	return  in ;

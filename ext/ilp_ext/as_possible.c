@@ -113,14 +113,14 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 	if( number_of_paths != 0){	
 		return number_of_paths ;
 	}else{
-		int sum = 0, i  ;
+		int sum = 0, i = 0  ;
 		for(i = 0; i < G->adj_list[s_label]->degree; i++){
 	 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
 			int allPO = dfs_paths(G, adj[0]) ;
 			Internal *current = G->adj_list[adj[0] ]->in_count ;
 			while (current != NULL){
-				Internal *in = G->adj_list[s_label]->in_count ;
 				Internal *previous = NULL ;
+				Internal *in = G->adj_list[s_label]->in_count ;
 				while (in != NULL ){
 					if( in->PO_label == current->PO_label){
 						in->count += current->count ;
@@ -149,7 +149,6 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 			G->adj_list[s_label]->paths = 1 ;
 			return 1;
 		}else{
-			
 			G->adj_list[s_label]->paths = sum ;
 			return sum ;
 		}
@@ -160,4 +159,15 @@ void number_of_distinct_paths(Graph *G){
 	for ( i = 1; i <= G->V; i++){
 		dfs_paths(G, i) ;
 	}
+/*
+	for ( i = 1; i <= G->V; i++){
+		Internal *current = G->adj_list[i]->in_count ;
+		printf("\n%d: \n", i) ;
+		while (current != NULL){
+			printf("[%d]: %d    ", current->PO_label, current->count) ;
+			current = current->next ;
+		}
+	}
+*///for test
 }
+

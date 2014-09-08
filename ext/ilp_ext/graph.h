@@ -44,5 +44,6 @@ extern Graph *gen(int D, int V) ;
 extern void pg(Graph *, FILE *fp) ;
 extern void pv(Vertex *, FILE *fp) ;
 extern void edges(Graph *, FILE* output) ;
+extern Internal *new_internal(int s_label, int count) ;
 
 #endif
