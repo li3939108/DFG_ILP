@@ -45,9 +45,15 @@ Graph *new_graph(int V, Vertex *vertex_list[]){
 }
 
 void free_vertex(Vertex *v){
+	Internal *in = v->in_count ;
 	if(v == NULL){return ;}
 	if(v->list != NULL){
 		free(v->list) ;
+	}
+	while(in != NULL){
+		Internal *next = in->next ;
+		free(in ) ;
+		in = next ;
 	}
 	free(v) ;
 }
@@ -101,7 +107,7 @@ Graph *reverse(Graph *G){
 }
 void pv(Vertex *v, FILE *fp){
 	int i ;
-	fprintf(fp, "(%d %s) -> ", v->label, v->op) ;
+	fprintf(fp, "(%d %s paths:%d) -> ", v->label, v->op, v->paths) ;
 	for(i = 0; i < v->degree; i++){
 		fprintf(fp, "%d  ", v->list[i][0]);
 	}
