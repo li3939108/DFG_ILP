@@ -159,22 +159,21 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 int compare(Vertex **a, Vertex **b){
 	return ((*a)->paths - (*b)->paths) ;
 }
-void sort (Graph *G){
-	//Graph *G_sorted = new_graph (G->V, G->adj_list + 1) ;
+void sort(Graph *G){
 	qsort(G->adj_list + 1, G->V, sizeof(Vertex *), (int(*)(const void*,const void*))compare ) ;
-	//return G_sorted ;
 }
 
 void number_of_distinct_paths(Graph *G){
 	int i = 1 ;
+	Graph *G_sorted = new_graph (G->V, G->adj_list + 1) ;
 	for ( i = 1; i <= G->V; i++){
 		dfs_paths(G, i) ;
 	}
 	
-	pg(G, stdout);
-	sort (G) ;
-	pg(G, stdout) ;
 /*
+	sort (G_sorted) ;
+	pg(G_sorted, stdout) ;
+	pg(G, stdout) ;
 	for ( i = 1; i <= G->V; i++){
 		Internal *current = G->adj_list[i]->in_count ;
 		printf("\n%d: \n", i) ;
