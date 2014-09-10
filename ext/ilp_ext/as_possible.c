@@ -195,6 +195,8 @@ void binder(Graph *G, int gap  ){
 		while(current != NULL){
 			if(G_sorted->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
 				break ;
+			}else{
+				G_sorted->adj_list[ current->PO_label]->PO_count += current->count * 1 ;//Add count 1
 			}
 			current = current->next ;
 		}
@@ -204,6 +206,11 @@ void binder(Graph *G, int gap  ){
 			G_sorted->adj_list[i]->implementation = 0 ;
 		}
 	}
+	//Debug
+	for(i = 1; i <= G->V; i++){
+		printf("imple_%d: %d\n", i, G->adj_list[i]->implementation ) ;
+	}
+	//*/////////////////////
 	if(G_sorted->adj_list != NULL){
 		free(G_sorted->adj_list) ;
 	}
@@ -217,8 +224,51 @@ void binder(Graph *G, int gap  ){
 }
 
 
+int dfs_post_binding(Graph *G, int s_label, int time[], VALUE delay){//no cycles
+	int i ;
+	char *op ;
+	VALUE d_arr, d ;
+	if(time[s_label] != -1){
+		return time[s_label] ;
+	}
+	for(i = 0; i < G->adj_list[s_label]->degree; i++){
+ 		int *adj = (int *)G->adj_list[ s_label ]->list[ i ] ;
+ 		int time_step = dfs_post_binding(G, adj[0], time, delay) ;
+ 		time[s_label] = (time[s_label] < time_step ? time_step : time[s_label] );
+	}
+	op = G->adj_list[s_label]->op ;
+	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
+	//d = rb_funcall(d_arr, rb_intern("min"), 0) ;
+	if(G->adj_list[s_label]->implementation == 0){
+		d = rb_ary_entry(d_arr, 1) ;
+	}else if(G->adj_list[s_label]->implementation == 1){
+		d = rb_ary_entry(d_arr, 0) ;
+	}else{
+		d = INT2FIX(0) ;
+	}
+	time[s_label] = time[s_label] + FIX2INT( d );
+	return time[s_label] ;
+}
 
 
+int alap_post_binding(Graph *G, int *time, VALUE delay, int Q){
+	int i, min = Q ;
+	for(i = 1; i <= G->V; i++){
+		dfs_post_binding(G, i, time, delay) ;
+	}
+	for(i = 1; i <= G->V; i++){
+		time[i] = Q - 1 - time[i] ;
+		min = (min > time[i] ? time[i] : min) ;
+	}
+	return min ;
+}
 
-void list_scheduling(Graph *G) {
+void list_scheduling(Graph *G, int *time, VALUE delay, int Q) {
+	int *time_alap ;
+	time_alap = calloc(G->V + 1, sizeof *time_alap);
+	memset(time_alap, 0xFF, (G->V + 1) * sizeof *time_alap) ; //set all entry -1
+	//alap_post_binding(G, time_alap, delay, Q ) ;
+	number_of_distinct_paths(G) ;
+	binder(G, 3) ;
+	alap_post_binding(G, time, delay, Q ) ;
 }
