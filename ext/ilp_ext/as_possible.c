@@ -159,13 +159,13 @@ int dfs_paths(Graph *G, int s_label){//dfs only for DAG
 int compare(Vertex **a, Vertex **b){
 	return ((*a)->paths - (*b)->paths) ;
 }
-void sort(Graph *G){
+Graph *sort(Graph *G){
 	qsort(G->adj_list + 1, G->V, sizeof(Vertex *), (int(*)(const void*,const void*))compare ) ;
+	return G ;
 }
 
 void number_of_distinct_paths(Graph *G){
 	int i = 1 ;
-	Graph *G_sorted = new_graph (G->V, G->adj_list + 1) ;
 	for ( i = 1; i <= G->V; i++){
 		dfs_paths(G, i) ;
 	}
@@ -187,4 +187,38 @@ void number_of_distinct_paths(Graph *G){
 
 
 
+void binder(Graph *G, int gap  ){
+	Graph *G_sorted = sort( new_graph (G->V, G->adj_list + 1) );
+	int i;
+	for (i = 1; i <= G_sorted->V  ; i++){
+		Internal *current = G->adj_list[ i ]->in_count ;
+		while(current != NULL){
+			if(G_sorted->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
+				break ;
+			}
+			current = current->next ;
+		}
+		if(current == NULL){
+			G_sorted->adj_list[i]->implementation = 1 ;
+		}else{
+			G_sorted->adj_list[i]->implementation = 0 ;
+		}
+	}
+	if(G_sorted->adj_list != NULL){
+		free(G_sorted->adj_list) ;
+	}
+	if(G_sorted->edge_list != NULL){
+		free(G_sorted->edge_list) ;
+	}
+	if(G_sorted->edge_pair != NULL){
+		free(G_sorted->edge_pair) ;
+	}
+	free(G_sorted);
+}
 
+
+
+
+
+void list_scheduling(Graph *G) {
+}

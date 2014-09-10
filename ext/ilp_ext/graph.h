@@ -14,6 +14,7 @@ typedef struct _Internal{
 	struct _Internal *next ;
 } Internal ;
 typedef struct _Vertex{
+	int implementation ;
 	int PO ;
 	int PO_count ;
 	Internal *in_count ;		

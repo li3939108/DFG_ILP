@@ -25,6 +25,7 @@ Vertex *new_vertex(int label){
 	v->PO_count = 0 ;
 	v->in_count = NULL ;
 	v->PO =  0 ;
+	v->implementation = -1 ;
 	return  v ;
 }
 Graph *new_graph(int V, Vertex *vertex_list[]){
