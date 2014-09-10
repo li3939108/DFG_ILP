@@ -191,17 +191,20 @@ void binder(Graph *G, int gap  ){
 	Graph *G_sorted = sort( new_graph (G->V, G->adj_list + 1) );
 	int i;
 	for (i = 1; i <= G_sorted->V  ; i++){
-		Internal *current = G->adj_list[ i ]->in_count ;
+		Internal *current = G_sorted->adj_list[ i ]->in_count ;
 		while(current != NULL){
-			if(G_sorted->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
+			if(G->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
 				break ;
-			}else{
-				G_sorted->adj_list[ current->PO_label]->PO_count += current->count * 1 ;//Add count 1
 			}
 			current = current->next ;
 		}
 		if(current == NULL){
+			Internal *current = G_sorted->adj_list[ i ]->in_count ;
 			G_sorted->adj_list[i]->implementation = 1 ;
+			while(current != NULL){
+				G->adj_list[ current->PO_label ]->PO_count += current->count * 1 ; 
+				current = current->next ;
+			}
 		}else{
 			G_sorted->adj_list[i]->implementation = 0 ;
 		}
@@ -263,12 +266,12 @@ int alap_post_binding(Graph *G, int *time, VALUE delay, int Q){
 	return min ;
 }
 
-void list_scheduling(Graph *G, int *time, VALUE delay, int Q) {
+void list_scheduling(Graph *G, int *time, VALUE delay, int Q, int gap) {
 	int *time_alap ;
 	time_alap = calloc(G->V + 1, sizeof *time_alap);
 	memset(time_alap, 0xFF, (G->V + 1) * sizeof *time_alap) ; //set all entry -1
 	//alap_post_binding(G, time_alap, delay, Q ) ;
 	number_of_distinct_paths(G) ;
-	binder(G, 3) ;
+	binder(G, gap) ;
 	alap_post_binding(G, time, delay, Q ) ;
 }

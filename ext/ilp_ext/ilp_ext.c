@@ -116,7 +116,7 @@ static VALUE ALAP(VALUE self ){
 	free(time) ;
 	return ret ;
 }
-static VALUE LIST(VALUE self){
+static VALUE LIST(VALUE self, VALUE gap){
 	Graph *G, *Gt ;
 	VALUE vlist = rb_ivar_get(self, rb_intern("@vertex") );
 	VALUE elist = rb_ivar_get(self, rb_intern("@edge") );
@@ -131,7 +131,7 @@ static VALUE LIST(VALUE self){
 
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	list_scheduling(G, time, delay, FIX2INT(Q)) ;	
+	list_scheduling(G, time, delay, FIX2INT(Q), FIX2INT(gap) ) ;	
 	
 	for(i = 1; i <= G->V; i++){
 		rb_ary_push(ret, INT2FIX(time[i] ) ) ;
@@ -811,7 +811,7 @@ void Init_ilp_ext(){
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ASAP", ASAP, 0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"ALAP", ALAP,0);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"M", M, 0);
-	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"LIST", LIST, 0);
+	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("ILP")),"LIST", LIST, 1);
 	rb_define_method(rb_const_get(DFG_ILP_mod, rb_intern("GRAPH")),"npaths", npaths, 0) ;
 	rb_global_variable(&graph_obj) ;
 	rb_global_variable(&reverse_graph_obj) ;
