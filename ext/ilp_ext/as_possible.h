@@ -14,6 +14,6 @@ extern int asap(Graph *G, int *time, VALUE delay) ;
 extern int alap(Graph *G, int *time, VALUE delay, int Q) ;
 extern void mobility(Graph *G, int *m, VALUE delay, int Q) ;
 extern void number_of_distinct_paths(Graph *G) ;
-extern void list_scheduling(Graph *G, int *time, VALUE delay, int Q, int gap) ;
+extern void list_scheduling(Graph *G, Graph *Gt, int *time, VALUE delay, int Q, int gap) ;
 
 #endif

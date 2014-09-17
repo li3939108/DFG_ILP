@@ -131,7 +131,7 @@ static VALUE LIST(VALUE self, VALUE gap){
 
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	list_scheduling(G, time, delay, FIX2INT(Q), FIX2INT(gap) ) ;	
+	list_scheduling(G, Gt, time, delay, FIX2INT(Q), FIX2INT(gap) ) ;	
 	
 	for(i = 1; i <= G->V; i++){
 		rb_ary_push(ret, INT2FIX(time[i] ) ) ;

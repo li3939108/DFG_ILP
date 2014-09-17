@@ -191,29 +191,31 @@ void binder(Graph *G, int gap  ){
 	Graph *G_sorted = sort( new_graph (G->V, G->adj_list + 1) );
 	int i;
 	for (i = 1; i <= G_sorted->V  ; i++){
-		Internal *current = G_sorted->adj_list[ i ]->in_count ;
-		while(current != NULL){
-			if(G->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
-				break ;
-			}
-			current = current->next ;
-		}
-		if(current == NULL){
+		if(	strcmp (G_sorted->adj_list[i]->op, "+") == 0 || 
+			strcmp(G_sorted->adj_list[i]->op, "x") == 0 ||
+			strcmp(G_sorted->adj_list[i]->op, "ALU") == 0 ){
+	
 			Internal *current = G_sorted->adj_list[ i ]->in_count ;
-			G_sorted->adj_list[i]->implementation = 1 ;
 			while(current != NULL){
-				G->adj_list[ current->PO_label ]->PO_count += current->count * 1 ; 
+				if(G->adj_list[ current->PO_label ]->PO_count + current->count > gap ){
+					break ;
+				}
 				current = current->next ;
 			}
-		}else{
-			G_sorted->adj_list[i]->implementation = 0 ;
+			if(current == NULL){
+				Internal *current = G_sorted->adj_list[ i ]->in_count ;
+				G_sorted->adj_list[i]->implementation = 1 ;
+				while(current != NULL){
+					G->adj_list[ current->PO_label ]->PO_count += current->count * 1 ; 
+					current = current->next ;
+				}
+			}else{
+				G_sorted->adj_list[i]->implementation = 0 ;
+			}
+		}else{//Operations other than Addition and Multiply have no approximate implementations
+				G_sorted->adj_list[i]->implementation = 0 ;
 		}
 	}
-	//Debug
-	for(i = 1; i <= G->V; i++){
-		printf("imple_%d: %d\n", i, G->adj_list[i]->implementation ) ;
-	}
-	//*/////////////////////
 	if(G_sorted->adj_list != NULL){
 		free(G_sorted->adj_list) ;
 	}
@@ -224,6 +226,11 @@ void binder(Graph *G, int gap  ){
 		free(G_sorted->edge_pair) ;
 	}
 	free(G_sorted);
+	//Debug
+	for(i = 1; i <= G->V; i++){
+		printf("imple_%d: %d\n", i, G->adj_list[i]->implementation ) ;
+	}
+	//*/////////////////////
 }
 
 
@@ -265,13 +272,71 @@ int alap_post_binding(Graph *G, int *time, VALUE delay, int Q){
 	}
 	return min ;
 }
-
-void list_scheduling(Graph *G, int *time, VALUE delay, int Q, int gap) {
+int cmp(int *a, int *b, int *time){
+	return time[*a] - time[*b] ;
+}
+void list_scheduling(Graph *G, Graph *Gt, int *time, VALUE delay, int Q, int gap) {
 	int *time_alap ;
+	int *time_alap_index ;
+	int *finished ;
+	int nadd = 1, nmul = 1, i, j;//initial resource :1 adder and 1 multiplier
+	int *add_ready_time, *mul_ready_time ;
+
+	add_ready_time = calloc(nadd, sizeof *add_ready_time) ;
+	memset(add_ready_time, 0, nadd * sizeof *add_ready_time) ;
+	
+	mul_ready_time = calloc(nmul, sizeof *mul_ready_time) ;
+	memset(mul_ready_time, 0, nmul * sizeof *mul_ready_time) ;
+
 	time_alap = calloc(G->V + 1, sizeof *time_alap);
 	memset(time_alap, 0xFF, (G->V + 1) * sizeof *time_alap) ; //set all entry -1
-	//alap_post_binding(G, time_alap, delay, Q ) ;
+	time_alap_index = calloc(G->V , sizeof *time_alap);
+	finished = calloc(G->V + 1, sizeof *finished) ;
+	memset(finished, 0, (G->V + 1) * sizeof *finished) ;
+	for(i = 0; i < G->V ; i++){
+		time_alap_index[i]= i+1 ;
+	}
+
 	number_of_distinct_paths(G) ;
 	binder(G, gap) ;
-	alap_post_binding(G, time, delay, Q ) ;
+	alap_post_binding(G, time_alap, delay, Q ) ;
+
+	qsort_r( time_alap_index, G->V, sizeof(int ),  (int(*)(const void*,const void*, void *))cmp, time_alap) ;
+	//alap_post_binding(G, time, delay, Q ) ;
+/*
+	for(i = 0; i < G->V; i++){
+		printf("%d ", time_alap[ i + 1] ) ;
+	}
+	printf("\n") ;
+	for(i = 0; i < G->V; i++){
+		printf("%d ", time_alap[ time_alap_index[i] ] ) ;
+	}
+*/
+	{//TODO may need a bigger loop
+	for (i = 0; i < G->V; i++){
+		int ready_to_schedule = 1;
+		for(j = 0; j < Gt->adj_list[ time_alap_index[i] ]->degree; j++){
+	 		int *adj = (int *)Gt->adj_list[ time_alap_index[i] ]->list[ j ] ;
+			if(!finished[adj[ 0 ] ] ){
+				ready_to_schedule = 0 ;
+				break ;
+			}
+		}
+		if(ready_to_schedule == 1){
+			if(G->adj_list[i]->implementation == 0){
+				if(strcmp(G->adj_list[i]->op, "+")  ||
+				   strcmp(G->adj_list[i]->op, "ALU") ){
+					for(j = 0; j<nadd; j++){
+						add_ready_time[j]
+					}
+				}else if(strcmp(G->adj_list[i]->op, "x")){
+				}else{
+				}
+			}else if(G->adj_list[i]->implementation == 1){
+
+			}
+		}
+	}
+	}
+	free(time_alap);free(time_alap_index);free(finished) ;
 }
