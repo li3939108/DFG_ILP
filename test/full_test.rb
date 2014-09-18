@@ -15,13 +15,13 @@ midct = DFG_ILP::Parser.new("#{root_dir}/test/dot/midct.dot").parse.to_DFG
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
-testcases = [iir4]
+testcases = [arf]
 fullset = [iir4, arf, midct, mv, mm, jfdct, pyr, jbmp, sds]
 testset1 = [iir4, arf, mv, mm, jfdct, pyr, jbmp, sds, midct]
 
 testcases.each do |g|
 	print "\n", g.p[:name], " start", "\n---------------------------\n"
-	ilp = DFG_ILP::ILP.new(g, {:q => ARGV[0].to_i, :error_bound => Math::log(1-0.01)}) 
+	ilp = DFG_ILP::ILP.new(g, {:q => ARGV[0].to_i, :error_bound => Math::log(1-0.005)}) 
 	ret = ilp.ASAP
 	print   "ASAP scheduling done, longest path length: ", ret[:latency], "\n"
 	r = ilp.compute(g, :cplex)
