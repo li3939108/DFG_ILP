@@ -1,8 +1,11 @@
 module DFG_ILP
-	class GRAPH
-		def read_dot(input)
-			
+	class Vertex
+		def initialize(n = 0, adj_list = [] )
+			number = n
+			adjacency_list = adj_list 
 		end
+	end
+	class GRAPH
 		def write_dot(out)
 			out.puts "digraph g {", "node [fontcolor=white,style=filled,color=blue2];"
 			[*0..@vertex.length - 1].each{|v| out.puts "node_#{v+1} [label = \"#{@vertex[v]}#{v + 1}\"];"}

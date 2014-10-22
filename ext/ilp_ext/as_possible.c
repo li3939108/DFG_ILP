@@ -275,6 +275,9 @@ int alap_post_binding(Graph *G, int *time, VALUE delay, int Q){
 int cmp(int *a, int *b, int *time){
 	return time[*a] - time[*b] ;
 }
+
+
+
 void list_scheduling(Graph *G, Graph *Gt, int *time, VALUE delay, int Q, int gap) {
 	int *time_alap ;
 	int *time_alap_index ;
