@@ -47,19 +47,19 @@ module DFG_ILP
 					}
 				}
 			}.flatten(1) + 
-			[*0..section1-1].map{|x|
-				edge1.map{|edge|
-					edge.map{|v|
-						v + vertex1.count * x + vertex2.count * section2
-					}
-				}
+			[*0..section1-1].map{|x| edge1.map{|edge|
+				edge.map{|v|
+					v + vertex1.count * x + vertex2.count * section2} }
 			}.flatten(1) +
 			[*1..section2-1].map{|x|
 				[x * vertex2.count, x * vertex2.count - 6]
 			} +
 			(section1 == 0 ? [] : [[section2 * vertex2.count, section2 * vertex2.count - 6]])
-			@PI = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[0]}.include?(i) and @vertex[i] != 'D'}
-			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| e[1] == i}.select{|e| @vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
+			@PI = [*0..@vertex.length-1].map{|i| 
+				!@edge.map{|e| e[0]}.include?(i) and @vertex[i] != 'D'}
+			@PO = [*0..@vertex.length-1].map{|i| @edge.select{|e| 
+				e[1] == i}.select{|e| 
+					@vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
 			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
 			@name = "IIR4"
 		end
