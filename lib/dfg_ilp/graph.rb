@@ -1,5 +1,5 @@
 module DFG_ILP
-	class Vertex
+	class Vertex_precedence
 		def initialize(n = 0, t = '@', adj_list = [] )
 			@number = n
 			@adjacency_list = adj_list 
@@ -19,6 +19,8 @@ module DFG_ILP
 				@adjacency_list.map{|v| v.n } ]
 		end
 	end
+	
+	
 	class GRAPH
 		def write_dot(out)
 			out.puts "digraph g {", "node [fontcolor=white,style=filled,color=blue2];"
@@ -39,12 +41,12 @@ module DFG_ILP
 				@edge.select{|e| e[1] == i}.select{|e| 
 					@vertex[e[0]] != 'D'}.empty? and v != 'D'}
 				@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
-				@vertex_adjacency_list = @vertex.map.with_index{|v,i|
-					DFG_ILP::Vertex.new(i+1, v)
+				@vertex_adj_precedence = @vertex.map.with_index{|v,i|
+					DFG_ILP::Vertex_precedence.new(i+1, v)
 				}
 				@edge.each{|e|
-					@vertex_adjacency_list[ e[1] ].adj_push(
-						@vertex_adjacency_list[ e[0] ] )
+					@vertex_adj_precedence[ e[1] ].adj_push(
+						@vertex_adj_precedence[ e[0] ] )
 				}
 				
 			else
@@ -94,7 +96,7 @@ module DFG_ILP
 				:PO => @PO, 
 				:vNoD => @vertex_without_D, 
 				:name => @name,
-				:adj => @vertex_adjacency_list,
+				:adj => @vertex_adj_precedence,
 			}
 		end
 	end
