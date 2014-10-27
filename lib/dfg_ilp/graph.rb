@@ -19,6 +19,84 @@ module DFG_ILP
 				@adjacency_list.map{|v| v.n } ]
 		end
 	end
+	class AST_Vertex
+		def initialize(n = 0, t = '@', children = [])
+			@number = n
+			@type = t
+			@children = children
+		end
+		def children_push(v)
+			@children.push(v)
+		end
+		def inspect
+			[@number, @type, 
+				@children.map{|v| v.n} ]
+		end
+	end
+	class AST
+		def initialize(p = nil)
+			@vertex_list = []
+		end
+		def arf
+			@vertex_list.push(AST_Vertex.new(       ) )
+			@vertex_list.push(AST_Vertex.new(1  ,'x') )
+			@vertex_list.push(AST_Vertex.new(2  ,'x') )
+			@vertex_list.push(AST_Vertex.new(3  ,'x') )
+			@vertex_list.push(AST_Vertex.new(4  ,'x') )
+			@vertex_list.push(AST_Vertex.new(5  ,'x') )
+			@vertex_list.push(AST_Vertex.new(6  ,'x') )
+			@vertex_list.push(AST_Vertex.new(7  ,'x') )
+			@vertex_list.push(AST_Vertex.new(8  ,'x') )
+			@vertex_list.push(AST_Vertex.new(9  ,'+') )
+			@vertex_list.push(AST_Vertex.new(10 ,'+') )
+			@vertex_list.push(AST_Vertex.new(11 ,'+') )
+			@vertex_list.push(AST_Vertex.new(12 ,'+') )
+			@vertex_list.push(AST_Vertex.new(13 ,'+') )
+			@vertex_list.push(AST_Vertex.new(14 ,'+') )
+			@vertex_list.push(AST_Vertex.new(15 ,'x') )
+			@vertex_list.push(AST_Vertex.new(16 ,'x') )
+			@vertex_list.push(AST_Vertex.new(17 ,'x') )
+			@vertex_list.push(AST_Vertex.new(18 ,'x') )
+			@vertex_list.push(AST_Vertex.new(19 ,'+') )
+			@vertex_list.push(AST_Vertex.new(20 ,'+') )
+			@vertex_list.push(AST_Vertex.new(21 ,'x') )
+			@vertex_list.push(AST_Vertex.new(22 ,'x') )
+			@vertex_list.push(AST_Vertex.new(23 ,'x') )
+			@vertex_list.push(AST_Vertex.new(24 ,'x') )
+			@vertex_list.push(AST_Vertex.new(25 ,'+') )
+			@vertex_list.push(AST_Vertex.new(26 ,'+') )
+			@vertex_list.push(AST_Vertex.new(27 ,'+') )
+			@vertex_list.push(AST_Vertex.new(28 ,'+') )
+			@vertex_list[27].children = [@vertex_list[9], @vertex_list[25] ]
+			@vertex_list[9].children =  [@vertex_list[1], @vertex_list[2]  ]
+			@vertex_list[25].children = [@vertex_list[21], @vertex_list[22]]
+			@vertex_list[1].children =  [                                  ]
+			@vertex_list[2].children =  [                                  ]
+			@vertex_list[21].children = [@vertex_list[19],                 ]
+			@vertex_list[22].children = [@vertex_list[20],                 ]
+			@vertex_list[28].children = [@vertex_list[12], @vertex_list[26]]
+			@vertex_list[12].children = [@vertex_list[7],  @vertex_list[8] ]
+			@vertex_list[26].children = [@vertex_list[23], @vertex_list[24]]
+			@vertex_list[7].children =  [                                  ]
+			@vertex_list[8].children =  [                                  ]
+			@vertex_list[23].children = [@vertex_list[19],                 ]
+			@vertex_list[24].children = [@vertex_list[20],                 ]
+			@vertex_list[19].children = [@vertex_list[15],@vertex_list[16] ]
+			@vertex_list[20].children = [@vertex_list[17],@vertex_list[18] ]
+			@vertex_list[15].children = [@vertex_list[13],                 ]
+			@vertex_list[16].children = [@vertex_list[14],                 ]
+			@vertex_list[17].children = [@vertex_list[13],                 ]
+			@vertex_list[18].children = [@vertex_list[14],                 ]
+			@vertex_list[13].children = [@vertex_list[10],                 ]
+			@vertex_list[14].children = [@vertex_list[11],                 ]
+			@vertex_list[10].children = [@vertex_list[3], @vertex_list[4]  ]
+			@vertex_list[11].children = [@vertex_list[5], @vertex_list[6]  ]
+			@vertex_list[3].children =  [                                  ]
+			@vertex_list[4].children =  [                                  ]
+			@vertex_list[5].children =  [                                  ]
+			@vertex_list[6].children =  [                                  ]
+		end
+	end
 	class GRAPH
 		def write_dot(out)
 			out.puts "digraph g {", "node [fontcolor=white,style=filled,color=blue2];"
