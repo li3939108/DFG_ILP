@@ -38,65 +38,7 @@ module DFG_ILP
 		def initialize(p = nil)
 			@vertex_list = []
 		end
-		def arf
-			@vertex_list.push(AST_Vertex.new(       ) )
-			@vertex_list.push(AST_Vertex.new(1  ,'x') )
-			@vertex_list.push(AST_Vertex.new(2  ,'x') )
-			@vertex_list.push(AST_Vertex.new(3  ,'x') )
-			@vertex_list.push(AST_Vertex.new(4  ,'x') )
-			@vertex_list.push(AST_Vertex.new(5  ,'x') )
-			@vertex_list.push(AST_Vertex.new(6  ,'x') )
-			@vertex_list.push(AST_Vertex.new(7  ,'x') )
-			@vertex_list.push(AST_Vertex.new(8  ,'x') )
-			@vertex_list.push(AST_Vertex.new(9  ,'+') )
-			@vertex_list.push(AST_Vertex.new(10 ,'+') )
-			@vertex_list.push(AST_Vertex.new(11 ,'+') )
-			@vertex_list.push(AST_Vertex.new(12 ,'+') )
-			@vertex_list.push(AST_Vertex.new(13 ,'+') )
-			@vertex_list.push(AST_Vertex.new(14 ,'+') )
-			@vertex_list.push(AST_Vertex.new(15 ,'x') )
-			@vertex_list.push(AST_Vertex.new(16 ,'x') )
-			@vertex_list.push(AST_Vertex.new(17 ,'x') )
-			@vertex_list.push(AST_Vertex.new(18 ,'x') )
-			@vertex_list.push(AST_Vertex.new(19 ,'+') )
-			@vertex_list.push(AST_Vertex.new(20 ,'+') )
-			@vertex_list.push(AST_Vertex.new(21 ,'x') )
-			@vertex_list.push(AST_Vertex.new(22 ,'x') )
-			@vertex_list.push(AST_Vertex.new(23 ,'x') )
-			@vertex_list.push(AST_Vertex.new(24 ,'x') )
-			@vertex_list.push(AST_Vertex.new(25 ,'+') )
-			@vertex_list.push(AST_Vertex.new(26 ,'+') )
-			@vertex_list.push(AST_Vertex.new(27 ,'+') )
-			@vertex_list.push(AST_Vertex.new(28 ,'+') )
-			@vertex_list[27].children = [@vertex_list[9], @vertex_list[25] ]
-			@vertex_list[9].children =  [@vertex_list[1], @vertex_list[2]  ]
-			@vertex_list[25].children = [@vertex_list[21], @vertex_list[22]]
-			@vertex_list[1].children =  [                                  ]
-			@vertex_list[2].children =  [                                  ]
-			@vertex_list[21].children = [@vertex_list[19],                 ]
-			@vertex_list[22].children = [@vertex_list[20],                 ]
-			@vertex_list[28].children = [@vertex_list[12], @vertex_list[26]]
-			@vertex_list[12].children = [@vertex_list[7],  @vertex_list[8] ]
-			@vertex_list[26].children = [@vertex_list[23], @vertex_list[24]]
-			@vertex_list[7].children =  [                                  ]
-			@vertex_list[8].children =  [                                  ]
-			@vertex_list[23].children = [@vertex_list[19],                 ]
-			@vertex_list[24].children = [@vertex_list[20],                 ]
-			@vertex_list[19].children = [@vertex_list[15],@vertex_list[16] ]
-			@vertex_list[20].children = [@vertex_list[17],@vertex_list[18] ]
-			@vertex_list[15].children = [@vertex_list[13],                 ]
-			@vertex_list[16].children = [@vertex_list[14],                 ]
-			@vertex_list[17].children = [@vertex_list[13],                 ]
-			@vertex_list[18].children = [@vertex_list[14],                 ]
-			@vertex_list[13].children = [@vertex_list[10],                 ]
-			@vertex_list[14].children = [@vertex_list[11],                 ]
-			@vertex_list[10].children = [@vertex_list[3], @vertex_list[4]  ]
-			@vertex_list[11].children = [@vertex_list[5], @vertex_list[6]  ]
-			@vertex_list[3].children =  [                                  ]
-			@vertex_list[4].children =  [                                  ]
-			@vertex_list[5].children =  [                                  ]
-			@vertex_list[6].children =  [                                  ]
-		end
+
 	end
 	class GRAPH
 		def write_dot(out)
@@ -121,6 +63,7 @@ module DFG_ILP
 				@vertex_adj_precedence = @vertex.map.with_index{|v,i|
 					DFG_ILP::Vertex_precedence.new(i+1, v)
 				}
+				@vertex_AST = []
 				@edge.each{|e|
 					@vertex_adj_precedence[ e[1] ].adj_push(
 						@vertex_adj_precedence[ e[0] ] )
@@ -164,7 +107,93 @@ module DFG_ILP
 			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
 			@name = "IIR4"
 		end
-	
+		def arf_AST
+			randgen = Random.new(Time.new.to_i)
+			@vertex_AST.push(AST_Vertex.new(       ) )
+			@vertex_AST.push(AST_Vertex.new(1  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(2  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(3  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(4  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(5  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(6  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(7  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(8  ,'x') )
+			@vertex_AST.push(AST_Vertex.new(9  ,'+') )
+			@vertex_AST.push(AST_Vertex.new(10 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(11 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(12 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(13 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(14 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(15 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(16 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(17 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(18 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(19 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(20 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(21 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(22 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(23 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(24 ,'x') )
+			@vertex_AST.push(AST_Vertex.new(25 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(26 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(27 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(28 ,'+') )
+			@vertex_AST.push(AST_Vertex.new(29 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(30 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(31 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(32 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(33 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(34 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(35 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(36 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(37 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(38 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(39 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(40 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(41 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(42 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(43 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(44 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(45 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(46 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(47 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(48 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(49 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(50 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(51 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(52 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(53 ,'i') )
+			@vertex_AST.push(AST_Vertex.new(54 ,'i') )
+			@vertex_AST[27].children = [@vertex_AST[9], @vertex_AST[25] ]
+			@vertex_AST[9].children =  [@vertex_AST[1], @vertex_AST[2]  ]
+			@vertex_AST[25].children = [@vertex_AST[21], @vertex_AST[22]]
+			@vertex_AST[1].children =  [@vertex_AST[29], @vertex_AST[30]]
+			@vertex_AST[2].children =  [@vertex_AST[31], @vertex_AST[32]   ]
+			@vertex_AST[21].children = [@vertex_AST[19], @vertex_AST[33]   ]
+			@vertex_AST[22].children = [@vertex_AST[20],  @vertex_AST[34]  ]
+			@vertex_AST[28].children = [@vertex_AST[12], @vertex_AST[26]]
+			@vertex_AST[12].children = [@vertex_AST[7],  @vertex_AST[8] ]
+			@vertex_AST[26].children = [@vertex_AST[23], @vertex_AST[24]]
+			@vertex_AST[7].children =  [ @vertex_AST[35], @vertex_AST[36] ]
+			@vertex_AST[8].children =  [ @vertex_AST[37], @vertex_AST[38]]
+			@vertex_AST[23].children = [@vertex_AST[19], @vertex_AST[39]]
+			@vertex_AST[24].children = [@vertex_AST[20], @vertex_AST[40]]
+			@vertex_AST[19].children = [@vertex_AST[15],@vertex_AST[16] ]
+			@vertex_AST[20].children = [@vertex_AST[17],@vertex_AST[18] ]
+			@vertex_AST[15].children = [@vertex_AST[13],@vertex_AST[41]    ]
+			@vertex_AST[16].children = [@vertex_AST[14], @vertex_AST[42]   ]
+			@vertex_AST[17].children = [@vertex_AST[13],  @vertex_AST[43]  ]
+			@vertex_AST[18].children = [@vertex_AST[14],  @vertex_AST[44]  ]
+			@vertex_AST[13].children = [@vertex_AST[10],  @vertex_AST[45]  ]
+			@vertex_AST[14].children = [@vertex_AST[11],   @vertex_AST[46] ]
+			@vertex_AST[10].children = [@vertex_AST[3], @vertex_AST[4]  ]
+			@vertex_AST[11].children = [@vertex_AST[5], @vertex_AST[6]  ]
+			@vertex_AST[3].children =  [@vertex_AST[47], @vertex_AST[48] ]
+			@vertex_AST[4].children =  [ @vertex_AST[49], @vertex_AST[50] ]
+			@vertex_AST[5].children =  [  @vertex_AST[51], @vertex_AST[52] ]
+			@vertex_AST[6].children =  [@vertex_AST[53], @vertex_AST[54]        ]
+			@vertex_AST 
+		end
 		def p
 			{
 				:v => @vertex, 
