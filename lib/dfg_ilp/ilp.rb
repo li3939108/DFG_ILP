@@ -1,43 +1,63 @@
 module DFG_ILP
 	class ILP
 		DEFAULT_OPERATION_PARAMETERS = {
+		's' => {
+			:type => ["approximate", "accurate"],
+			:u    => [1,1],
+			:d    => [2,3],
+			:g    => [1000, 2000],
+			:p    => [50, 100],
+			:err  => [Math::log(1 - 0.001), Math::log(1 - 0), ],
+			:variance  => [],
+		},
 		'x' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1], 
 			:d    => [2, 3], 
 			:g    => [1000, 2000],
 			:p    => [50, 100],
-			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] },
+			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] ,
+			:variance  => [],
+
+		},
+			
 		'ALU' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] },
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)], 
+			:variance  => [],
+		},
 		'+' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
 			:g    => [200, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] },
-	
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] ,
+			:variance  => [],
+		},
 		'D' => {
 			:type => ["accurate"],
 			:u    => [Float::INFINITY],
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:err  => [Math::log(1 - 0)] },
-		
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [],
+
+		},
 		'@' => {
 			:type => ["accurate"],
 			:u    => [Float::INFINITY],
 			:d    => [1],
 			:g    => [20],
 			:p    => [3],
-			:err  => [Math::log(1 - 0)] }
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [],
+		}
 		}
 		MIN = true#constant for minimum linear programming
 		MAX = false#constant for maximum linear programming
@@ -46,6 +66,7 @@ module DFG_ILP
 			no_resource_limit = true
 			error_bound = Math::log(1 - 0.01) 
 			tq = 2
+			if parameters[:err_type] == nil then err_type = 'er' else err_type = 'var' end
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
 
 			if parameters[:mobility_constrainted] == nil then mobility_constrainted = mobility_constrainted
@@ -122,7 +143,7 @@ module DFG_ILP
 					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@u[v].length, t)}.reduce([], :+) 
 					ntail = @Nx - start_point - @u[v].length * (1 + @mobility[i] )
 				else
-					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
+					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+)
 					xArray = [*0..q-1].map{|t| Array.new(@u[v].length, t)}.reduce([], :+)
 					ntail = @Nx - start_point - @u[v].length * q
 				end
@@ -138,7 +159,7 @@ module DFG_ILP
 				else
 					start_point = [*0..e[1]-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
 					ntail = @Nx - start_point - @u[@vertex[e[1]]].length * q
-					xArray = [*0..q-1].map{|t|     @d[@vertex[e[1]]]                  }.reduce([], :+) 
+					xArray = [*0..q-1].map{|t|     @d[@vertex[e[1]]]           }.reduce([], :+) 
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[e[0]] = -1
@@ -222,7 +243,7 @@ module DFG_ILP
 				Array.new(@vertex.length , 0)				+		#Formula (6) (7)							
 				Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, 0)		+		#Formula (9)
-				( if no_resource_limit == false then @u.values.flatten else [] end) 
+				( if no_resource_limit == false then @u.values.flatten else [] end )
 			@c	=
 				if(mobility_constrainted)
 					@vertex.map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
@@ -234,12 +255,12 @@ module DFG_ILP
 				Array.new(@Ns, 0)							#sArray
 			@int	=
 				Array.new(@Nx, 'B')					+
-				Array.new(@Nerr, 'C')				+
+				Array.new(@Nerr, 'C')					+
 				Array.new(@Nu, 'I')					+ 
 				Array.new(@Ns, 'I')
 			@lb	=
 				Array.new(@Nx, 0)					+
-				Array.new(@Nerr, -Float::INFINITY)	+
+				Array.new(@Nerr, -Float::INFINITY)			+
 				Array.new(@Nu, 0)					+
 				Array.new(@Ns, 0)					
 			@ub	=
@@ -247,7 +268,6 @@ module DFG_ILP
 				Array.new(@Nerr, 0)                +
 				Array.new(@Nu, Float::INFINITY)    +
 				Array.new(@Ns, Float::INFINITY)
-			
 		end
 	
 		def p
