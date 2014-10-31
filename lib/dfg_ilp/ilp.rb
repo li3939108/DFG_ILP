@@ -8,7 +8,7 @@ module DFG_ILP
 			:g    => [1000, 2000],
 			:p    => [50, 100],
 			:err  => [Math::log(1 - 0.001), Math::log(1 - 0), ],
-			:variance  => [],
+			:variance  => [8000, 0],
 		},
 		'x' => {
 			:type => ["approximate", "accurate"], 
@@ -17,7 +17,7 @@ module DFG_ILP
 			:g    => [1000, 2000],
 			:p    => [50, 100],
 			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] ,
-			:variance  => [],
+			:variance  => [8000, 0],
 
 		},
 			
@@ -28,7 +28,7 @@ module DFG_ILP
 			:g    => [200, 500],
 			:p    => [10, 30],
 			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)], 
-			:variance  => [],
+			:variance  => [8000, 0],
 		},
 		'+' => {
 			:type => ["approximate", "accurate"], 
@@ -37,7 +37,7 @@ module DFG_ILP
 			:g    => [200, 500],
 			:p    => [10, 30],
 			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] ,
-			:variance  => [],
+			:variance  => [8000, 0],
 		},
 		'D' => {
 			:type => ["accurate"],
@@ -46,7 +46,7 @@ module DFG_ILP
 			:g    => [20],
 			:p    => [3],
 			:err  => [Math::log(1 - 0)] ,
-			:variance  => [],
+			:variance  => [0],
 
 		},
 		'@' => {
@@ -56,7 +56,7 @@ module DFG_ILP
 			:g    => [20],
 			:p    => [3],
 			:err  => [Math::log(1 - 0)] ,
-			:variance  => [],
+			:variance  => [0],
 		}
 		}
 		MIN = true#constant for minimum linear programming
@@ -64,7 +64,13 @@ module DFG_ILP
 		def initialize(g, parameters = {} )
 			mobility_constrainted = true
 			no_resource_limit = true
+
+			# this is the default error rate bound on the primay outputs
 			error_bound = Math::log(1 - 0.01) 
+
+			# this is the default variance bound on the primary outputs 
+			variance_bound = 30000
+
 			tq = 2
 			if parameters[:err_type] == nil then err_type = 'er' else err_type = 'var' end
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
@@ -93,6 +99,7 @@ module DFG_ILP
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
 			@variance    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:variance]]}]
+			@varianceB = variance_bound
 			@errB = error_bound
 
 			#get the vertices without vertices depending on
@@ -211,11 +218,11 @@ module DFG_ILP
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}    )
 			+
-			@PO_vertex.map{|v|			#Formula (8)
+			(err_type == 'er' ? @PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			} +
+			} : [] )+
 			[*0..q * @u.values.flatten.length - 1].map{|row_i|	#Formula (9)
 				t = row_i / @u.values.flatten.length
 				di = row_i % @u.values.flatten.length
@@ -245,18 +252,20 @@ module DFG_ILP
 				Array.new(@vertex.length, EQ)				+		#Formula (3)
 				Array.new(@edge.length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
-				Array.new(@vertex.length, EQ)				+
-				Array.new(@PO_vertex.length, GE)			+		#Formula (8)
+				err_type == 'er' ? Array.new(@vertex.length, EQ): 
+					Array.new(@po_total, LE)			+		#error
+				err_type == 'er' ? Array.new(@PO_vertex.length, GE):[]	+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
-				Array.new(@vertex.length, 1)				+		#Formula (2)
-				Array.new(@vertex.length, 0)				+		#Formula (3)
-				Array.new(@edge.length, 0)				+		#Formula (4)	
-				Array.new(@end_vertex.length, q)			+		#Formula (5)
-				Array.new(@vertex.length , 0)				+		#Formula (6) (7)							
-				Array.new(@PO_vertex.length, @errB)			+		#Formula (8)
-				Array.new(q * @u.values.flatten.length, 0)		+		#Formula (9)
+				Array.new(@vertex.length, 1)					+		#Formula (2)
+				Array.new(@vertex.length, 0)					+		#Formula (3)
+				Array.new(@edge.length, 0)					+		#Formula (4)	
+				Array.new(@end_vertex.length, q)				+		#Formula (5)
+				err_type == 'er' ? Array.new(@vertex.length , 0):
+					Array.new(@po_total, 	@variance_bound)		+		#Formula (6) (7) or error 
+				err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[]	+		#Formula (8)
+				Array.new(q * @u.values.flatten.length, 0)			+		#Formula (9)
 				( if no_resource_limit == false then @u.values.flatten else [] end )
 			@c	=
 				if(mobility_constrainted)
