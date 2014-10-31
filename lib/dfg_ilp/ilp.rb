@@ -92,6 +92,7 @@ module DFG_ILP
 			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
+			@variance    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:variance]]}]
 			@errB = error_bound
 
 			#get the vertices without vertices depending on
@@ -99,6 +100,7 @@ module DFG_ILP
 			@end_vertex = [*0..@end.length - 1].select{|i| @end[i] == true}
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
 			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO][i] == true}
+			@po_total = g.p[:po_total]
 			if (mobility_constrainted )
 				ret = self.ASAP
 				@critical_length = ret[:latency]
@@ -121,7 +123,7 @@ module DFG_ILP
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
 			
-			@Nerr = @vertex.length
+			@Nerr = err_type == 'er' ? @vertex.length : 0  # the number of error for each vertex
 			@Nu = @u.values.flatten.length 
 			@Ns = @vertex.length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
@@ -180,7 +182,7 @@ module DFG_ILP
 				sArray[v] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			@vertex.map.with_index{|v,i|			#Formula (6) (7)
+			( err_type == 'er' ? @vertex.map.with_index{|v,i|			#Formula (6) (7)
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
 					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err[v])}.reduce([], :+) 
@@ -196,7 +198,19 @@ module DFG_ILP
 					@edge.select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
 				end
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			} +
+			} :  [*0..@po_total].map{|i|
+				if(mobility_constrainted)
+					xArray = @vertex.map.with_index{|v,i|
+						[*@asap[i]..@alap[i]].map{|t| Array.new(@variance[v])}.reduce([], :+) 
+					}.reduce([], :+)
+				else
+					xArray = @vertex.map.with_index{|v,i| 
+						[*0..q-1].map{|t| Array.new(@variance[v])}.reduce([], :+)
+					}.reduce{[],:+)
+				end
+				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+			}    )
+			+
 			@PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1

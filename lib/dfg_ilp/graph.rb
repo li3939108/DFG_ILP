@@ -247,6 +247,7 @@ module DFG_ILP
 				:name => @name,
 				:adj => @vertex_adj_precedence,
 				:vAST => @vertex_AST ,
+				:po_total => @po_count,
 			}
 		end
 	end
