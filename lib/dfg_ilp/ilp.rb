@@ -253,8 +253,8 @@ module DFG_ILP
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
 				(if err_type == 'er' then Array.new(@vertex.length, EQ) 
 				else Array.new(@po_total, LE) end)			+		#error
-				(err_type == 'er' ? Array.new(@PO_vertex.length, GE):[]	+		#Formula (8)
-				Array.new(q * @u.values.flatten.length, LE)	)	+		#Formula (9)
+				(err_type == 'er' ? Array.new(@PO_vertex.length, GE):[])+		#Formula (8)
+				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
 				Array.new(@vertex.length, 1)					+		#Formula (2)
