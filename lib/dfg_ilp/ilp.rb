@@ -129,13 +129,27 @@ module DFG_ILP
 				g.p[:PO].count(true) +
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
-			
-			@Nerr = ( @err_type == 'er' ? @vertex.length : 0 )  # the number of error for each vertex
+
+			# the number of error for each vertex
+			# only for error rate 
+			@Nerr = ( @err_type == 'er' ? @vertex.length : 0 )  
+
+			# Number of different types of implementations used
 			@Nu = @u.values.flatten.length 
+
+			# starting time 
 			@Ns = @vertex.length
+
+			# number of columns 
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
+
+			# This giant matrix is the constraint matrix
+			# Ax <= b
 			@A = 
-			@vertex.map.with_index{|v,i|		#Formula (2)  
+
+			# One operation can only be scheduled one time step, 
+			# using one type of implementation
+			@vertex.map.with_index{|v,i|
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
 					ntail = @Ncolumn - start_point - @u[ v ].length * (1 + @mobility[i])
@@ -340,7 +354,9 @@ module DFG_ILP
 				position = position + current_length
 				err_position = err_position + 1
 			end
-			print	"\n", "optimal value: ", ret[:o], "\n", "number of constraints: ", ret[:s].length, "\n", "number of variables: ", ret[:v].length, "\n", 
+			print	"\n", "optimal value: ", ret[:o], "\n", 
+				"number of constraints: ", ret[:s].length, "\n", 
+				"number of variables: ", ret[:v].length, "\n", 
 				"allocation: ", allocation, "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
@@ -356,7 +372,9 @@ module DFG_ILP
 				i = 0
 				while i < sch.length do
 					if (sch[i][:time] == l) 
-						print sch[i][:op],sch[i][:id],': ', 'd', sch[i][:delay], 'e', 1 - Math::E**sch[i][:error], "   "
+						print sch[i][:op],sch[i][:id],': ', 
+						'd', sch[i][:delay], 
+						'e', 1 - Math::E**sch[i][:error], "   "
 						sch.delete_at(i)
 					else
 						i = i + 1
