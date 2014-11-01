@@ -216,13 +216,12 @@ module DFG_ILP
 					}.reduce([],:+)
 				end
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			}    )
-			+
+			}  ) +
 			(err_type == 'er' ? @PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			} : [] )+
+			} : [] ) +
 			[*0..q * @u.values.flatten.length - 1].map{|row_i|	#Formula (9)
 				t = row_i / @u.values.flatten.length
 				di = row_i % @u.values.flatten.length
