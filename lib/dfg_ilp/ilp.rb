@@ -213,7 +213,7 @@ module DFG_ILP
 				else
 					xArray = @vertex.map.with_index{|v,i| 
 						[*0..q-1].map{|t| Array.new(@variance[v])}.reduce([], :+)
-					}.reduce{[],:+)
+					}.reduce([],:+)
 				end
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}    )
