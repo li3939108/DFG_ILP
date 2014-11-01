@@ -72,7 +72,7 @@ module DFG_ILP
 			variance_bound = 30000
 
 			tq = 2
-			if parameters[:err_type] == nil then err_type = 'er' else err_type = 'var' end
+			if parameters[:err_type] == nil then @err_type = 'er' else @err_type = 'var' end
 			if parameters[:q] == nil then q = nil else q = parameters[:q] end
 
 			if parameters[:mobility_constrainted] == nil then mobility_constrainted = mobility_constrainted
@@ -130,7 +130,7 @@ module DFG_ILP
 				q * @u.values.flatten.length +
 				@u.values.flatten.length
 			
-			@Nerr = err_type == 'er' ? @vertex.length : 0  # the number of error for each vertex
+			@Nerr = ( @err_type == 'er' ? @vertex.length : 0 )  # the number of error for each vertex
 			@Nu = @u.values.flatten.length 
 			@Ns = @vertex.length
 			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
@@ -189,7 +189,7 @@ module DFG_ILP
 				sArray[v] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			( err_type == 'er' ? @vertex.map.with_index{|v,i|			#Formula (6) (7)
+			( @err_type == 'er' ? @vertex.map.with_index{|v,i|			#Formula (6) (7)
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
 					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err[v])}.reduce([], :+) 
@@ -217,7 +217,7 @@ module DFG_ILP
 				end
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}  ) +
-			(err_type == 'er' ? @PO_vertex.map{|v|			#Formula (8)
+			(@err_type == 'er' ? @PO_vertex.map{|v|			#Formula (8)
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
@@ -251,9 +251,9 @@ module DFG_ILP
 				Array.new(@vertex.length, EQ)				+		#Formula (3)
 				Array.new(@edge.length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
-				(if err_type == 'er' then Array.new(@vertex.length, EQ) 
+				(if @err_type == 'er' then Array.new(@vertex.length, EQ) 
 				else Array.new(@po_total, LE) end)			+		#error
-				(err_type == 'er' ? Array.new(@PO_vertex.length, GE):[])+		#Formula (8)
+				(@err_type == 'er' ? Array.new(@PO_vertex.length, GE):[])+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
@@ -261,9 +261,9 @@ module DFG_ILP
 				Array.new(@vertex.length, 0)					+		#Formula (3)
 				Array.new(@edge.length, 0)					+		#Formula (4)	
 				Array.new(@end_vertex.length, q)				+		#Formula (5)
-				(err_type == 'er' ? Array.new(@vertex.length , 0):
+				(@err_type == 'er' ? Array.new(@vertex.length , 0):
 					Array.new(@po_total, 	@variance_bound))		+		#Formula (6) (7) or error 
-				(err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+		#Formula (8)
+				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, 0)			+		#Formula (9)
 				( if no_resource_limit == false then @u.values.flatten else [] end )
 			@c	=
