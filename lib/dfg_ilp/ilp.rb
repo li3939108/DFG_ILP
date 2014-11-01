@@ -251,19 +251,19 @@ module DFG_ILP
 				Array.new(@vertex.length, EQ)				+		#Formula (3)
 				Array.new(@edge.length, LE)				+		#Formula (4)	
 				Array.new(@end_vertex.length, LE )			+		#Formula (5)
-				err_type == 'er' ? Array.new(@vertex.length, EQ): 
-					Array.new(@po_total, LE)			+		#error
-				err_type == 'er' ? Array.new(@PO_vertex.length, GE):[]	+		#Formula (8)
-				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
+				(if err_type == 'er' then Array.new(@vertex.length, EQ) 
+				else Array.new(@po_total, LE) end)			+		#error
+				(err_type == 'er' ? Array.new(@PO_vertex.length, GE):[]	+		#Formula (8)
+				Array.new(q * @u.values.flatten.length, LE)	)	+		#Formula (9)
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
 				Array.new(@vertex.length, 1)					+		#Formula (2)
 				Array.new(@vertex.length, 0)					+		#Formula (3)
 				Array.new(@edge.length, 0)					+		#Formula (4)	
 				Array.new(@end_vertex.length, q)				+		#Formula (5)
-				err_type == 'er' ? Array.new(@vertex.length , 0):
-					Array.new(@po_total, 	@variance_bound)		+		#Formula (6) (7) or error 
-				err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[]	+		#Formula (8)
+				(err_type == 'er' ? Array.new(@vertex.length , 0):
+					Array.new(@po_total, 	@variance_bound))		+		#Formula (6) (7) or error 
+				(err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+		#Formula (8)
 				Array.new(q * @u.values.flatten.length, 0)			+		#Formula (9)
 				( if no_resource_limit == false then @u.values.flatten else [] end )
 			@c	=
