@@ -5,14 +5,35 @@ require 'dfg_ilp'
 root_dir = "/home/me/DFG_ILP"
 
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
-arf.arf_AST
 arf.ifactor
 
+iir4 = DFG_ILP::GRAPH.new
+iir4.IIR(4)
+iir4.ifactor
+
+mm =  DFG_ILP::Parser.new("#{root_dir}/test/dot/mm.dot").parse.to_DFG
+mm.ifactor
+
+mv = DFG_ILP::Parser.new("#{root_dir}/test/dot/mv.dot").parse.to_DFG
+mv.ifactor
+
+pyr =  DFG_ILP::Parser.new("#{root_dir}/test/dot/pyr.dot").parse.to_DFG
+pyr.ifactor
 
 
-testcases = [arf]
+jbmp =  DFG_ILP::Parser.new("#{root_dir}/test/dot/jbmp.dot").parse.to_DFG
+jbmp.ifactor
 
-testcases.each do |g|
+
+sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
+sds.ifactor
+
+testcase = [mm]
+testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
+
+minLatency = [14, 11, 7, 11, 8, 8, 17]
+
+testcase.each do |g|
 	print "\n", g.p[:name], " start", "\n---------------------------\n"
 	ilp = DFG_ILP::ILP.new(g, {:err_type => 'var', :q => ARGV[0].to_i, :variance_bound => ARGV[1].to_i}) 
 	ret = ilp.ASAP
@@ -36,6 +57,7 @@ testcases.each do |g|
 	fa_ret = full_approximate_ilp.compute(g, :cplex)
 	print "var: ", fa_ret[:var].map{|var_slack| 99999999 - var_slack}, "\n"
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
+
 	#accurate 
 	accurate_ilp = DFG_ILP::ILP.new(g, {:err_type => 'var', :q => ARGV[0].to_i, :variance_bound => 0})
 	a_ret = accurate_ilp.compute(g, :cplex)

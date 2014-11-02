@@ -21,7 +21,7 @@ iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
 testcases = [arf]
 fullset = [iir4, arf, midct, mv, mm, jfdct, pyr, jbmp, sds]
-testset1 = [iir4, arf, mv, mm, jfdct, pyr, jbmp, sds, midct]
+testset1 = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 testcases.each do |g|
 	print "\n", g.p[:name], " start", "\n---------------------------\n"

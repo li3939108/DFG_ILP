@@ -50,6 +50,10 @@ module DFG_ILP
 					@ifactor = @ifactor.map.with_index{|if_value,i|
 						if_value + w.ifactor[i]
 					}
+					else
+					@ifactor = @ifactor.map.with_index{|if_value,i|
+						if_value + w.ifactor[i]
+					}
 					end
 				}
 			end
@@ -103,12 +107,12 @@ module DFG_ILP
 			if p != nil and p[:name] != nil then @name = p[:name] 
 			else @name = nil end
 			if @edge.length != 0 and @vertex.length != 0
-				@po_count = 0
 				@PI = @vertex.map.with_index{|v,i| !@edge.map{|e| e[0]}.include?(i) and v != 'D'}
 				@PO = @vertex.map.with_index{|v,i| 
 				@edge.select{|e| e[1] == i}.select{|e| 
 					@vertex[e[0]] != 'D'}.empty? and v != 'D'}
 				@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
+				@po_count = 0
 				@vertex_adj_precedence = @vertex.map.with_index{|v,i|
 					if @PO[i] == false 
 						DFG_ILP::Vertex_precedence.new(i+1, v) 
@@ -130,6 +134,7 @@ module DFG_ILP
 				@vertex_without_D = [] 
 				@vertex_adj_precedence = []
 				@vertex_AST = []
+				@po_count = 0
 			end
 		end
 		def IIR(order)
@@ -162,6 +167,15 @@ module DFG_ILP
 				e[1] == i}.select{|e| 
 					@vertex[e[0]] != 'D'}.empty? and @vertex[i] != 'D'}
 			@vertex_without_D = [*0..@vertex.length - 1].select{|i| @vertex[i] != 'D'}
+			@po_count = 0
+			@vertex_adj_precedence = @vertex.map.with_index{|v,i|
+				if @PO[i] == false 
+					DFG_ILP::Vertex_precedence.new(i+1, v) 
+				else
+					@po_count = @po_count + 1
+					DFG_ILP::Vertex_precedence.new(i+1, v, @po_count - 1 )
+				end
+			}
 			@name = "IIR4"
 		end
 		def arf_AST
