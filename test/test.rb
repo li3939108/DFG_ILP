@@ -28,7 +28,7 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [mm]
+testcase = [sds]
 testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = [14, 11, 7, 11, 8, 8, 17]

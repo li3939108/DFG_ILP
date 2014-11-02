@@ -1,0 +1,320 @@
+
+IIR4 start
+---------------------------
+ASAP scheduling done, longest path length: 14
+
+optimal value: 18204.0
+number of constraints: 314
+number of variables: 648
+allocation: {"x"=>[1, 1], "ALU"=>[0, 0], "+"=>[0, 1], "D"=>[1], "@"=>[0]}
+----------------------------------
+0	|	x1: d3e0   x7: d2e1   
+1	|	
+2	|	x10: d2e1   
+3	|	+2: d2e1   
+4	|	x8: d2e1   
+5	|	+3: d2e2   
+6	|	
+7	|	+4: d2e3   
+8	|	
+9	|	+5: d2e3   
+10	|	
+11	|	
+12	|	x11: d2e4   
+13	|	
+14	|	x17: d2e1   
+15	|	
+16	|	x20: d2e1   
+17	|	+12: d2e5   
+18	|	x18: d2e1   
+19	|	
+20	|	+13: d2e6   
+21	|	
+22	|	+14: d2e7   
+23	|	
+24	|	D9: d1e4   +15: d2e7   
+25	|	D6: d1e8   
+26	|	D19: d1e8   
+27	|	D16: d1e16   
+----------------------------------
+
+arf start
+---------------------------
+ASAP scheduling done, longest path length: 11
+
+optimal value: 34920.0
+number of constraints: 294
+number of variables: 820
+allocation: {"x"=>[2, 2], "ALU"=>[0, 2], "+"=>[0, 0], "D"=>[0], "@"=>[0]}
+----------------------------------
+0	|	x1: d2e1   x3: d3e0   x4: d3e0   
+1	|	
+2	|	x7: d2e1   x8: d2e1   
+3	|	x5: d3e0   x6: d3e0   
+4	|	x2: d2e1   ALU10: d2e0   
+5	|	
+6	|	ALU11: d2e0   
+7	|	
+8	|	ALU13: d2e0   ALU14: d2e0   
+9	|	
+10	|	x15: d2e1   x16: d2e1   
+11	|	x17: d3e0   
+12	|	x18: d2e1   ALU19: d2e2   
+13	|	
+14	|	ALU20: d2e1   x21: d2e3   x23: d2e3   
+15	|	
+16	|	ALU9: d2e2   ALU12: d2e2   x22: d2e2   x24: d2e2   
+17	|	
+18	|	ALU25: d2e5   ALU26: d2e5   
+19	|	
+20	|	ALU27: d2e7   ALU28: d2e7   
+----------------------------------
+
+idctcol_dfg__3 start
+---------------------------
+ASAP scheduling done, longest path length: 19
+
+optimal value: 68562.0
+number of constraints: 826
+number of variables: 4944
+allocation: {"x"=>[2, 1], "ALU"=>[2, 2], "+"=>[0, 0], "D"=>[0], "@"=>[3]}
+----------------------------------
+0	|	x1: d3e0   ALU6: d2e0   ALU15: d2e0   x80: d2e1   x112: d2e1   
+1	|	
+2	|	x72: d2e1   ALU81: d1e2   ALU113: d2e1   
+3	|	ALU2: d2e0   x16: d3e0   
+4	|	x64: d2e1   
+5	|	@3: d1e0   ALU26: d2e0   
+6	|	@4: d1e0   x7: d3e0   ALU17: d2e0   x88: d2e1   x96: d2e1   
+7	|	ALU5: d2e0   
+8	|	ALU97: d2e1   
+9	|	ALU8: d2e0   x12: d3e0   x18: d2e1   x21: d2e1   
+10	|	ALU24: d2e0   
+11	|	ALU19: d2e1   
+12	|	x9: d3e0   ALU22: d2e1   
+13	|	ALU13: d2e0   
+14	|	@20: d1e1   @23: d1e1   ALU25: d2e0   
+15	|	ALU10: d2e0   @14: d1e0   x27: d3e0   
+16	|	ALU37: d2e1   
+17	|	ALU38: d2e1   
+18	|	@11: d1e0   ALU28: d2e0   x32: d3e0   
+19	|	ALU35: d2e1   
+20	|	ALU36: d2e1   
+21	|	x29: d3e0   ALU33: d2e0   
+22	|	ALU47: d2e2   x56: d2e1   
+23	|	@34: d1e0   ALU43: d2e2   x104: d2e1   
+24	|	ALU30: d2e0   ALU39: d1e1   x48: d2e3   
+25	|	ALU40: d2e0   x44: d2e3   ALU51: d1e4   ALU107: d1e4   
+26	|	@31: d1e0   ALU49: d2e3   @52: d1e4   @108: d1e4   
+27	|	ALU42: d2e0   x53: d2e5   ALU75: d1e3   ALU83: d1e3   x109: d2e5   
+28	|	ALU45: d2e3   @50: d1e3   @76: d1e3   @84: d1e3   
+29	|	ALU41: d2e0   ALU67: d1e5   x77: d2e4   x85: d2e4   ALU91: d1e5   
+30	|	@46: d1e3   ALU54: d1e6   @68: d1e5   @92: d1e5   ALU110: d1e6   
+31	|	ALU57: d2e1   ALU59: d1e4   x69: d2e6   ALU73: d2e1   x93: d2e6   ALU99: d1e4   
+32	|	@60: d1e4   ALU78: d1e5   ALU86: d1e5   @100: d1e4   @111: d1e6   
+33	|	@55: d1e6   x61: d2e5   ALU70: d2e6   @79: d1e5   @87: d1e5   ALU94: d2e6   x101: d2e5   
+34	|	@58: d1e7   @82: d1e7   ALU89: d1e2   @114: d1e7   
+35	|	ALU62: d1e6   ALU65: d2e1   @71: d1e6   @90: d1e7   @95: d1e6   ALU102: d1e6   ALU105: d2e1   
+36	|	@63: d1e6   @98: d1e7   @103: d1e6   
+37	|	@66: d1e7   @74: d1e7   @106: d1e7   
+----------------------------------
+
+motion_vectors_dfg__7 start
+---------------------------
+ASAP scheduling done, longest path length: 7
+
+optimal value: 23002.000000000055
+number of constraints: 243
+number of variables: 626
+allocation: {"x"=>[3, 0], "ALU"=>[1, 2], "+"=>[0, 0], "D"=>[0], "@"=>[1]}
+----------------------------------
+0	|	x7: d2e1   x21: d2e1   x28: d2e1   
+1	|	
+2	|	x19: d2e1   x20: d2e1   ALU22: d2e1   x26: d2e1   
+3	|	ALU29: d2e1   
+4	|	ALU8: d2e1   x12: d2e1   x14: d2e1   x27: d2e1   
+5	|	ALU23: d2e2   
+6	|	x5: d2e1   x6: d2e1   x13: d2e1   ALU15: d2e1   
+7	|	ALU30: d2e2   
+8	|	x1: d2e1   x2: d2e1   ALU9: d1e3   ALU24: d2e3   
+9	|	ALU16: d2e2   
+10	|	ALU10: d2e4   @25: d1e3   ALU31: d1e4   
+11	|	ALU3: d1e2   ALU17: d2e3   @32: d1e7   
+12	|	ALU4: d1e4   @11: d1e4   
+13	|	@18: d1e7   
+----------------------------------
+
+matmul_dfg__3 start
+---------------------------
+ASAP scheduling done, longest path length: 11
+
+optimal value: 87132.0
+number of constraints: 629
+number of variables: 2903
+allocation: {"x"=>[4, 2], "ALU"=>[1, 5], "+"=>[0, 0], "D"=>[0], "@"=>[2]}
+----------------------------------
+0	|	ALU1: d2e0   ALU5: d2e0   ALU9: d2e0   x40: d2e1   x63: d3e0   ALU82: d2e0   x86: d2e1   x90: d3e0   x95: d2e1   ALU105: d2e0   
+1	|	
+2	|	x21: d2e1   ALU41: d2e1   x49: d2e1   ALU87: d2e1   ALU96: d2e1   
+3	|	x2: d3e0   x6: d3e0   ALU64: d2e0   ALU91: d2e0   
+4	|	ALU13: d2e0   x17: d2e1   ALU22: d2e1   @42: d1e1   x44: d2e1   ALU50: d2e1   x67: d2e1   @97: d1e1   x106: d2e1   
+5	|	ALU36: d2e0   
+6	|	ALU3: d2e0   ALU7: d2e0   x10: d3e0   x14: d3e0   ALU18: d2e1   @23: d1e1   x26: d2e1   x31: d2e1   @51: d1e1   ALU68: d2e1   
+7	|	ALU45: d2e1   x54: d2e1   @88: d1e1   @92: d1e0   x100: d2e1   
+8	|	@4: d1e0   @8: d1e0   ALU32: d2e1   ALU59: d2e0   x72: d2e1   
+9	|	ALU15: d2e0   @19: d1e1   ALU27: d2e1   x43: d2e2   @46: d1e1   x89: d3e1   x93: d2e1   ALU101: d2e1   
+10	|	ALU11: d2e0   x47: d3e1   ALU55: d2e1   @65: d1e0   @69: d1e1   x77: d2e1   
+11	|	@16: d1e0   x66: d2e1   x70: d2e2   @102: d1e1   
+12	|	@12: d1e0   @33: d1e1   ALU73: d2e1   x83: d3e0   ALU94: d2e2   x103: d2e2   
+13	|	x20: d2e2   x24: d2e2   @28: d1e1   x34: d3e1   ALU48: d2e3   ALU71: d2e3   ALU78: d2e1   x98: d2e2   
+14	|	x52: d2e2   @56: d1e1   @74: d1e1   
+15	|	ALU25: d2e4   x29: d2e2   x57: d2e2   x60: d3e0   x75: d2e2   ALU84: d2e0   ALU99: d2e4   ALU107: d2e1   
+16	|	x37: d3e0   ALU53: d2e5   @79: d1e1   
+17	|	ALU30: d2e6   ALU76: d2e5   x80: d2e2   ALU104: d2e6   
+18	|	ALU58: d2e7   ALU61: d2e0   
+19	|	ALU35: d2e7   ALU38: d2e0   ALU81: d2e7   
+20	|	@62: d1e7   @108: d1e7   
+21	|	@39: d1e7   @85: d1e7   ALU109: d1e1   
+----------------------------------
+
+jpeg_fdct_islow_dfg__6 start
+---------------------------
+ASAP scheduling done, longest path length: 16
+
+optimal value: 98604.0
+number of constraints: 847
+number of variables: 5098
+allocation: {"x"=>[1, 3], "ALU"=>[2, 4], "+"=>[0, 0], "D"=>[0], "@"=>[4]}
+----------------------------------
+0	|	x4: d3e0   x22: d3e0   x29: d3e0   x32: d2e1   
+1	|	
+2	|	x86: d2e1   
+3	|	x1: d3e0   ALU5: d2e0   ALU23: d2e0   ALU30: d2e0   x43: d3e0   x46: d3e0   
+4	|	x70: d2e1   
+5	|	@24: d1e0   
+6	|	ALU2: d2e0   x15: d3e0   x18: d3e0   ALU33: d2e1   x39: d3e0   ALU44: d2e0   ALU47: d2e0   x64: d2e1   
+7	|	@6: d1e0   
+8	|	@3: d1e0   @45: d1e0   @48: d1e0   x130: d2e1   
+9	|	ALU7: d2e0   ALU16: d2e0   ALU19: d2e0   x25: d3e0   @31: d1e0   @34: d1e1   ALU49: d2e0   x50: d3e0   x53: d3e0   
+10	|	x116: d2e1   
+11	|	@17: d1e0   @20: d1e0   ALU35: d2e1   ALU40: d2e0   ALU57: d1e1   ALU58: d2e0   ALU134: d1e1   
+12	|	x8: d3e0   x11: d3e0   ALU21: d2e0   x36: d3e0   x79: d2e1   
+13	|	ALU26: d2e0   @41: d1e0   ALU51: d2e0   ALU54: d2e0   
+14	|	ALU59: d1e2   ALU60: d2e1   x75: d2e1   
+15	|	ALU9: d2e0   ALU12: d2e0   @27: d1e0   ALU37: d2e0   ALU61: d1e4   ALU67: d1e4   
+16	|	ALU28: d2e0   @52: d1e0   @55: d1e0   x82: d2e2   ALU133: d1e1   
+17	|	@10: d1e0   @13: d1e0   @38: d1e0   ALU56: d2e0   ALU73: d2e1   
+18	|	ALU14: d2e0   ALU42: d2e0   x97: d2e1   
+19	|	ALU62: d1e5   ALU71: d1e2   x74: d3e1   ALU91: d2e0   x95: d3e0   
+20	|	ALU68: d1e5   ALU89: d2e0   ALU90: d2e0   ALU92: d2e0   x96: d2e1   x98: d3e0   ALU117: d1e2   
+21	|	@69: d1e5   ALU87: d1e2   
+22	|	ALU76: d1e3   ALU83: d1e4   ALU93: d2e0   x99: d2e2   x100: d3e0   x101: d3e0   
+23	|	@63: d1e5   ALU77: d1e4   ALU84: d1e5   x102: d3e0   
+24	|	ALU65: d1e2   ALU80: d1e2   x94: d2e1   
+25	|	@72: d1e7   @78: d1e4   @85: d1e5   ALU105: d2e3   ALU112: d1e2   ALU119: d1e2   ALU126: d2e3   
+26	|	@81: d1e6   ALU103: d2e1   ALU104: d1e2   x109: d2e1   
+27	|	@88: d1e7   ALU113: d1e5   ALU127: d1e6   
+28	|	ALU106: d1e5   ALU114: d2e5   ALU120: d1e4   x123: d2e1   ALU128: d2e6   
+29	|	@66: d1e7   ALU107: d1e6   ALU110: d2e1   ALU121: d1e5   ALU131: d2e1   
+30	|	@108: d1e6   @115: d1e5   @122: d1e5   ALU124: d1e2   @129: d1e6   
+31	|	@111: d1e7   @118: d1e7   @125: d1e7   @132: d1e7   
+----------------------------------
+
+collapse_pyr_dfg__113 start
+---------------------------
+ASAP scheduling done, longest path length: 8
+
+optimal value: 17716.0
+number of constraints: 387
+number of variables: 1000
+allocation: {"x"=>[2, 0], "ALU"=>[2, 1], "+"=>[0, 0], "D"=>[0], "@"=>[2]}
+----------------------------------
+0	|	x1: d2e1   @6: d1e0   ALU7: d1e1   ALU13: d1e1   ALU19: d2e0   
+1	|	x14: d2e2   @25: d1e0   
+2	|	ALU2: d1e2   x20: d2e1   ALU26: d1e1   ALU38: d2e0   @42: d1e0   
+3	|	@3: d1e2   x8: d2e2   ALU15: d1e3   
+4	|	ALU4: d1e3   ALU21: d1e2   x39: d2e1   
+5	|	ALU9: d1e3   @16: d1e3   ALU45: d1e1   
+6	|	@10: d1e3   @22: d1e2   x27: d2e2   ALU51: d1e1   
+7	|	@5: d1e5   ALU17: d1e4   ALU32: d1e1   x52: d2e2   
+8	|	ALU23: d1e3   ALU28: d1e3   x33: d2e2   
+9	|	ALU11: d1e4   @29: d1e3   ALU53: d1e3   
+10	|	@18: d1e7   ALU34: d1e3   x46: d2e2   @54: d1e3   
+11	|	@12: d1e7   @24: d1e5   ALU30: d1e4   ALU55: d1e4   
+12	|	@35: d1e3   ALU40: d1e2   ALU47: d1e3   @56: d1e7   
+13	|	ALU36: d1e4   @41: d1e2   @48: d1e3   
+14	|	@31: d1e7   @37: d1e7   ALU43: d1e3   ALU49: d1e4   
+15	|	@44: d1e5   @50: d1e7   
+----------------------------------
+
+write_bmp_header_dfg__7 start
+---------------------------
+ASAP scheduling done, longest path length: 8
+
+optimal value: 12260.0
+number of constraints: 584
+number of variables: 2074
+allocation: {"x"=>[1, 0], "ALU"=>[3, 0], "+"=>[0, 0], "D"=>[0], "@"=>[5]}
+----------------------------------
+0	|	x1: d2e1   ALU3: d1e1   ALU5: d1e1   ALU81: d1e1   @97: d1e0   @100: d1e0   
+1	|	@4: d1e1   @6: d1e1   ALU52: d1e1   ALU70: d1e1   @82: d1e1   ALU104: d1e1   
+2	|	ALU2: d1e2   x7: d2e3   @53: d1e1   @71: d1e1   ALU73: d1e1   @83: d1e1   ALU87: d1e1   @105: d1e1   
+3	|	ALU26: d1e1   @31: d1e2   @35: d1e2   ALU37: d1e1   @39: d1e2   ALU75: d1e1   @88: d1e1   
+4	|	ALU8: d1e6   @32: d1e2   @36: d1e2   ALU41: d1e1   @72: d1e1   @84: d1e1   ALU93: d1e1   
+5	|	@38: d1e3   ALU43: d1e1   ALU45: d1e1   ALU47: d1e1   @54: d1e1   @101: d1e0   @106: d1e1   
+6	|	@13: d1e6   @28: d1e2   @55: d1e1   ALU56: d1e1   ALU58: d1e1   ALU98: d1e1   
+7	|	ALU22: d1e1   @24: d1e6   ALU29: d1e1   @46: d1e1   ALU64: d1e1   @74: d1e2   @99: d1e1   
+8	|	@44: d1e1   @59: d1e1   @65: d1e1   @89: d1e1   ALU91: d1e1   ALU102: d1e1   
+9	|	ALU11: d1e1   ALU33: d1e1   @40: d1e2   ALU62: d1e1   @66: d1e1   @90: d1e1   @94: d1e1   @103: d1e1   
+10	|	@16: d1e6   @25: d1e6   @48: d1e1   @60: d1e1   @67: d1e1   ALU68: d1e1   ALU85: d1e1   
+11	|	@12: d1e1   @49: d1e1   @61: d1e1   @76: d1e1   ALU79: d1e1   @92: d1e2   ALU95: d1e1   
+12	|	ALU14: d1e1   @17: d1e6   @20: d1e6   @30: d1e3   ALU50: d1e1   @69: d1e2   @77: d1e1   
+13	|	ALU18: d1e1   @21: d1e6   @27: d1e7   @34: d1e3   @63: d1e2   @96: d1e1   
+14	|	ALU9: d1e1   @15: d1e7   @19: d1e7   @23: d1e7   @42: d1e3   @78: d1e1   
+15	|	@10: d1e1   @51: d1e2   @57: d1e2   @80: d1e2   @86: d1e2   
+----------------------------------
+
+h2v2_smooth_downsample_dfg__6 start
+---------------------------
+ASAP scheduling done, longest path length: 17
+
+optimal value: 19942.0
+number of constraints: 483
+number of variables: 1953
+allocation: {"x"=>[1, 0], "ALU"=>[1, 2], "+"=>[0, 0], "D"=>[0], "@"=>[1]}
+----------------------------------
+0	|	@10: d1e0   ALU11: d2e0   ALU32: d2e0   ALU34: d1e1   
+1	|	
+2	|	@12: d1e0   ALU16: d2e0   
+3	|	ALU13: d2e0   @14: d1e0   
+4	|	@1: d1e0   ALU37: d2e0   
+5	|	@5: d1e0   ALU15: d2e0   
+6	|	ALU7: d2e0   
+7	|	ALU22: d2e0   
+8	|	@17: d1e0   ALU19: d2e0   
+9	|	ALU40: d2e0   
+10	|	ALU18: d2e0   @20: d1e0   
+11	|	
+12	|	ALU25: d2e0   
+13	|	ALU21: d2e0   
+14	|	ALU2: d2e0   @23: d1e0   
+15	|	ALU24: d2e0   @35: d1e1   
+16	|	@26: d1e0   ALU28: d2e0   
+17	|	ALU27: d2e0   @33: d1e0   
+18	|	@29: d1e0   ALU36: d2e1   
+19	|	ALU30: d2e0   @38: d1e0   
+20	|	@3: d1e0   ALU39: d2e1   
+21	|	ALU31: d2e0   @41: d1e0   
+22	|	ALU4: d2e0   ALU42: d1e2   
+23	|	ALU43: d1e3   
+24	|	ALU6: d2e0   x45: d2e4   
+25	|	@8: d1e0   
+26	|	ALU9: d2e0   
+27	|	
+28	|	x44: d2e1   
+29	|	
+30	|	ALU46: d1e6   
+31	|	ALU47: d1e7   
+32	|	@48: d1e7   ALU51: d1e1   
+33	|	@49: d1e7   ALU50: d1e1   
+----------------------------------
