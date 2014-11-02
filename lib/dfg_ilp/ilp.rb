@@ -317,16 +317,23 @@ module DFG_ILP
 				Array.new(@Nerr, 0)					+		#errArray
 				@p.values.flatten.map{|p| p * q }			+		#uArray
 				Array.new(@Ns, 0)							#sArray
+			# Integer constraints
 			@int	=
+				# Binary 
 				Array.new(@Nx, 'B')					+
+				# Continuous
 				Array.new(@Nerr, 'C')					+
+				# Integer
 				Array.new(@Nu, 'I')					+ 
 				Array.new(@Ns, 'I')
+
+			# Lower bounds for each variable
 			@lb	=
 				Array.new(@Nx, 0)					+
 				Array.new(@Nerr, -Float::INFINITY)			+
 				Array.new(@Nu, 0)					+
 				Array.new(@Ns, 0)					
+			# Upper bounds for each variable
 			@ub	=
 				Array.new(@Nx, Float::INFINITY)    +
 				Array.new(@Nerr, 0)                +
