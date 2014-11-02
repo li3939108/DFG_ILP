@@ -426,9 +426,8 @@ module DFG_ILP
 			print	"\n", "optimal value: ", ret[:o], "\n", 
 				"number of constraints: ", ret[:s].length, "\n", 
 				"number of variables: ", ret[:v].length, "\n", 
-				"allocation: ", allocation, "\n",
-				"variance: ", var_slack, "\n"
-			return {:opt => ret[:o], :sch => schedule}
+				"allocation: ", allocation, "\n"
+			return {:opt => ret[:o], :sch => schedule, :var => var_slack}
 		end
 		def vs(sch, l = 0)
 			if(l == 0)

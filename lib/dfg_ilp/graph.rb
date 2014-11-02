@@ -30,7 +30,7 @@ module DFG_ILP
 			[@number, @type, @ifactor,
 				@adjacency_list.map{|v| v.n } ]
 		end
-		def ifactor_dfs(v_ast, po_total = 1)
+		def ifactor_dfs(randgen, po_total = 1)
 			if (@ifactor.length > 0)
 				@ifactor
 			elsif( @adjacency_list.length == 0 )
@@ -40,11 +40,11 @@ module DFG_ILP
 			else
 				@ifactor = Array.new( po_total, 0 ) 
 				@adjacency_list.each { |w|
-					w.ifactor_dfs(v_ast, po_total)
+					w.ifactor_dfs(randgen, po_total)
 					case w.type
 					when 's','x'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
-						if_value + w.ifactor[i] * v_ast[w.n].const 
+						if_value + w.ifactor[i] * (randgen.rand(4.0) - 2)
 					}
 					when '+', 'ALU'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
@@ -83,7 +83,7 @@ module DFG_ILP
 	class GRAPH
 		def ifactor
 			@vertex_adj_precedence.each{|v|
-				v.ifactor_dfs(@vertex_AST, @po_count)
+				v.ifactor_dfs(@randgen, @po_count)
 			}
 			@vertex_adj_precedence.map{|v|
 				v.ifactor
@@ -123,6 +123,7 @@ module DFG_ILP
 						@vertex_adj_precedence[ e[0] ] )
 				}
 				
+				@randgen = Random.new(Time.new.to_i)
 			else
 				@PI = []
 				@PO = []
