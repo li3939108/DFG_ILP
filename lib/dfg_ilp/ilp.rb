@@ -285,6 +285,8 @@ module DFG_ILP
 				uArray[u] = 1
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
 			} else [] end)
+			
+			# less than or equal to or greater than
 			@op 	= 	
 				
 				# One implementation constraint
@@ -307,22 +309,25 @@ module DFG_ILP
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
 				# One implementation constraint
-				Array.new(@vertex.length, 1)					+		#Formula (2)
+				Array.new(@vertex.length, 1)					+
 				# Starting time
-				Array.new(@vertex.length, 0)					+		#Formula (3)
+				Array.new(@vertex.length, 0)					+
 				# Precedence constraints
-				Array.new(@edge.length, 0)					+		#Formula (4)	
+				Array.new(@edge.length, 0)					+
 				# Precedence constraints at Primary Outputs
-				Array.new(@end_vertex.length, q)				+		#Formula (5)
+				Array.new(@end_vertex.length, q)				+
 				# Error rate propagation and variance bounds
 				(@err_type == 'er' ? Array.new(@vertex.length , 0):
-					Array.new(@po_total, 	@variance_bound))		+		#Formula (6) (7) or error 
+					Array.new(@po_total, 	@variance_bound))		+
 				# Error Rate bounds at Primary Outputs
-				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+		#Formula (8)
+				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+
 				# Resource allocation 
-				Array.new(q * @u.values.flatten.length, 0)			+		#Formula (9)
+				Array.new(q * @u.values.flatten.length, 0)			+
 				# Recousce bounds 
 				( if no_resource_limit == false then @u.values.flatten else [] end )
+
+			# max cx
+			# Objective vector
 			@c	=
 				if(mobility_constrainted)
 					@vertex.map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
