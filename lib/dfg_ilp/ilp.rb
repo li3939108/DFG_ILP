@@ -386,7 +386,7 @@ module DFG_ILP
 	
 			schedule = []
 			position = 0
-			err_position =  @Nx 
+			if @err_type == 'er' then err_position =  @Nx end
 			for i in [*0..@vertex.length-1]	do
 				if(@mC)
 					current_length = @u[@vertex[i]].length * (1+@mobility[i]) 
@@ -398,16 +398,16 @@ module DFG_ILP
 					time = index/ @u[ @vertex[i] ].length + 0
 				end
 				type = index% @u[@vertex[i]].length 
-				error = ret[:v][err_position]
+				if @err_type == 'er' then  error = ret[:v][err_position] end
 				schedule = schedule + [{
 						:id => i + 1, 
 						:op => @vertex[i], 
 						:time => time, 
 						:type => type, 
-						:error => error, 
+						:error => ( @err_type == 'er' ? error : false) , 
 						:delay => @d[ @vertex[i] ][ type ] }]				
 				position = position + current_length
-				err_position = err_position + 1
+				if @err_type == 'er' then err_position = err_position + 1 end
 			end
 			print	"\n", "optimal value: ", ret[:o], "\n", 
 				"number of constraints: ", ret[:s].length, "\n", 
