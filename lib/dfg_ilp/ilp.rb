@@ -160,7 +160,10 @@ module DFG_ILP
 					Array.new(start_point, 0) + Array.new(@u[ v ].length * q, 1) + Array.new(ntail, 0)
 				end
 			} +
-			@vertex.map.with_index{|v,i|	#Formula (3)  
+			
+			# starting time 
+			# s_v = \sum_t\sum_m t * x_{v,t,m}
+			@vertex.map.with_index{|v,i|	
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
 					xArray = [*@asap[i]..@alap[i] ].map{|t| Array.new(@u[v].length, t)}.reduce([], :+) 
@@ -174,7 +177,9 @@ module DFG_ILP
 				sArray[i] = -1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
 			} +
-			@edge.map{|e|	#Formula (4)  41
+			
+			# precedence constraints
+			@edge.map{|e|	
 				if(mobility_constrainted)
 					start_point = [*0..e[1]-1].map{|j| @u[@vertex[j]].length * (1 + @mobility[j]) }.reduce(0,:+) 
 					ntail = @Nx - start_point - @u[@vertex[e[1]]].length * (1 + @mobility[e[1]])
@@ -189,7 +194,9 @@ module DFG_ILP
 				sArray[e[1]] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			@end_vertex.map.with_index{|v,i|	#Formula (5)
+			
+			#precedence constraints at Primary Outputs
+			@end_vertex.map.with_index{|v,i|	
 				if(mobility_constrainted)
 					start_point = [*0..v-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
 					ntail = @Nx - start_point - @u[@vertex[v]].length * (1+@mobility[v])
@@ -203,7 +210,11 @@ module DFG_ILP
 				sArray[v] = 1
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
 			} +
-			( @err_type == 'er' ? @vertex.map.with_index{|v,i|			#Formula (6) (7)
+			
+			# error constraints
+			( @err_type == 'er' ? 
+			# Error rate propagation
+			@vertex.map.with_index{|v,i|	
 				if(mobility_constrainted)
 					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
 					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err[v])}.reduce([], :+) 
@@ -219,7 +230,9 @@ module DFG_ILP
 					@edge.select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
 				end
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			} :  [*0..@po_total].map{|i|
+			} :  
+			# variance constraints and bounds
+			[*0..@po_total].map{|i|
 				if(mobility_constrainted)
 					xArray = @vertex.map.with_index{|v,i|
 						[*@asap[i]..@alap[i]].map{|t| Array.new(@variance[v])}.reduce([], :+) 
@@ -231,12 +244,17 @@ module DFG_ILP
 				end
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}  ) +
-			(@err_type == 'er' ? @PO_vertex.map{|v|			#Formula (8)
+			(@err_type == 'er' ? 
+
+			# Error bounds at Primary Outputs
+			@PO_vertex.map{|v|	
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
 				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} : [] ) +
-			[*0..q * @u.values.flatten.length - 1].map{|row_i|	#Formula (9)
+			
+			# resource constraints
+			[*0..q * @u.values.flatten.length - 1].map{|row_i|
 				t = row_i / @u.values.flatten.length
 				di = row_i % @u.values.flatten.length
 				d = @d.values.flatten[di]
