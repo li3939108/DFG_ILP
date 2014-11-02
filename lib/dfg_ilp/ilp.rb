@@ -279,14 +279,24 @@ module DFG_ILP
 				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
 			} else [] end)
 			@op 	= 	
-				Array.new(@vertex.length, EQ)				+		#Formula (2)
-				Array.new(@vertex.length, EQ)				+		#Formula (3)
-				Array.new(@edge.length, LE)				+		#Formula (4)	
-				Array.new(@end_vertex.length, LE )			+		#Formula (5)
+				
+				# One implementation constraint
+				Array.new(@vertex.length, EQ)				+		
+				# Starting time
+				Array.new(@vertex.length, EQ)				+
+				# Precedence constraints
+				Array.new(@edge.length, LE)				+		
+				# Precedence constraints at Primary Outputs
+				Array.new(@end_vertex.length, LE )			+	
+				# Error propagation and variance bounds
 				(if @err_type == 'er' then Array.new(@vertex.length, EQ) 
 				else Array.new(@po_total, LE) end)			+		#error
-				(@err_type == 'er' ? Array.new(@PO_vertex.length, GE):[])+		#Formula (8)
-				Array.new(q * @u.values.flatten.length, LE)		+		#Formula (9)
+				# Error Rate bounds at Primary Outputs
+				(@err_type == 'er' ? 
+					Array.new(@PO_vertex.length, GE):[])		+		
+				# Resource allocation 
+				Array.new(q * @u.values.flatten.length, LE)		+
+				# Recousce bounds 
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
 				Array.new(@vertex.length, 1)					+		#Formula (2)
