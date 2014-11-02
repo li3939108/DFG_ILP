@@ -289,7 +289,6 @@ module DFG_ILP
 			
 			# less than or equal to or greater than
 			@op 	= 	
-				
 				# One implementation constraint
 				Array.new(@vertex.length, EQ)				+		
 				# Starting time
@@ -301,7 +300,8 @@ module DFG_ILP
 				# Error Rate propagation 
 				Array.new(@vertex.length, EQ) 				+
 				# variance bounds
-				Array.new(@po_total, LE)			 	+		#error
+				(@err_type == 'er' ? Array.new(@po_total, GE):
+					Array.new(@po_total, LE))		 	+		#error
 				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? 
 					Array.new(@PO_vertex.length, GE):[])		+		
@@ -321,7 +321,7 @@ module DFG_ILP
 				# Error rate propagation 
 				Array.new(@vertex.length , 0)					+
 				# Variance bounds
-				(@err_type == 'er' ?  Array.new(@po_total, Float::INFINITY):
+				(@err_type == 'er' ?  Array.new(@po_total, 0):
 					Array.new(@po_total, @variance_bound)		)	+
 				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+
@@ -391,7 +391,7 @@ module DFG_ILP
 	
 			schedule = []
 			position = 0
-			if @err_type == 'er' then err_position =  @Nx end
+			err_position =  @Nx 
 			for i in [*0..@vertex.length-1]	do
 				if(@mC)
 					current_length = @u[@vertex[i]].length * (1+@mobility[i]) 
@@ -406,21 +406,28 @@ module DFG_ILP
 				end
 				# The allocated resource type
 				type = index% @u[@vertex[i]].length 
-				if @err_type == 'er' then  error = ret[:v][err_position] end
+				error = ret[:v][err_position] 
 				schedule = schedule + [{
 						:id => i + 1, 
 						:op => @vertex[i], 
 						:time => time, 
 						:type => type, 
-						:error => ( @err_type == 'er' ? error : 0) , 
+						:error =>  error , 
 						:delay => @d[ @vertex[i] ][ type ] }]				
 				position = position + current_length
-				if @err_type == 'er' then err_position = err_position + 1 end
+				err_position = err_position + 1 
 			end
+			position = @vertex.length + @vertex.length + @edge.length + @end_vertex.length + @vertex.length
+			var_slack = []
+			for i in [*0..@po_total-1] do
+				var_slack.push(ret[:s][position])
+				position += 1
+			end 			
 			print	"\n", "optimal value: ", ret[:o], "\n", 
 				"number of constraints: ", ret[:s].length, "\n", 
 				"number of variables: ", ret[:v].length, "\n", 
-				"allocation: ", allocation, "\n"
+				"allocation: ", allocation, "\n",
+				"variance: ", var_slack, "\n"
 			return {:opt => ret[:o], :sch => schedule}
 		end
 		def vs(sch, l = 0)
