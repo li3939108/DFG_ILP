@@ -238,14 +238,14 @@ module DFG_ILP
 					xArray = @vertex.map.with_index{|v,i|
 						[*@asap[i]..@alap[i]].map{|t| Array.new(
 						@variance[v].map{|value|
-							value * @vertex_adj_precedence[i].ifactor[po_i]
+							value * @vertex_precedence_adj[i].ifactor[po_i]
 						})}.reduce([], :+) 
 					}.reduce([], :+)
 				else
 					xArray = @vertex.map.with_index{|v,i| 
 						[*0..q-1].map{|t| Array.new(
 						@variance[v].map{|value|
-							value * @vertex_adj_precedence[i].ifactor[po_i]
+							value * @vertex_precedence_adj[i].ifactor[po_i]
 						})}.reduce([], :+)
 					}.reduce([],:+)
 				end
