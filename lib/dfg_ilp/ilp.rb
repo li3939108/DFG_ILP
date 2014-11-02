@@ -120,15 +120,16 @@ module DFG_ILP
 				@Nx = @vertex.map{|v| @u[v].length * q}.reduce(0,:+) 
 				if( q == nil) then q = 40 end
 			end
-			@Nrow =	
-				@vertex.length +
-				@vertex.length + 
-				@edge.length + 
-				@end.count(true) +
-				@vertex.count{|v| v != 'D'} + #error in D operation is ignored
-				g.p[:PO].count(true) +
-				q * @u.values.flatten.length +
-				@u.values.flatten.length
+			# Not used
+			#@Nrow =	
+			#	@vertex.length +
+			#	@vertex.length + 
+			#	@edge.length + 
+			#	@end.count(true) +
+			#	@vertex.count{|v| v != 'D'} + #error in D operation is ignored
+			#	g.p[:PO].count(true) +
+			#	q * @u.values.flatten.length +
+			#	@u.values.flatten.length
 
 			# the number of error for each vertex
 			# only for error rate 
