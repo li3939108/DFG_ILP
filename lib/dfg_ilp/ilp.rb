@@ -249,7 +249,7 @@ module DFG_ILP
 						})}.reduce([], :+)
 					}.reduce([],:+)
 				end
-				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				xArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}  ) +
 			(@err_type == 'er' ? 
 
@@ -374,6 +374,7 @@ module DFG_ILP
 
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
+			# This is the position of resource usage
 			position = @Nx +@Nerr - 1
 	
 			allocation = {}
@@ -391,12 +392,15 @@ module DFG_ILP
 				if(@mC)
 					current_length = @u[@vertex[i]].length * (1+@mobility[i]) 
 					index = ret[:v][position, current_length].index(1)
+					# The scheduled time step
 					time = index/ @u[ @vertex[i] ].length + @asap[i]
 				else 
 					current_length = @u[@vertex[i]].length * @q
 					index = ret[:v][position, current_length].index(1)
+					# The scheduled time step
 					time = index/ @u[ @vertex[i] ].length + 0
 				end
+				# The allocated resource type
 				type = index% @u[@vertex[i]].length 
 				if @err_type == 'er' then  error = ret[:v][err_position] end
 				schedule = schedule + [{
