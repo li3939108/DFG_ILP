@@ -91,6 +91,7 @@ module DFG_ILP
 
 			@q = q
 			@vertex = g.p[:v]
+			@vertex_precedence_adj = g.p[:adj]
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
@@ -232,14 +233,20 @@ module DFG_ILP
 				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			} :  
 			# variance constraints and bounds
-			[*0..@po_total].map{|i|
+			[*0..@po_total - 1].map{|po_i|
 				if(mobility_constrainted)
 					xArray = @vertex.map.with_index{|v,i|
-						[*@asap[i]..@alap[i]].map{|t| Array.new(@variance[v])}.reduce([], :+) 
+						[*@asap[i]..@alap[i]].map{|t| Array.new(
+						@variance[v].map{|value|
+							value * @vertex_adj_precedence[i].ifactor[po_i]
+						})}.reduce([], :+) 
 					}.reduce([], :+)
 				else
 					xArray = @vertex.map.with_index{|v,i| 
-						[*0..q-1].map{|t| Array.new(@variance[v])}.reduce([], :+)
+						[*0..q-1].map{|t| Array.new(
+						@variance[v].map{|value|
+							value * @vertex_adj_precedence[i].ifactor[po_i]
+						})}.reduce([], :+)
 					}.reduce([],:+)
 				end
 				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
@@ -288,7 +295,7 @@ module DFG_ILP
 				Array.new(@edge.length, LE)				+		
 				# Precedence constraints at Primary Outputs
 				Array.new(@end_vertex.length, LE )			+	
-				# Error propagation and variance bounds
+				# Error Rate propagation and variance bounds
 				(if @err_type == 'er' then Array.new(@vertex.length, EQ) 
 				else Array.new(@po_total, LE) end)			+		#error
 				# Error Rate bounds at Primary Outputs
@@ -299,14 +306,22 @@ module DFG_ILP
 				# Recousce bounds 
 				( if no_resource_limit == false then Array.new(@u.values.flatten.length, LE) else [] end)
 			@b 	=
+				# One implementation constraint
 				Array.new(@vertex.length, 1)					+		#Formula (2)
+				# Starting time
 				Array.new(@vertex.length, 0)					+		#Formula (3)
+				# Precedence constraints
 				Array.new(@edge.length, 0)					+		#Formula (4)	
+				# Precedence constraints at Primary Outputs
 				Array.new(@end_vertex.length, q)				+		#Formula (5)
+				# Error rate propagation and variance bounds
 				(@err_type == 'er' ? Array.new(@vertex.length , 0):
 					Array.new(@po_total, 	@variance_bound))		+		#Formula (6) (7) or error 
+				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+		#Formula (8)
+				# Resource allocation 
 				Array.new(q * @u.values.flatten.length, 0)			+		#Formula (9)
+				# Recousce bounds 
 				( if no_resource_limit == false then @u.values.flatten else [] end )
 			@c	=
 				if(mobility_constrainted)
