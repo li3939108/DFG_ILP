@@ -100,7 +100,7 @@ module DFG_ILP
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
 			@variance    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:variance]]}]
-			@varianceB = variance_bound
+			@variance_bound = variance_bound
 			@errB = error_bound
 
 			#get the vertices without vertices depending on
@@ -320,7 +320,7 @@ module DFG_ILP
 				Array.new(@end_vertex.length, q)				+
 				# Error rate propagation and variance bounds
 				(@err_type == 'er' ? Array.new(@vertex.length , 0):
-					Array.new(@po_total, 	@variance_bound))		+
+					Array.new(@po_total, @variance_bound))		+
 				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+
 				# Resource allocation 
