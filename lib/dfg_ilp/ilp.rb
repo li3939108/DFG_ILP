@@ -108,6 +108,64 @@ module DFG_ILP
 			@PI_vertex = [*0..g.p[:PI].length - 1].select{|i| g.p[:PI][i] == true}
 			@PO_vertex = [*0..g.p[:PO].length - 1].select{|i| g.p[:PO][i] == true}
 			@po_total = g.p[:po_total]
+
+
+
+			if parameters[:type] == 'mmkp' 
+
+
+
+			#get the number of variables
+			@Nx = @vertex.map{|v| 
+				@variance[v].legnth
+			}.reduce(0,:+)
+
+			#A is the constraints matrix  Ax <= b
+			@A = 
+
+			# Only one of the multiple choices can be selected
+			# Multiple choice
+			@vertex.map.with_index{|v,i|
+				n_zeros_before = [*0..i-1].map{|j|
+					@variance[@vertex[j]].length 
+				}.reduce(0, :+)
+				n_ones = @variance[v].length 
+				n_zeros_after = @Nx - n_zeros_before - n_ones
+				Array.new(n_zeros_before, 0) + 
+				Array.new(n_ones, 1)+
+				Array.new(n_zeros_after, 0)
+			} + 
+
+			# Multiple dimension
+			[*0..@po_total-1].map{|po_i|
+				xArray = @vertex.map.with_index{|v,i|
+					@variance[v].map{|value|
+						value * (@vertex_precedence_adj[i].ifactor[po_i]**2)
+					}
+				}.reduce([], :+)
+			}
+
+			@op = 
+			Array.new(@vertex.length, EQ)+
+			Array.new(@po_total.length, LE)
+			
+			@b =
+			Array.new(@vertex.length, 1)+
+			Array.new(@po_total.length, @variance_bound)
+
+			@c =
+			@vertex.map.with_index{|v,i|
+				
+			}
+			
+
+
+			else
+
+
+
+
+
 			if (mobility_constrainted )
 				ret = self.ASAP
 				@critical_length = ret[:latency]
@@ -363,6 +421,7 @@ module DFG_ILP
 				Array.new(@Nerr, 0)                +
 				Array.new(@Nu, Float::INFINITY)    +
 				Array.new(@Ns, Float::INFINITY)
+		end
 		end
 	
 		def p

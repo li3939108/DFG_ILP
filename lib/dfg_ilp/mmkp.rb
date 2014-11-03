@@ -2,33 +2,67 @@ module DFG_ILP
 
 	#multiple choice multiple dimension Knapsack Problem
 	class MMKP 
-		def initialize(g, parameters = {} )	
-			#all vertices, value being the type
-			@vertex = g.p[:v]
+	DEFAULT_OPERATION_PARAMETERS = {
+		's' => {
+			:type => ["approximate", "accurate"],
+			:u    => [1,1],
+			:d    => [2,3],
+			:g    => [1000, 2000],
+			:p    => [50, 100],
+			:err  => [Math::log(1 - 0.001), Math::log(1 - 0), ],
+			:variance  => [8000, 0],
+		},
+		'x' => {
+			:type => ["approximate", "accurate"], 
+			:u    => [1, 1], 
+			:d    => [2, 3], 
+			:g    => [1000, 2000],
+			:p    => [50, 100],
+			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] ,
+			:variance  => [8000, 0],
 
-			#get the number of variables
-			@Nx = @vertex.map{|v| 
-				@variance[v].legnth
-			}.reduce(0,:+)
+		},
+			
+		'ALU' => {
+			:type => ["approximate", "accurate"], 
+			:u    => [1, 1],
+			:d    => [1, 2], 
+			:g    => [200, 500],
+			:p    => [10, 30],
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)], 
+			:variance  => [8000, 0],
+		},
+		'+' => {
+			:type => ["approximate", "accurate"], 
+			:u    => [1, 1],
+			:d    => [1, 2], 
+			:g    => [200, 500],
+			:p    => [10, 30],
+			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] ,
+			:variance  => [8000, 0],
+		},
+		'D' => {
+			:type => ["accurate"],
+			:u    => [Float::INFINITY],
+			:d    => [1],
+			:g    => [20],
+			:p    => [3],
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [0],
 
-			#A is the constraints matrix  Ax <= b
-			@A = 
+		},
+		'@' => {
+			:type => ["accurate"],
+			:u    => [Float::INFINITY],
+			:d    => [1],
+			:g    => [20],
+			:p    => [3],
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [0],
+		}
+		}
+		def initialize(g, parameters = {} )
 
-			#Only one of the multiple choices can be selected
-			@vertex.map.with_index{|v,i|
-				Nzeros_before = [*0..i-1].map{|j|
-					@variance[@vertex[j]].length 
-				}.reduce(0, :+)
-				Nones = @variance[v].length 
-				Nzeros_after = Nx - Nzeros_before - Nones
-				Array.new(Nzeros_before, 0) + 
-				Array.new(Nones, 1)+
-				Array.new(Nzeros_after, 0)
-			} + 
-
-			@PO_vertex.map.with_index{|v,i|
-				
-			}
 		end
 	end
 	require 'dfg_ilp/ilp_ext'
