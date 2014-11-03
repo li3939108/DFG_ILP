@@ -95,7 +95,9 @@ module DFG_ILP
 			@mC     = mobility_constrainted
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
+			# dynamic energy
 			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
+			# static power
 			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
 			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
 			@variance    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:variance]]}]
@@ -155,8 +157,11 @@ module DFG_ILP
 
 			@c =
 			@vertex.map.with_index{|v,i|
-				
-			}
+				ref_index = @g[v][:type].index("accurate")
+				@g[v].map{|value|
+					value - @g[v][ref_index]
+				}
+			}.reduce([],:+)
 			
 
 
