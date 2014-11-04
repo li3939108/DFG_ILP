@@ -93,7 +93,7 @@ module DFG_ILP
 			@vertex_precedence_adj = g.p[:adj]
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
-			@type   = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:type]}]
+			@type   = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:type] ]}]
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
 			# dynamic energy
@@ -120,7 +120,7 @@ module DFG_ILP
 
 			#get the number of variables
 			@Nx = @vertex.map{|v| 
-				@variance[v].legnth
+				@variance[v].length
 			}.reduce(0,:+)
 
 			#A is the constraints matrix  Ax <= b
@@ -150,22 +150,24 @@ module DFG_ILP
 
 			@op = 
 			Array.new(@vertex.length, EQ)+
-			Array.new(@po_total.length, LE)
+			Array.new(@po_total, LE)
 			
 			@b =
 			Array.new(@vertex.length, 1)+
-			Array.new(@po_total.length, @variance_bound)
+			Array.new(@po_total, @variance_bound)
 
 			@c =
 			@vertex.map.with_index{|v,i|
-				ref_index = @g[v][:type].index("accurate")
+				ref_index = @type[v].index("accurate")
 				@g[v].map{|value|
-					value - @g[v][ref_index]
+					 @g[v][ref_index] - value
 				}
 			}.reduce([],:+)
 			@int = Array.new(@Nx, 'B')
 			@lb = Array.new(@Nx, 0)
 			@up = Array.new(@Nx, 1)
+
+
 
 			else
 
