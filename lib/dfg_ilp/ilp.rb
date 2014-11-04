@@ -93,6 +93,7 @@ module DFG_ILP
 			@vertex_precedence_adj = g.p[:adj]
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
+			@type   = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:type]}]
 			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
 			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
 			# dynamic energy
@@ -440,7 +441,15 @@ module DFG_ILP
 				:d => @d 
 			}
 		end
-
+		def mmkp_compute(g, method)
+			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :max)
+			position = 0
+			for i in [*0..@vertex.length - 1] do
+				index = ret[:v][position, @variable[ @vertex[i] ].length].index(1)
+				position += @variable[ @vertex[i] ].length
+				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index]
+			end
+		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
@@ -450,10 +459,9 @@ module DFG_ILP
 			@u.keys.each{|k|
 				allocation[k] = @u[k].map{|u|
 					position = position + 1
-					ret[:v][position]
+					ret[:v][position] 
 				}
 			}
-	
 			schedule = []
 			position = 0
 			err_position =  @Nx 
