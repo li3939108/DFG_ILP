@@ -447,9 +447,9 @@ module DFG_ILP
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :max)
 			position = 0
 			for i in [*0..@vertex.length - 1] do
-				index = ret[:v][position, @variable[ @vertex[i] ].length].index(1)
-				position += @variable[ @vertex[i] ].length
-				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index]
+				index = ret[:v][position, @variance[ @vertex[i] ].length].index(1)
+				position += @variance[ @vertex[i] ].length
+				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "\n"
 			end
 		end
 		def compute(g, method)
