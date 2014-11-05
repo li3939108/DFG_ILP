@@ -1,42 +1,60 @@
 module DFG_ILP
 	class ILP
 		DEFAULT_OPERATION_PARAMETERS = {
+
+#		's' => {
+#			:type => ["approximate", "accurate"],
+#			:u    => [1,1],
+#			:d    => [2,3],
+#			:g    => [1000, 2000],
+#			:p    => [50, 100],
+#			:err  => [Math::log(1 - 0.91), Math::log(1 - 0), ],
+#			:variance  => [8000, 0],
+#		},
+#		'x' => {
+#			:type => ["approximate", "accurate"], 
+#			:u    => [1, 1], 
+#			:d    => [2, 3], 
+#			:g    => [1000, 2000],
+#			:p    => [50, 100],
+#			:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+#			:variance  => [8000, 0],
+#
+#		},
 		's' => {
-			:type => ["approximate", "accurate"],
-			:u    => [1,1],
-			:d    => [2,3],
-			:g    => [1000, 2000],
-			:p    => [50, 100],
-			:err  => [Math::log(1 - 0.001), Math::log(1 - 0), ],
-			:variance  => [8000, 0],
+			:type => ["accurate"],
+			:u    => [Float::INFINITY],
+			:d    => [3],
+			:g    => [1500],
+			:p    => [100],
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [0],
 		},
 		'x' => {
-			:type => ["approximate", "accurate"], 
-			:u    => [1, 1], 
-			:d    => [2, 3], 
-			:g    => [1000, 2000],
-			:p    => [50, 100],
-			:err  => [Math::log(1 - 0.001), Math::log(1 - 0)] ,
-			:variance  => [8000, 0],
-
+			:type => ["accurate"],
+			:u    => [Float::INFINITY],
+			:d    => [3],
+			:g    => [1500],
+			:p    => [100],
+			:err  => [Math::log(1 - 0)] ,
+			:variance  => [0],
 		},
-			
 		'ALU' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
-			:g    => [200, 500],
+			:g    => [350, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)], 
+			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)], 
 			:variance  => [8000, 0],
 		},
 		'+' => {
 			:type => ["approximate", "accurate"], 
 			:u    => [1, 1],
 			:d    => [1, 2], 
-			:g    => [200, 500],
+			:g    => [350, 500],
 			:p    => [10, 30],
-			:err  => [Math::log(1 - 0.001),Math::log(1 - 0)] ,
+			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)] ,
 			:variance  => [8000, 0],
 		},
 		'D' => {
@@ -57,7 +75,7 @@ module DFG_ILP
 			:p    => [3],
 			:err  => [Math::log(1 - 0)] ,
 			:variance  => [0],
-		}
+		},
 		}
 		MIN = true#constant for minimum linear programming
 		MAX = false#constant for maximum linear programming
@@ -78,7 +96,7 @@ module DFG_ILP
 			operations            = [] 
 
 			# this is the default error rate bound on the primay outputs
-			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.01)
+			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.99)
 			else error_bound = parameters[:error_bound] end
 
 			# this is the default variance bound on the primary outputs 
