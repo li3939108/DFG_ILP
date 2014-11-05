@@ -165,7 +165,7 @@ module DFG_ILP
 			}.reduce([],:+)
 			@int = Array.new(@Nx, 'B')
 			@lb = Array.new(@Nx, 0)
-			@up = Array.new(@Nx, 1)
+			@ub = Array.new(@Nx, 1)
 
 
 
