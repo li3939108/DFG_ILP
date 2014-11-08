@@ -454,9 +454,13 @@ module DFG_ILP
 			end
 			
 		end
-		def list_scheduler(delay, vlist)
-			ret = self.ALAP(nil)
-			
+		def list_scheduler
+			time = self.ALAP(nil)
+			time_slot = []
+			for i in [*0..time.length - 1] 
+				time_slot[ time[i] ] = i 
+			end
+			time_slot
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)

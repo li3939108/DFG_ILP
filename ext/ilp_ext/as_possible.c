@@ -74,7 +74,7 @@ int asap(Graph *Gt, int *time, VALUE delay, VALUE delay_type){
 		VALUE d_arr, d ;
 		op = Gt->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		if(delay_type == NULL){
+		if(delay_type == Qnil){
 			d = rb_ary_entry(delay, Gt->adj_list[i]->label - 1);
 		}else{
 			d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
