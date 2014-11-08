@@ -118,7 +118,9 @@ static VALUE ALAP(VALUE self, VALUE delay_type ){
 		op = G->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
-		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
+		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", 
+			i, G->adj_list[i]->op, 
+			FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
 		#endif
 		rb_ary_push(ret, INT2FIX(time[i]  ) ) ;
 	}

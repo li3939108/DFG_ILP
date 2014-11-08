@@ -454,6 +454,10 @@ module DFG_ILP
 			end
 			
 		end
+		def list_scheduler(delay, vlist)
+			ret = self.ALAP(nil)
+			
+		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
