@@ -175,11 +175,11 @@ module DFG_ILP
 
 
 			if (mobility_constrainted )
-				ret = self.ASAP
+				ret = self.ASAP(:min)
 				@critical_length = ret[:latency]
 				if( @q == nil) then q = @q = @critical_length * tq end
 				@asap = ret[:schedule]
-				@alap = self.ALAP
+				@alap = self.ALAP(:min)
 				@mobility = @asap.map.with_index{|m,i| @alap[i] - @asap[i] }
 				@Nx = @vertex.map.with_index{|v,i| @u[v].length * (1 + @mobility[i]) }.reduce(0,:+) 
 			else

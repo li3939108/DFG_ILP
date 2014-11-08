@@ -40,7 +40,7 @@ void get_graph(VALUE vlist, VALUE elist) {
 	reverse_graph_obj = Data_Wrap_Struct(cGraph, 0, free_graph, Gt) ;
 }
 
-int dfs(Graph *G, int s_label, int time[], VALUE delay, const char * delay_type){//no cycles
+int dfs(Graph *G, int s_label, int time[], VALUE delay, VALUE delay_type){//no cycles
 	int i ;
 	char *op ;
 	VALUE d_arr, d ;
@@ -54,17 +54,17 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay, const char * delay_type)
 	}
 	op = G->adj_list[s_label]->op ;
 	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-	if(delay_type == NULL){
-		d = rb_ary_entry(delay, Gt->adj_list[i]->label - 1)
+	if(delay_type == Qnil){
+		d = rb_ary_entry(delay, G->adj_list[i]->label - 1) ;
 	}else{
-		d = rb_funcall(d_arr, rb_intern(delay_type), 0) ;
+		d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
 	}
 	time[s_label] = time[s_label] + FIX2INT( d );
 	return time[s_label] ;
 }
 
 
-int asap(Graph *Gt, int *time, VALUE delay, const char * delay_type){
+int asap(Graph *Gt, int *time, VALUE delay, VALUE delay_type){
 	int i, max = 0 ;
 	char *op ;
 	for(i = 1; i <= Gt->V; i++){
@@ -75,9 +75,9 @@ int asap(Graph *Gt, int *time, VALUE delay, const char * delay_type){
 		op = Gt->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		if(delay_type == NULL){
-			d = rb_ary_entry(delay, Gt->adj_list[i]->label - 1)
+			d = rb_ary_entry(delay, Gt->adj_list[i]->label - 1);
 		}else{
-			d = rb_funcall(d_arr, rb_intern(delay_type), 0) ;
+			d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
 		}
 		max = (max < time[i] ? time[i] : max );
 		time[i] = time[i] + 1 - FIX2INT( d ) ;
@@ -85,7 +85,7 @@ int asap(Graph *Gt, int *time, VALUE delay, const char * delay_type){
 	return max+1 ;
 }
 
-int alap(Graph *G, int *time, VALUE delay, int Q, const char * delay_type){
+int alap(Graph *G, int *time, VALUE delay, int Q, VALUE delay_type){
 	int i, min = Q ;
 	for(i = 1; i <= G->V; i++){
 		dfs(G, i, time, delay, delay_type) ;
@@ -96,7 +96,7 @@ int alap(Graph *G, int *time, VALUE delay, int Q, const char * delay_type){
 	}
 	return min ;
 }
-void mobility(Graph *G, int *m, VALUE delay, int Q, const char * delay_type){
+void mobility(Graph *G, int *m, VALUE delay, int Q, VALUE delay_type){
 	Graph *Gt = NULL;
 	int *time_s = NULL, *time_l = NULL, i;
 	time_s = calloc(G->V + 1, sizeof *time_s);

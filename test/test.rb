@@ -47,7 +47,7 @@ testset.each do |g|
 	variance_bound = 30000
 	print "\n", g.p[:name], " start", "\n---------------------------\n"
 	ilp = DFG_ILP::ILP.new(g, {:err_type => 'var', :q => latency, :variance_bound => variance_bound}) 
-	ret = ilp.ASAP
+	ret = ilp.ASAP(:min)
 	print   "ASAP scheduling done, longest path length: ", ret[:latency], "\n"
 	r = ilp.compute(g, :cplex)
 	
