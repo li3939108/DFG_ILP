@@ -254,15 +254,31 @@ module DFG_ILP
 		end
 		def p
 			{
-				:v => @vertex, 
-				:e => @edge, 
-				:PI => @PI, 
-				:PO => @PO, 
-				:vNoD => @vertex_without_D, 
-				:name => @name,
-				:adj => @vertex_adj_precedence,
-				:vAST => @vertex_AST ,
+				:v        => @vertex, 
+				:e        => @edge, 
+				:PI       => @PI, 
+				:PO       => @PO, 
+				:vNoD     => @vertex_without_D, 
+				:name     => @name,
+				:adj      => @vertex_adj_precedence,
+				:vAST     => @vertex_AST ,
 				:po_total => @po_count,
+			}
+		end
+		def gen
+			vertex = @vertex_adj_precedence
+			vertex.each{|v|
+			case v.type
+			when  '+', 'ALU'
+			print "wire [63:0] inputs_to_vertex_", v.n, "_0;", "\n"
+			print "wire [63:0] inputs_to_vertex_", v.n, "_1;", "\n"
+			print "wire [63:0] output_from_vertex_", v.n, ";", "\n"
+			when 's', 'x'
+			print "wire [63:0] inputs_to_vertex_", v.n, "_0;", "\n"
+			print "wire [63:0] inputs_to_vertex_", v.n, "_1;", "\n"
+			print "wire [63:0] output_from_vertex_", v.n, ";", "\n"
+			end
+			
 			}
 		end
 	end
