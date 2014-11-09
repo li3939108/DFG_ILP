@@ -59,7 +59,7 @@ static VALUE ASAP(VALUE self){
 
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	critical_length = asap(Gt, time, delay ) ;
+	critical_length = asap(Gt, time, delay, "min" ) ;
 	for(i = 1; i <= G->V; i++){
 		#ifdef DEBUG
 		char *op ;
@@ -96,7 +96,7 @@ static VALUE ALAP(VALUE self ){
 
 	time = calloc(G->V + 1, sizeof *time);
 	memset(time, 0xFF, (G->V + 1) * sizeof *time) ; //set all entry -1
-	alap(G, time, delay, FIX2INT(Q ) ) ;
+	alap(G, time, delay, FIX2INT(Q ) , "min") ;
 
 	for(i = 1; i <= G->V; i++){
 		#ifdef DEBUG
@@ -104,7 +104,7 @@ static VALUE ALAP(VALUE self ){
 		char *op ;
 		op = G->adj_list[i]->op ;
 		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		d = rb_funcall(d_arr, rb_intern("max"), 0) ;
+		d = rb_funcall(d_arr, rb_intern("min"), 0) ;
 		printf("(%d %s\ttype:%d delay:%d)->  \t %d)\n", i, G->adj_list[i]->op, FIX2INT( rb_funcall(d_arr, rb_intern("index"), 1, d) )  , FIX2INT( d ), time[i] ) ;
 		#endif
 		rb_ary_push(ret, INT2FIX(time[i]  ) ) ;
@@ -159,7 +159,7 @@ static VALUE M(VALUE self){
 
 	m = calloc(G->V + 1, sizeof *m);
 	memset(m, 0xFF, (G->V + 1) * sizeof *m) ; //set all entry -1
-	mobility(G, m, delay, FIX2INT(Q ) ) ;
+	mobility(G, m, delay, FIX2INT(Q ), "min" ) ;
 	for(i = 1; i <= G->V; i++){
 		rb_ary_push(ret, INT2FIX(m[i] ) ) ;
 		#ifdef DEBUG
