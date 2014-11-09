@@ -445,11 +445,14 @@ module DFG_ILP
 		def mmkp_compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :max)
 			position = 0
+			@delay = []
 			for i in [*0..@vertex.length - 1] do
 				index = ret[:v][position, @variance[ @vertex[i] ].length].index(1)
 				position += @variance[ @vertex[i] ].length
-				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "\n"
+				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "delay: ", @d[ @vertex[i] ][ index ], "\n"
+				@delay [i] = @d[ @vertex[i] ][ index ]
 			end
+			
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
@@ -527,6 +530,7 @@ module DFG_ILP
 				vs(sch, l + 1)
 			end
 		end
+
 	
 		require 'dfg_ilp/ilp_ext'
 	end
