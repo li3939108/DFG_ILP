@@ -53,10 +53,10 @@ int dfs(Graph *G, int s_label, int time[], VALUE delay, VALUE delay_type){//no c
  		time[s_label] = (time[s_label] < time_step ? time_step : time[s_label] );
 	}
 	op = G->adj_list[s_label]->op ;
-	d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-	if(delay_type == Qnil){
+	if(NIL_P( delay_type) ){
 		d = rb_ary_entry(delay, G->adj_list[i]->label - 1) ;
 	}else{
+		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 		d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
 	}
 	time[s_label] = time[s_label] + FIX2INT( d );
@@ -73,10 +73,10 @@ int asap(Graph *Gt, int *time, VALUE delay, VALUE delay_type){
 	for(i = 1; i <= Gt->V; i++){
 		VALUE d_arr, d ;
 		op = Gt->adj_list[i]->op ;
-		d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
-		if(delay_type == Qnil){
+		if(NIL_P( delay_type) ){
 			d = rb_ary_entry(delay, Gt->adj_list[i]->label - 1);
 		}else{
+			d_arr = rb_hash_aref(delay, rb_str_new2(op) ) ;
 			d = rb_funcall(d_arr, SYM2ID(delay_type), 0) ;
 		}
 		max = (max < time[i] ? time[i] : max );

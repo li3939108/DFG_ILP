@@ -458,7 +458,8 @@ module DFG_ILP
 			time = self.ALAP(nil)
 			time_slot = []
 			for i in [*0..time.length - 1] 
-				time_slot[ time[i] ] = i 
+				if time_slot[ time[i] ] == nil then time_slot[ time[i] ] = Array.new(1, i) 
+				else time_slot[ time[i] ].push(i) end
 			end
 			time_slot
 		end

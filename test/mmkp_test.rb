@@ -23,6 +23,7 @@ testcases = [arf]
 
 testcases.each do |g|
 	print "\n", g.p[:name], "start", "\n------------------------\n"
-	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => 30000})
+	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => 30000, :q => 22})
 	r = ilp.mmkp_compute(g, :cplex)
+	print ilp.list_scheduler
 end

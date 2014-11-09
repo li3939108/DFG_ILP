@@ -54,7 +54,7 @@ static VALUE ASAP(VALUE self, VALUE delay_type){
 	VALUE ret = rb_hash_new();
 	int *time, i, critical_length;
 
-	if(delay_type == Qnil){
+	if(NIL_P( delay_type) ){
 		delay = rb_ivar_get(self, rb_intern("@delay") ) ;
 	}else{
 		delay  = rb_ivar_get(self, rb_intern("@d") );
@@ -97,7 +97,7 @@ static VALUE ALAP(VALUE self, VALUE delay_type ){
 	int *time, i ;
 	VALUE ret = rb_ary_new();
 
-	if(delay_type == Qnil){
+	if( NIL_P( delay_type) ){
 		delay = rb_ivar_get(self, rb_intern("@delay") ) ;
 	}else{
 		delay  = rb_ivar_get(self, rb_intern("@d") );
@@ -168,7 +168,7 @@ static VALUE M(VALUE self, VALUE delay_type){
 	int *m, i ;
 	VALUE ret = rb_ary_new() ;
 
-	if(delay_type == Qnil){
+	if(NIL_P( delay_type) ){
 		delay = rb_ivar_get(self, rb_intern("@delay") ) ;
 	}else{
 		delay  = rb_ivar_get(self, rb_intern("@d") );
