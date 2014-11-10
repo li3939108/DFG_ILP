@@ -112,15 +112,14 @@ module DFG_ILP
 			@po_total = g.p[:po_total]
 
 
-
 			if parameters[:type] == 'mmkp' 
 
 
-
 			#get the number of variables
+			@Nerr = @vertex.length
 			@Nx = @vertex.map{|v| 
 				@variance[v].length
-			}.reduce(0,:+)
+			}.reduce(0,:+) 
 
 			#A is the constraints matrix  Ax <= b
 			@A = 
@@ -135,7 +134,8 @@ module DFG_ILP
 				n_zeros_after = @Nx - n_zeros_before - n_ones
 				Array.new(n_zeros_before, 0) + 
 				Array.new(n_ones, 1)+
-				Array.new(n_zeros_after, 0)
+				Array.new(n_zeros_after, 0)+
+				Array.new(1, 0) + Array.new(@Nerr, 0)
 			} + 
 
 			# Multiple dimension
@@ -145,15 +145,39 @@ module DFG_ILP
 						value * (@vertex_precedence_adj[i].ifactor[po_i]**2)
 					}
 				}.reduce([], :+)
-			}
+				xArray + [0]+ Array.new(@Nerr, 0)
+			}+
+			# Energy
+			[@vertex.map.with_index{|v,i|
+				@g[v]
+			}.reduce([], :+) + [-1] + Array.new(@Nerr, 0) ] +
+			
+			#Error Rate
+			@vertex.map.with_index{|v,i|	
+				start_point = [*0..i-1].map{|j| @variance[@vertex[j]].length  }.reduce(0,:+) 
+				xArray =  Array.new(@err[v]) 
+				ntail = @Nx - start_point - xArray.length
+				errArray = Array.new(@Nerr, 0)
+				errArray[i] = -1
+				if g.p[:PI][i] == false
+					@edge.select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
+				end
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + [0] + errArray 
+			} 
 
 			@op = 
 			Array.new(@vertex.length, EQ)+
-			Array.new(@po_total, LE)
+			Array.new(@po_total, LE)+
+			Array.new(1, EQ)+
+			# Error rate propagation 
+			Array.new(@vertex.length , EQ)
 			
 			@b =
 			Array.new(@vertex.length, 1)+
-			Array.new(@po_total, @variance_bound)
+			Array.new(@po_total, @variance_bound)+
+			[0] + 
+			# Error rate propagation 
+			Array.new(@vertex.length , 0)
 
 			@c =
 			@vertex.map.with_index{|v,i|
@@ -161,15 +185,14 @@ module DFG_ILP
 				@g[v].map{|value|
 					 @g[v][ref_index] - value
 				}
-			}.reduce([],:+)
-			@int = Array.new(@Nx, 'B')
-			@lb = Array.new(@Nx, 0)
-			@ub = Array.new(@Nx, 1)
+			}.reduce([],:+) + [0] + Array.new(@Nerr, 0)
+			@int = Array.new(@Nx , 'B') + ['I'] + Array.new(@Nerr, 'C')
+			@lb = Array.new(@Nx , 0)+ [0] + Array.new(@Nerr, -Float::INFINITY)
+			@ub = Array.new(@Nx , 1)+ [Float::INFINITY] + Array.new(@Nerr, 0)
 
 
 
 			else
-
 
 
 
@@ -445,58 +468,122 @@ module DFG_ILP
 		def mmkp_compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :max)
 			position = 0
+			err_position =  @Nx + 1
 			@delay = []
+			t = []
 			for i in [*0..@vertex.length - 1] do
 				index = ret[:v][position, @variance[ @vertex[i] ].length].index(1)
-				position += @variance[ @vertex[i] ].length
 				$stderr.print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "delay: ", @d[ @vertex[i] ][ index ], "\n"
 				@delay [i] = @d[ @vertex[i] ][ index ]
+				t[i] = index
+				error = ret[:v][err_position] 
+				position += @variance[ @vertex[i] ].length
+				err_position += 1
 			end
+			position = @vertex.length 
+			var_slack = []
+			for i in [*0..@po_total-1] do
+				var_slack.push(ret[:s][position])
+				position += 1
+			end 
+			{:type => t,
+			 :energy => ret[:v][@Nx - 1],
+			 :var => var_slack,
+			 :error => error} 
 			
 		end
-		def list_scheduler
-			time = []
-			time_slot = []
-			time_alap = self.ALAP(nil)
-			time_slot_alap = []
-			time_asap = self.ASAP(nil)
-			time_slot_asap = []
-			for i in [*0..time.length - 1] do
-				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
-				else time_slot_alap[ time_alap[i] ].push(i) end
-				if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
-				else time_slot_asap[ time_asap[i] ].push(i) end
-			end
-			resource_max = { 'x' => 1, '+' => 1, '@' => 1}
-			time_allocation = { 'x' => 0, '+' => 0, '@' => 0}
-			for i in (time_slot.length - 1).downto(0) do
-				if time_slot_alap[i]  != nil 
-					time_slot_alap[i].each{|v|
-						time[v] = i
-						if(time_slot[i] == nil) 
-							time_slot[i] = Array.new(1, v)
-						else
-							time_slot[i].push(v)
-							case @vertex[v - 1] 
-							when 'x'
-							
-							when '+', 'ALU'
-
-							else
-							end
-						end
-					}
-				else next
-				end
-			end
-			
-			
-		end
+		#def list_scheduler(type)
+		#	time = []
+		#	time_slot = []
+		#	time_alap = self.ALAP(nil)
+		#	time_slot_alap = []
+		#	time_asap = self.ASAP(nil)
+		#	time_slot_asap = []
+		#	for i in [*0..time.length - 1] do
+		#		if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
+		#		else time_slot_alap[ time_alap[i] ].push(i) end
+		#		if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
+		#		else time_slot_asap[ time_asap[i] ].push(i) end
+		#	end
+		#	#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
+		#	#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
+		#	being_used =  @d.map{|k,v| k => v.map{|delay| [0]} }
+		#	@vertex_precedence_adj.each{|v|
+		#		v.adj.each{|w|
+		#			if reverse_adj_list[w.n] == nil 
+		#				reverse_adj_list[w.n] = DFG_ILP::Vertex_precedence.new(w.n, @vertex[w.n - 1] )
+		#			end
+		#			reverse_adj_list[w.n].adj_push(v)
+		#		}
+		#	}
+		#	scheduled = {}
+		#	for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+		#	for i in [*0..time_slot.length - 1] do
+		#		being_used = being_used.map{|k,v| k=> v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 } } }
+		#		if time_slot_alap[i]  != nil 
+		#			time_slot_alap[i].each{|v|
+		#				time[v] = i
+		#				if(time_slot[i] == nil) 
+		#					time_slot[i] = Array.new(1, v)
+		#				else
+		#					time_slot[i].push(v)
+		#				end
+		#				case @vertex[v - 1] 
+		#				when 'x'
+		#				available_resource = being_used['x'][ type[v - 1] ].index(0)
+		#				if  available_resource == nil  
+		#					being_used['x'][ type[v - 1] ].push( @d['x'][type[v - 1] )
+		#				else
+		#					being_used['x'][ type[v - 1] ][ available_resource ]  = @d['x'][type[v - 1] ]
+		#				end
+		#				when '+', 'ALU'
+		#				available_resource = being_used['+'][ type[v - 1] ].index(0)
+		#				if  available_resource == nil  
+		#					being_used['+'][ type[v - 1] ].push( @d['+'][type[v - 1] )
+		#				else
+		#					being_used['+'][ type[v - 1] ][ available_resource ]  = @d['+'][type[v - 1] ]
+		#				end
+		#				else
+		#				available_resource = being_used['@'][ type[v - 1] ].index(0)
+		#				if  available_resource == nil  
+		#					being_used['@'][ type[v - 1] ].push( @d['@'][type[v - 1] )
+		#				else
+		#					being_used['@'][ type[v - 1] ][ available_resource ]  = @d['@'][type[v - 1] ]
+		#				end
+		#				end
+		#			}
+		#		else 
+		#			while (true ) do 
+		#				for_scheduling = reverse_adj_list.select{|v| 
+		#					v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+		#				if(for_scheduling.empty?) then break else
+		#					for_scheduling.sort{|x,y|
+		#						time_alap[x.n] <=> time.alap[y.n]
+		#					}
+		#					for_scheduling.each{|v|
+		#						available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
+		#						if(available_resource != nil) then 
+		#							being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
+		#								@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
+		#							scheduled [ v ] = true
+		#							time[v.n] = i 
+		#							if(time_slot[i] == nil) 
+		#								time_slot[i] = Array.new(1, v)
+		#							else
+		#								time_slot[i].push(v)
+		#							end
+		#						end
+		#					}
+		#				end
+		#			end
+		#		end
+		#	end
+		#end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
 			position = @Nx +@Nerr - 1
-	
+	        
 			allocation = {}
 			@u.keys.each{|k|
 				allocation[k] = @u[k].map{|u|

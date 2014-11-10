@@ -22,8 +22,11 @@ iir4.IIR(4)
 testcases = [arf]
 
 testcases.each do |g|
+	variance_bound = 30000
 	print "\n", g.p[:name], "start", "\n------------------------\n"
-	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => 30000, :q => 22})
+	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => variance_bound, :q => 22})
 	r = ilp.mmkp_compute(g, :cplex)
-	print ilp.list_scheduler
+	$stderr.print  "energy:", r[:energy],  "\n"
+	$stderr.print "var: ", r[:var].map{|var_slack| variance_bound - var_slack}, "\n"
+#	print ilp.list_scheduler
 end
