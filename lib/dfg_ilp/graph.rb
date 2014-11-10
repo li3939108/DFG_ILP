@@ -44,7 +44,7 @@ module DFG_ILP
 					case w.type
 					when 's','x'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
-						if_value + w.ifactor[i] * (randgen.rand(4.0) - 2)
+						if_value + w.ifactor[i] * (randgen.rand(8.0) - 4)
 					}
 					when '+', 'ALU'
 					@ifactor = @ifactor.map.with_index{|if_value,i|

@@ -449,19 +449,48 @@ module DFG_ILP
 			for i in [*0..@vertex.length - 1] do
 				index = ret[:v][position, @variance[ @vertex[i] ].length].index(1)
 				position += @variance[ @vertex[i] ].length
-				print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "delay: ", @d[ @vertex[i] ][ index ], "\n"
+				$stderr.print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "delay: ", @d[ @vertex[i] ][ index ], "\n"
 				@delay [i] = @d[ @vertex[i] ][ index ]
 			end
 			
 		end
 		def list_scheduler
-			time = self.ALAP(nil)
+			time = []
 			time_slot = []
-			for i in [*0..time.length - 1] 
-				if time_slot[ time[i] ] == nil then time_slot[ time[i] ] = Array.new(1, i) 
-				else time_slot[ time[i] ].push(i) end
+			time_alap = self.ALAP(nil)
+			time_slot_alap = []
+			time_asap = self.ASAP(nil)
+			time_slot_asap = []
+			for i in [*0..time.length - 1] do
+				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
+				else time_slot_alap[ time_alap[i] ].push(i) end
+				if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
+				else time_slot_asap[ time_asap[i] ].push(i) end
 			end
-			time_slot
+			resource_max = { 'x' => 1, '+' => 1, '@' => 1}
+			time_allocation = { 'x' => 0, '+' => 0, '@' => 0}
+			for i in (time_slot.length - 1).downto(0) do
+				if time_slot_alap[i]  != nil 
+					time_slot_alap[i].each{|v|
+						time[v] = i
+						if(time_slot[i] == nil) 
+							time_slot[i] = Array.new(1, v)
+						else
+							time_slot[i].push(v)
+							case @vertex[v - 1] 
+							when 'x'
+							
+							when '+', 'ALU'
+
+							else
+							end
+						end
+					}
+				else next
+				end
+			end
+			
+			
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
@@ -509,7 +538,7 @@ module DFG_ILP
 				var_slack.push(ret[:s][position])
 				position += 1
 			end 			
-			print	"\n", "optimal value: ", ret[:o], "\n", 
+			$stderr.print	"\n", "optimal value: ", ret[:o], "\n", 
 				"number of constraints: ", ret[:s].length, "\n", 
 				"number of variables: ", ret[:v].length, "\n", 
 				"allocation: ", allocation, "\n"
@@ -517,17 +546,17 @@ module DFG_ILP
 		end
 		def vs(sch, l = 0)
 			if(l == 0)
-				print "----------------------------------", "\n"
+				$stderr.print "----------------------------------", "\n"
 			end
 			if(sch.empty?)
-				print "----------------------------------", "\n"
+				$stderr.print "----------------------------------", "\n"
 				return
 			else
-				print l, "\t|\t"
+				$stderr.print l, "\t|\t"
 				i = 0
 				while i < sch.length do
 					if (sch[i][:time] == l) 
-						print sch[i][:op],sch[i][:id],': ', 
+						$stderr.print sch[i][:op],sch[i][:id],': ', 
 						'd', sch[i][:delay], 't', sch[i][:type],
 						'e', 1 - Math::E**sch[i][:error], "   "
 						sch.delete_at(i)
@@ -535,7 +564,7 @@ module DFG_ILP
 						i = i + 1
 					end
 				end
-				print "\n"
+				$stderr.print "\n"
 				vs(sch, l + 1)
 			end
 		end
