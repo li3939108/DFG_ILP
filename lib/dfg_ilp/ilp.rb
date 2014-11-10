@@ -471,12 +471,13 @@ module DFG_ILP
 			err_position =  @Nx + 1
 			@delay = []
 			t = []
+			error = []
 			for i in [*0..@vertex.length - 1] do
 				index = ret[:v][position, @variance[ @vertex[i] ].length].index(1)
 				$stderr.print 'vertex', i, ': ', @vertex[i] , ' ',  @type[ @vertex[i] ] [index], "delay: ", @d[ @vertex[i] ][ index ], "\n"
 				@delay [i] = @d[ @vertex[i] ][ index ]
 				t[i] = index
-				error = ret[:v][err_position] 
+				error.push( ret[:v][err_position]  )
 				position += @variance[ @vertex[i] ].length
 				err_position += 1
 			end
@@ -487,7 +488,7 @@ module DFG_ILP
 				position += 1
 			end 
 			{:type => t,
-			 :energy => ret[:v][@Nx - 1],
+			 :energy => ret[:v][@Nx ],
 			 :var => var_slack,
 			 :error => error} 
 			

@@ -28,5 +28,6 @@ testcases.each do |g|
 	r = ilp.mmkp_compute(g, :cplex)
 	$stderr.print  "energy:", r[:energy],  "\n"
 	$stderr.print "var: ", r[:var].map{|var_slack| variance_bound - var_slack}, "\n"
+	$stderr.print "er: ", [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| r[:error][po] }.max
 #	print ilp.list_scheduler
 end
