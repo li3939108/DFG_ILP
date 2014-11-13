@@ -56,7 +56,7 @@ testset.each do |g|
 	max_var = r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	
-	$stdout.print "#{g.p[:name]}&#{r[:opt]}&#{max_var}&#{1 - Math::E**er_bound}"
+	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 	 
 	ilp.vs(r[:sch], 0)
 	# error rate based ILP
@@ -66,7 +66,7 @@ testset.each do |g|
 	$stderr.print "var: ", er_r[:var].map{|var| -var}, "\n"
 	max_var = er_r[:var].map{|var| -var}.max
 
-	$stdout.print "&#{er_r[:opt]}&#{max_var}&#{1 - Math::E**er_bound}"
+	$stdout.print "&\t#{er_r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 
 	er_ilp.vs(er_r[:sch], 0)
 
@@ -78,13 +78,24 @@ testset.each do |g|
 	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
-	$stdout.print "&#{fa_ret[:opt]}&#{max_var}&#{1 - Math::E**er_bound}"
+	$stdout.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 
 	#accurate 
 	accurate_ilp = DFG_ILP::ILP.new(g, {:err_type => 'var', :q => latency, :variance_bound => 0})
 	a_ret = accurate_ilp.compute(g, :cplex)
 	accurate_ilp.vs(a_ret[:sch], 0)
 	
-	$stdout.print "&#{a_ret[:opt]}&0&0\n"
+	$stdout.print "&\t#{a_ret[:opt]}&\t0&\t0"
+
+	# mmkp
+	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => variance_bound, :q => latency})
+	mmkp_r = ilp.mmkp_compute(g, :cplex)
+	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
+	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
+	$stderr.print  "energy:", mmkp_r[:energy],  "\n"
+	$stderr.print "var: ", max_var, "\n"
+	$stderr.print "er: ", er_bound, "\n"
+	
+	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
 
 end

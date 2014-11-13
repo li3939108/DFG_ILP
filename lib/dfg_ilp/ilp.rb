@@ -9,7 +9,7 @@ module DFG_ILP
 			:g    => [40930, 74995],
 			:p    => [50, 45],
 			:err  => [Math::log(1 - 0.91), Math::log(1 - 0), ],
-			:variance  => [8000, 0],
+			:variance  => [77, 0],
 		},
 		'x' => {
 			:type => ["approximate", "accurate"], 
@@ -18,7 +18,7 @@ module DFG_ILP
 			:g    => [40930, 74995],
 			:p    => [50, 45],
 			:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-			:variance  => [8000, 0],
+			:variance  => [77, 0],
 		},
 		'ALU' => {
 			:type => ["approximate", "accurate"], 
@@ -27,7 +27,7 @@ module DFG_ILP
 			:g    => [4705, 6050],
 			:p    => [3, 4],
 			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)], 
-			:variance  => [8000, 0],
+			:variance  => [4474, 0],
 		},
 		'+' => {
 			:type => ["approximate", "accurate"], 
@@ -36,7 +36,7 @@ module DFG_ILP
 			:g    => [4705, 6050],
 			:p    => [3 , 4],
 			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)] ,
-			:variance  => [8000, 0],
+			:variance  => [4474, 0],
 		},
 		'D' => {
 			:type => ["accurate"],
@@ -488,7 +488,7 @@ module DFG_ILP
 				position += 1
 			end 
 			{:type => t,
-			 :energy => ret[:v][@Nx ],
+			 :energy => ret[:v][@Nx],
 			 :var => var_slack,
 			 :error => error} 
 			
