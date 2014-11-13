@@ -1,3 +1,5 @@
+
+`include "interface.v"
 module arf;
 
 reg	 
@@ -161,15 +163,14 @@ initial begin
 end
 
 initial begin
-	in_1_0 = 
-	in_2_0
-	in_3_0
-	in_4_0
-	in_5_0
-	in_6_0
-	in_7_0
-	in_8_0
-
+	in_1_0 = {$urandom(),$urandom()} >> 48
+	in_2_0 = {$urandom(),$urandom()} >> 48
+	in_3_0 = {$urandom(),$urandom()} >> 48
+	in_4_0 = {$urandom(),$urandom()} >> 48
+	in_5_0 = {$urandom(),$urandom()} >> 48
+	in_6_0 = {$urandom(),$urandom()} >> 48
+	in_7_0 = {$urandom(),$urandom()} >> 48
+	in_8_0 = {$urandom(),$urandom()} >> 48
 end
 
 endmodule
