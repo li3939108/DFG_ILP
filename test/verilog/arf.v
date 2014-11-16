@@ -1,15 +1,15 @@
 `include "interface.v"
 `include "arf_variance.v"
 `include "arf_accurate.v"
-`define TEST_SIZE 000
+`define TEST_SIZE 100
 
 module arf();
 
-wire [63:0] out_27_var, out_27_acc, out_28_var, out_28_acc;
+wire [31:0] out_27_var, out_27_acc, out_28_var, out_28_acc;
 
-	reg [15:0] a = ~(16'd3) + 16'b1 ;
+	reg [31:0] a = ~(32'd3) + 32'b1 ;
 	reg [31:0] b ;
-reg [15:0] 
+reg [31:0] 
 	in_1_0,
         in_2_0,
         in_3_0,
@@ -18,7 +18,7 @@ reg [15:0]
         in_6_0,
         in_7_0,
         in_8_0;
-reg [63:0]
+reg [31:0]
 	in_13_1, in_14_1;
 
 
@@ -54,8 +54,8 @@ initial begin
 	integer tmp = $urandom(r_seed);
 	integer i ;
 	integer input_width = 64- 10 ;
-	assign b = 16'b1101 * a ;
-	$display("%h x %h = %h\n",a, 16'b1101,  b) ;
+	assign b = 32'b1101 * a ;
+	$display("%h x %h = %h\n",a, 32'b1101,  b) ;
 	for(i = 0; i < `TEST_SIZE; i = i + 1 )begin
 		in_1_0 = {$urandom(),$urandom()} >> input_width;
 		in_2_0 = {$urandom(),$urandom()} >> input_width;
