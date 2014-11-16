@@ -500,6 +500,7 @@ module DFG_ILP
 			time_slot_alap = []
 			time_asap = self.ASAP(nil)
 			time_slot_asap = []
+			reverse_adj_list = []
 			for i in [*0..time.length - 1] do
 				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
 				else time_slot_alap[ time_alap[i] ].push(i) end
@@ -509,14 +510,13 @@ module DFG_ILP
 			#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
 			#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
 			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
+			#Create reverse adjancency list
+			reverse_adj_list[0] = DFG_ILP::Vertex_precedence.new
+			@vertex_precedence_adj.each{|v|
+				reverse_adj_list[v.n] = DFG_ILP::Vertex_precedence.new(v.n, v.type) }
 			@vertex_precedence_adj.each{|v|
 				v.adj.each{|w|
-					if reverse_adj_list[w.n] == nil 
-						reverse_adj_list[w.n] = DFG_ILP::Vertex_precedence.new(w.n, @vertex[w.n - 1] )
-					end
-					reverse_adj_list[w.n].adj_push(v)
-				}
-			}
+					reverse_adj_list[w.n].adj_push(v)}}
 			scheduled = {}
 			for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
 			for i in [*0..time_slot.length - 1] do

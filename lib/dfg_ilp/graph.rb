@@ -1,4 +1,5 @@
 module DFG_ILP
+	# Index starting from 1 
 	class Vertex_precedence
 		def initialize(n = 0, t = '@', pon = -1, adj_list = [], ifactor = [] )
 			@number = n
