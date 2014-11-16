@@ -493,93 +493,93 @@ module DFG_ILP
 			 :error => error} 
 			
 		end
-		#def list_scheduler(type)
-		#	time = []
-		#	time_slot = []
-		#	time_alap = self.ALAP(nil)
-		#	time_slot_alap = []
-		#	time_asap = self.ASAP(nil)
-		#	time_slot_asap = []
-		#	for i in [*0..time.length - 1] do
-		#		if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
-		#		else time_slot_alap[ time_alap[i] ].push(i) end
-		#		if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
-		#		else time_slot_asap[ time_asap[i] ].push(i) end
-		#	end
-		#	#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
-		#	#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
-		#	being_used =  @d.map{|k,v| k => v.map{|delay| [0]} }
-		#	@vertex_precedence_adj.each{|v|
-		#		v.adj.each{|w|
-		#			if reverse_adj_list[w.n] == nil 
-		#				reverse_adj_list[w.n] = DFG_ILP::Vertex_precedence.new(w.n, @vertex[w.n - 1] )
-		#			end
-		#			reverse_adj_list[w.n].adj_push(v)
-		#		}
-		#	}
-		#	scheduled = {}
-		#	for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
-		#	for i in [*0..time_slot.length - 1] do
-		#		being_used = being_used.map{|k,v| k=> v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 } } }
-		#		if time_slot_alap[i]  != nil 
-		#			time_slot_alap[i].each{|v|
-		#				time[v] = i
-		#				if(time_slot[i] == nil) 
-		#					time_slot[i] = Array.new(1, v)
-		#				else
-		#					time_slot[i].push(v)
-		#				end
-		#				case @vertex[v - 1] 
-		#				when 'x'
-		#				available_resource = being_used['x'][ type[v - 1] ].index(0)
-		#				if  available_resource == nil  
-		#					being_used['x'][ type[v - 1] ].push( @d['x'][type[v - 1] )
-		#				else
-		#					being_used['x'][ type[v - 1] ][ available_resource ]  = @d['x'][type[v - 1] ]
-		#				end
-		#				when '+', 'ALU'
-		#				available_resource = being_used['+'][ type[v - 1] ].index(0)
-		#				if  available_resource == nil  
-		#					being_used['+'][ type[v - 1] ].push( @d['+'][type[v - 1] )
-		#				else
-		#					being_used['+'][ type[v - 1] ][ available_resource ]  = @d['+'][type[v - 1] ]
-		#				end
-		#				else
-		#				available_resource = being_used['@'][ type[v - 1] ].index(0)
-		#				if  available_resource == nil  
-		#					being_used['@'][ type[v - 1] ].push( @d['@'][type[v - 1] )
-		#				else
-		#					being_used['@'][ type[v - 1] ][ available_resource ]  = @d['@'][type[v - 1] ]
-		#				end
-		#				end
-		#			}
-		#		else 
-		#			while (true ) do 
-		#				for_scheduling = reverse_adj_list.select{|v| 
-		#					v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
-		#				if(for_scheduling.empty?) then break else
-		#					for_scheduling.sort{|x,y|
-		#						time_alap[x.n] <=> time.alap[y.n]
-		#					}
-		#					for_scheduling.each{|v|
-		#						available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
-		#						if(available_resource != nil) then 
-		#							being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
-		#								@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
-		#							scheduled [ v ] = true
-		#							time[v.n] = i 
-		#							if(time_slot[i] == nil) 
-		#								time_slot[i] = Array.new(1, v)
-		#							else
-		#								time_slot[i].push(v)
-		#							end
-		#						end
-		#					}
-		#				end
-		#			end
-		#		end
-		#	end
-		#end
+		def list_scheduler(type)
+			time = []
+			time_slot = []
+			time_alap = self.ALAP(nil)
+			time_slot_alap = []
+			time_asap = self.ASAP(nil)
+			time_slot_asap = []
+			for i in [*0..time.length - 1] do
+				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
+				else time_slot_alap[ time_alap[i] ].push(i) end
+				if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
+				else time_slot_asap[ time_asap[i] ].push(i) end
+			end
+			#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
+			#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
+			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
+			@vertex_precedence_adj.each{|v|
+				v.adj.each{|w|
+					if reverse_adj_list[w.n] == nil 
+						reverse_adj_list[w.n] = DFG_ILP::Vertex_precedence.new(w.n, @vertex[w.n - 1] )
+					end
+					reverse_adj_list[w.n].adj_push(v)
+				}
+			}
+			scheduled = {}
+			for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+			for i in [*0..time_slot.length - 1] do
+				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
+				if time_slot_alap[i]  != nil 
+					time_slot_alap[i].each{|v|
+						time[v] = i
+						if(time_slot[i] == nil) 
+							time_slot[i] = Array.new(1, v)
+						else
+							time_slot[i].push(v)
+						end
+						case @vertex[v - 1] 
+						when 'x'
+						available_resource = being_used['x'][ type[v - 1] ].index(0)
+						if  available_resource == nil  
+							being_used['x'][ type[v - 1] ].push( @d['x'][type[v - 1] ] )
+						else
+							being_used['x'][ type[v - 1] ][ available_resource ]  = @d['x'][type[v - 1] ]
+						end
+						when '+', 'ALU'
+						available_resource = being_used['+'][ type[v - 1] ].index(0)
+						if  available_resource == nil  
+							being_used['+'][ type[v - 1] ].push( @d['+'][type[v - 1] ])
+						else
+							being_used['+'][ type[v - 1] ][ available_resource ]  = @d['+'][type[v - 1] ]
+						end
+						else
+						available_resource = being_used['@'][ type[v - 1] ].index(0)
+						if  available_resource == nil  
+							being_used['@'][ type[v - 1] ].push( @d['@'][type[v - 1]  ] )
+						else
+							being_used['@'][ type[v - 1] ][ available_resource ]  = @d['@'][type[v - 1] ]
+						end
+						end
+					}
+				else 
+					while (true ) do 
+						for_scheduling = reverse_adj_list.select{|v| 
+							v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+						if(for_scheduling.empty?) then break else
+							for_scheduling.sort{|x,y|
+								time_alap[x.n] <=> time.alap[y.n]
+							}
+							for_scheduling.each{|v|
+								available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
+								if(available_resource != nil) then 
+									being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
+										@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
+									scheduled [ v ] = true
+									time[v.n] = i 
+									if(time_slot[i] == nil) 
+										time_slot[i] = Array.new(1, v)
+									else
+										time_slot[i].push(v)
+									end
+								end
+							}
+						end
+					end
+				end
+			end
+		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
