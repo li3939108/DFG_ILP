@@ -6,6 +6,7 @@ root_dir = "/home/me/DFG_ILP"
 
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.ifactor
+$stderr.print arf.p[:adj].map{|v| [v.n, v.rand_number]}
 
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
@@ -28,7 +29,7 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [sds]
+testcase = [arf]
 testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = {
@@ -42,7 +43,7 @@ minLatency = {
 }
 
 
-testset.each do |g|
+testcase.each do |g|
 	latency = minLatency[g] * 2
 	variance_bound = 30000
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"

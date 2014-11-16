@@ -6,6 +6,7 @@ module DFG_ILP
 			@type = t
 			@ifactor = ifactor 
 			@po_index = pon 
+			@rand_number = nil
 		end
 		def type
 			@type
@@ -26,6 +27,12 @@ module DFG_ILP
 		def ifactor=(factor)
 			@ifactor = factor
 		end
+		def rand_number=(random_number)
+			@rand_number = random_number
+		end
+		def rand_number
+			@rand_number
+		end
 		def inspect
 			[@number, @type, @ifactor,
 				@adjacency_list.map{|v| v.n } ]
@@ -44,7 +51,8 @@ module DFG_ILP
 					case w.type
 					when 's','x'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
-						if_value + w.ifactor[i] * (randgen.rand(8.0) - 4)
+						w.rand_number = (randgen.rand(1..2)*2 - 3) * 3
+						if_value + w.ifactor[i] * w.rand_number
 					}
 					when '+', 'ALU'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
