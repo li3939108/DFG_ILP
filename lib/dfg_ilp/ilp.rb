@@ -519,6 +519,7 @@ module DFG_ILP
 					reverse_adj_list[w.n].adj_push(v)}}
 			scheduled = {}
 			for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+			print for_scheduling , "\n\n"
 			for i in [*0..time_slot.length - 1] do
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil 
@@ -579,6 +580,7 @@ module DFG_ILP
 					end
 				end
 			end
+			time_slot
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
