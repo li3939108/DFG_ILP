@@ -6,7 +6,7 @@ wire [31:0] out ;
 wire  Cout ;
 
 integer i, TESTSIZE;
-real mean, variance, std;
+real mean, variance, std, mean_result;
 longint signed error[], sum, result_sum;
 
 AMA_appr4_32bit_8appr appr0( 
@@ -17,7 +17,7 @@ AMA_appr4_32bit_8appr appr0(
 	.Cin(1'b0) );
 
 initial begin
-	integer r_seed = 200 ;
+	integer r_seed = 23232 ;
 	integer tmp = $urandom(r_seed);
 	integer status ;
 	TESTSIZE = 0;
@@ -30,11 +30,12 @@ initial begin
 end
 initial begin
 	for(i=0; i<TESTSIZE; i=i+1)begin
-		in_0 = $urandom();
-		in_1 = $urandom();
+		in_0 = $urandom()>> 19;
+		in_1 = $urandom()>> 19;
 		#5;
 		error[i] = $signed(out) - $signed( in_0 + in_1 ) ;
 		sum += error[i] ;
+		result_sum += $signed(in_0 + in_1);
 		$display("Actual: %d\nAppr:   %d\nError:  %d\n", in_0 + in_1, out, error[i]) ;
 	end
 	#5;
@@ -43,7 +44,9 @@ initial begin
 		variance += ( (error[i] - mean)**2)/( TESTSIZE+0.0) ;
 	end
 	std = variance**(1.0/2.0);
-	$display("Mean:     %f\nVariance: %f\nStd:      %f\n", mean, variance, std );
+	mean_result = result_sum/ (TESTSIZE + 0.0) ;
+	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\n", 
+		mean, mean / mean_result, variance, std, std/mean_result, mean_result);
 
 end
 
