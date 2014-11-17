@@ -1,0 +1,38 @@
+`timescale 1ns / 1ns 
+`include "Multiplier_appr.v"
+//`include "NangateOpenCellLibrary.v"
+
+module stimulus;
+
+//integer file;
+parameter BITWIDTH = 16;
+reg signed [BITWIDTH - 1 : 0] A;
+reg signed [BITWIDTH - 1 : 0] B;
+
+wire signed [BITWIDTH * 2 - 1 : 0] out;
+
+Multiplier_appr nn( out, A, B );
+
+initial
+begin
+//file = $fopen("result.txt","w");
+
+#5	A=16'b0101011001011100; B=16'b0100011101111100;
+#5	A=16'b0001011001011100; B=16'b1100011101111100;
+#5	A=16'b1011011101111100; B=16'b1011100001011100;
+#5	A=16'b0000000010111011; B=16'b0000001010100101;
+#5	A=16'b1000110010111011; B=16'b1001101010100101;
+#5	A=16'b1111110010111011; B=16'b1111111010100101;
+#5	A=16'b0111111111111111; B=16'b0111111111111111;
+#5	A=16'b1000000000000001; B=16'b1000000000000001;
+
+
+
+end
+
+//initial
+//	$sdf_annotate("wallacemul16.sdf.sdf", nn);
+initial
+#5	$monitor("A=%d, B=%d, out=%d",A, B, out);
+
+endmodule
