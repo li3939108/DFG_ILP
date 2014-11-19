@@ -8,20 +8,23 @@
 /*
  Approximate multiplier
  */
+
+`include "parameters.v"
+
 module mul_0(
 	out, in_0, in_1
 );
-input wire [15:0] in_0, in_1;
+input wire [31:0] in_0, in_1;
 output wire [31:0] out;
 
 wire [31:0] out_intermediate ;
 
-assign out = {{32{out_intermediate[31]}}, out_intermediate[31:0]} >> 12  ;
+assign out = {{32{out_intermediate[31]}}, out_intermediate[31:0]} >> `SHIFT_WIDTH  ;
 
 Multiplier_appr mul(
 	.out(out_intermediate), 
-	.A(in_0), 
-	.B(in_1 << 12)
+	.A(in_0[15:0]), 
+	.B(in_1[15:0])
 );
 
 endmodule
@@ -32,10 +35,15 @@ endmodule
 module mul_1(
 	out, in_0, in_1
 );
+
+
 input wire [31:0] in_0, in_1;
 output wire [31:0] out;
 
-assign out = in_0 * in_1 ;
+wire [31:0] out_intermediate ;
+
+assign out = {{32{out_intermediate[31]}}, out_intermediate[31:0]} >> `SHIFT_WIDTH  ;
+assign out_intermediate = in_0 * in_1 ;
 
 endmodule
 

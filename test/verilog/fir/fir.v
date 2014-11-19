@@ -1,7 +1,9 @@
 `include "interface.v"
 `include "fir_accurate.v"
 `include "fir_variance.v"
+`include "parameters.v"
 module fir;
+
 
 reg signed [31:0] 
 	in_1_0,	
@@ -14,12 +16,15 @@ wire signed [31:0]
 	out_11_0, out_11_1, out_11_0_int;
 
 
-integer i, TESTSIZE;
+integer i, TESTSIZE,input_width = 64 - `INPUT_WIDTH ;
 real 
 	mean       , 
 	variance   , 
 	std        , 
-	mean_result
+	mean_result,
+	snr_sum,
+	snr,
+	ares_sum, ares
 ;
 longint signed 
 	error[], 
@@ -54,17 +59,27 @@ initial begin
 	integer status ;
 	TESTSIZE = 0;
 	status = $value$plusargs("T=%d", TESTSIZE) ;
-	#5;
+
+	in_6_0 = {$urandom(),$urandom()} >> input_width;
+        in_5_0 = {$urandom(),$urandom()} >> input_width;
+        in_4_0 = {$urandom(),$urandom()} >> input_width;
+        in_3_0 = {$urandom(),$urandom()} >> input_width;
+        in_2_0 = {$urandom(),$urandom()} >> input_width;
+        in_1_0 = {$urandom(),$urandom()} >> input_width;
+
+
 	error = new[TESTSIZE] ;
 	sum = 0;
 	variance = 0.0;
 	result_sum = 0;
+	ares_sum = 0;
+
 end
 
 
 initial begin
-	integer input_width = 64 - 12 ;
 
+	#5;
 	for(i = 0; i < TESTSIZE; i = i + 1 )begin
 		in_6_0 = in_5_0 ;
 		in_5_0 = in_4_0 ;
@@ -78,6 +93,10 @@ initial begin
 		sum += error[i] ;
 
 		result_sum += ($signed(out_11_1) > 0 ? out_11_1 : -out_11_1);
+	
+		snr_sum += ($signed(out_11_1)**2)/ ($signed(error[i])**2);
+
+		ares_sum += $itor(error[i] ) / $itor(out_11_1 );
 
 		$display("appr:   %d\naccu:   %d\ndiff:   %d(%f)\n", 
 			out_11_0, 
@@ -86,14 +105,15 @@ initial begin
 			error[i] / (out_11_1 + 0.0) );
 	end
 	mean = sum / (TESTSIZE + 0.0) ;
-
+	snr = snr_sum / (TESTSIZE + 0.0);
+	ares = ares_sum / (TESTSIZE + 0.0); 
 	for (i = 0; i < TESTSIZE; i = i + 1) begin		
 		variance += ( ( error[i] - mean)**2) / (TESTSIZE + 0.0);
 	end
 	std = variance ** (1.0/2.0) ;
 	mean_result = result_sum / (TESTSIZE + 0.0);
-	$display("variance:  %f\nmean:      %f(%f)\nstd:       %f(%f)\nresult:    %f\n", 
-		variance, mean, mean/mean_result, std, std / mean_result, mean_result );
+	$display("variance:  %f\nmean:      %f(%f)\nstd:       %f(%f)\nresult:    %f\nsnr:       %f\nares:      %f\n", 
+		variance, mean, mean/mean_result, std, std / mean_result, mean_result, snr, ares );
 
 end
 
