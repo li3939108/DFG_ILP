@@ -1,4 +1,5 @@
 `include "AMA_appr4_32bit_8appr.v"
+`include "parameters.v"
 module tb;
 reg [31:0] in_0;
 reg [31:0] in_1;
@@ -30,8 +31,8 @@ initial begin
 end
 initial begin
 	for(i=0; i<TESTSIZE; i=i+1)begin
-		in_0 = $urandom()>> 19;
-		in_1 = $urandom()>> 19;
+		in_0 = $urandom()>> `INPUT_WIDTH;
+		in_1 = $urandom()>> `INPUT_WIDTH;
 		#5;
 		error[i] = $signed(out) - $signed( in_0 + in_1 ) ;
 		sum += error[i] ;
