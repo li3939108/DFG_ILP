@@ -1,6 +1,7 @@
 `include "interface.v"
 `include "arf_variance.v"
 `include "arf_accurate.v"
+`include "arf_variance_0.v"
 `include "parameters.v"
 
 module arf();
@@ -23,7 +24,7 @@ integer i, TESTSIZE;
 real mean[2], variance[2], std[2], mean_result[2], snr[2], snr_sum[2], mse[2], ares_sum[2], ares[2];
 longint signed error[2][], sum[2], result_sum[2];
 
-arf_variance arf0(
+arf_variance_0 arf0(
 	in_1_0,
 	in_2_0,
 	in_3_0,

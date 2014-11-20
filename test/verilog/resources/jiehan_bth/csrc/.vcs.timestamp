@@ -33,14 +33,14 @@ UNAME=/bin/uname
 TOOL_HOME=/softwares/Common/synopsys/C-2009.06/linux
 SYS_BASE=/softwares/Common/synopsys
 STROOT=/softwares/Common/synopsys/sentaurus_I_2013.12
-SSH_TTY=/dev/pts/11
-SSH_CONNECTION=172.16.48.97 34720 10.0.0.81 22
-SSH_CLIENT=172.16.48.97 34720 22
+SSH_TTY=/dev/pts/13
+SSH_CONNECTION=10.202.55.250 56649 10.0.0.81 22
+SSH_CLIENT=10.202.55.250 56649 22
 SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
 SNPS_SIMIF=/softwares/Common/synopsys/Hspice_C-2009.09-SP1
 SNPSLMD_LICENSE_FILE=27000@license.ece.tamu.edu:27000@license.ece.tamu.edu:/softwares/Common/synopsys/C-2009.06/flexlm//license.dat
 SCRNAME=vcs
-REMOTEHOST=tamu-172-16-48-97.vpn.tamu.edu
+REMOTEHOST=dhcp-10-202-55-250.tamulink.tamu.edu
 OVA_UUM=0
 OSTYPE=linux
 MG_HOME=/softwares/Common/synopsys/Magellan_vD-2010.03
@@ -61,26 +61,28 @@ CVS_RSH=ssh
 ARCHPRO_ROOT=/softwares/Common/synopsys/MVtools_vD-2010.06
 ARCH=x86_64
 0
-20
-1416195146 CS_Adder32.v
-1416195146 CS_Adder32.v
-1416195300 booth.v
-1416195300 booth.v
-1416195146 cla.v
-1416195146 cla.v
-1416195146 adlv_31.v
-1416195146 adlv_31.v
-1416195146 adlv_23.v
-1416195146 adlv_23.v
-1416195146 adlv_19.v
-1416195146 adlv_19.v
-1416195146 adlv_17.v
-1416195146 adlv_17.v
-1416195146 cell.v
-1416195146 cell.v
-1416195146 ./Multiplier_appr.v
-1416195146 ./Multiplier_appr.v
-1416195194 tb.v
-1416195194 tb.v
-1416195303 tb.daidir
-1416195303 csrc
+22
+1416454093 parameters.v
+1416454093 parameters.v
+1416451125 CS_Adder32.v
+1416451125 CS_Adder32.v
+1416451125 booth.v
+1416451125 booth.v
+1416451125 cla.v
+1416451125 cla.v
+1416451125 adlv_31.v
+1416451125 adlv_31.v
+1416451125 adlv_23.v
+1416451125 adlv_23.v
+1416451125 adlv_19.v
+1416451125 adlv_19.v
+1416451125 adlv_17.v
+1416451125 adlv_17.v
+1416451125 cell.v
+1416451125 cell.v
+1416451125 ./Multiplier_appr.v
+1416451125 ./Multiplier_appr.v
+1416454104 tb.v
+1416454104 tb.v
+1416454107 tb.daidir
+1416454107 csrc

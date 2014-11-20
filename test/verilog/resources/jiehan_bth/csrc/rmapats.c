@@ -261,7 +261,7 @@ void  rmaPropagate9(UB  * pcode, vec32  * pval);
 #ifdef __cplusplus
 extern "C" {
 #endif
-void  rmaPropagate10(UB  * pcode, scalar  val);
+void  rmaPropagate10(UB  * pcode, vec32  * pval);
 #ifdef __cplusplus
 }
 #endif
@@ -275,7 +275,7 @@ void  rmaPropagate11(UB  * pcode, scalar  val);
 #ifdef __cplusplus
 extern "C" {
 #endif
-void  rmaPropagate12(UB  * pcode, vec32  * pval);
+void  rmaPropagate12(UB  * pcode, scalar  val);
 #ifdef __cplusplus
 }
 #endif
@@ -289,14 +289,7 @@ void  rmaPropagate13(UB  * pcode, vec32  * pval);
 #ifdef __cplusplus
 extern "C" {
 #endif
-void  rmaPropagate14(UB  * pcode, scalar  val);
-#ifdef __cplusplus
-}
-#endif
-#ifdef __cplusplus
-extern "C" {
-#endif
-void  rmaPropagate14t0(UB  * pcode, UB  val);
+void  rmaPropagate14(UB  * pcode, vec32  * pval);
 #ifdef __cplusplus
 }
 #endif
@@ -311,6 +304,20 @@ void  rmaPropagate15(UB  * pcode, scalar  val);
 extern "C" {
 #endif
 void  rmaPropagate15t0(UB  * pcode, UB  val);
+#ifdef __cplusplus
+}
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+void  rmaPropagate16(UB  * pcode, scalar  val);
+#ifdef __cplusplus
+}
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+void  rmaPropagate16t0(UB  * pcode, UB  val);
 #ifdef __cplusplus
 }
 #endif
@@ -330,9 +337,10 @@ FP rmaFunctionArray[] = {
 	(FP) rmaPropagate12,
 	(FP) rmaPropagate13,
 	(FP) rmaPropagate14,
-	(FP) rmaPropagate14t0,
 	(FP) rmaPropagate15,
-	(FP) rmaPropagate15t0
+	(FP) rmaPropagate15t0,
+	(FP) rmaPropagate16,
+	(FP) rmaPropagate16t0
 };
 
 #ifdef __cplusplus
