@@ -498,14 +498,10 @@ module DFG_ILP
 			time_slot = []
 			time_alap = self.ALAP(nil)
 			time_slot_alap = []
-			time_asap = self.ASAP(nil)
-			time_slot_asap = []
 			reverse_adj_list = []
-			for i in [*0..time.length - 1] do
+			for i in [*0..time_alap.length - 1] do
 				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
 				else time_slot_alap[ time_alap[i] ].push(i) end
-				if time_slot_asap[ time_asap[i] ] == nil then time_slot_asap[ time_asap[i] ] = Array.new(1, i) 
-				else time_slot_asap[ time_asap[i] ].push(i) end
 			end
 			#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
 			#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
@@ -520,7 +516,7 @@ module DFG_ILP
 			scheduled = {}
 			for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
 			print for_scheduling , "\n\n"
-			for i in [*0..time_slot.length - 1] do
+			for i in [*0..time_slot_alap.length - 1] do
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil 
 					time_slot_alap[i].each{|v|
