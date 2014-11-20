@@ -556,7 +556,7 @@ module DFG_ILP
 							v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
 						if(for_scheduling.empty?) then break else
 							for_scheduling.sort{|x,y|
-								time_alap[x.n] <=> time.alap[y.n]
+								time_alap[x.n] <=> time_alap[y.n]
 							}
 							for_scheduling.each{|v|
 								available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
@@ -576,7 +576,7 @@ module DFG_ILP
 					end
 				end
 			end
-			time_slot
+			[time, time_slot]
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
