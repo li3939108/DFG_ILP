@@ -560,8 +560,10 @@ module DFG_ILP
 							}
 							print time_alap, "\n"
 							print for_scheduling, "\n"
+							print scheduled, "\n"
 							for_scheduling.each{|v|
 								available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
+								print being_used , "\n"
 								if(available_resource != nil) then 
 									being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
 										@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
