@@ -506,15 +506,15 @@ module DFG_ILP
 			#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
 			#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
 			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
-			#Create reverse adjancency list
-			reverse_adj_list[0] = DFG_ILP::Vertex_precedence.new
+			# Create reverse adjancency list 
+			# No dummy node at index 0
 			@vertex_precedence_adj.each{|v|
-				reverse_adj_list[v.n] = DFG_ILP::Vertex_precedence.new(v.n, v.type) }
+				reverse_adj_list[v.n - 1] = DFG_ILP::Vertex_precedence.new(v.n, v.type) }
 			@vertex_precedence_adj.each{|v|
 				v.adj.each{|w|
-					reverse_adj_list[w.n].adj_push(v)}}
+					reverse_adj_list[w.n - 1].adj_push(v)}}
 			scheduled = {}
-			for_scheduling = reverse_adj_list.select{|v| v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+			for_scheduling = reverse_adj_list.select{|v| (v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty?) and v.n != 0 }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
@@ -554,6 +554,7 @@ module DFG_ILP
 					while (true ) do 
 						for_scheduling = reverse_adj_list.select{|v| 
 							v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+						print for_scheduling, "\n\n"
 						if(for_scheduling.empty?) then break else
 							for_scheduling.sort{|x,y|
 								time_alap[x.n] <=> time_alap[y.n]
