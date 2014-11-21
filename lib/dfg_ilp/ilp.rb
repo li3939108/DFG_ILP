@@ -554,11 +554,12 @@ module DFG_ILP
 					while (true ) do 
 						for_scheduling = reverse_adj_list.select{|v| 
 							v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
-						print for_scheduling, "\n\n"
 						if(for_scheduling.empty?) then break else
-							for_scheduling.sort{|x,y|
+							for_scheduling = for_scheduling.sort{|x,y|
 								time_alap[x.n] <=> time_alap[y.n]
 							}
+							print time_alap, "\n"
+							print for_scheduling, "\n"
 							for_scheduling.each{|v|
 								available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
 								if(available_resource != nil) then 
