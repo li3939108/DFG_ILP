@@ -551,32 +551,30 @@ module DFG_ILP
 						end
 					}
 				else 
-					while (true ) do 
-						for_scheduling = reverse_adj_list.select{|v| 
-							v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
-						if(for_scheduling.empty?) then break else
-							for_scheduling = for_scheduling.sort{|x,y|
-								time_alap[x.n] <=> time_alap[y.n]
-							}
-							print time_alap, "\n"
-							print for_scheduling, "\n"
-							print scheduled, "\n"
-							for_scheduling.each{|v|
-								available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
-								print being_used , "\n"
-								if(available_resource != nil) then 
-									being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
-										@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
-									scheduled [ v ] = true
-									time[v.n] = i 
-									if(time_slot[i] == nil) 
-										time_slot[i] = Array.new(1, v)
-									else
-										time_slot[i].push(v)
-									end
+					for_scheduling = reverse_adj_list.select{|v| 
+						v.adj.empty? or v.adj.select{|v| not scheduled[v] }.empty? }
+					if(not for_scheduling.empty?) then 
+						for_scheduling = for_scheduling.sort{|x,y|
+							time_alap[x.n] <=> time_alap[y.n]
+						}
+						print time_alap, "\n"
+						print for_scheduling, "\n"
+						print scheduled, "\n"
+						for_scheduling.each{|v|
+							available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
+							print being_used , "\n"
+							if(available_resource != nil) then 
+								being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
+									@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
+								scheduled [ v ] = true
+								time[v.n] = i 
+								if(time_slot[i] == nil) 
+									time_slot[i] = Array.new(1, v)
+								else
+									time_slot[i].push(v)
 								end
-							}
-						end
+							end
+						}
 					end
 				end
 			end
