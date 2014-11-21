@@ -514,7 +514,8 @@ module DFG_ILP
 				v.adj.each{|w|
 					reverse_adj_list[w.n - 1].adj_push(v)}}
 			scheduled = []
-			for_scheduling = reverse_adj_list.select{|v| (v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n] }.empty?) and (not scheduled[v.n]) }
+			for_scheduling = reverse_adj_list.select{|v| 
+				(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n] }.empty?) and (not scheduled[v.n]) }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
 				print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
