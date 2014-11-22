@@ -507,8 +507,7 @@ module DFG_ILP
 				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
 				else time_slot_alap[ time_alap[i] ].push(i) end
 			end
-			#sorted = time.map.with_index{|t,i| [i, t] }.sort{|x,y|  x[1] <=> y[1] }.reverse
-			#resource_max = { 'x' => [1,1], '+' => [1,1], '@' => [1]}
+			print "\n", "time_alap: ", time_alap, "time_slot_alap: ", time_slot_alap, "\n\n"
 			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
 			# Create reverse adjancency list 
 			# No dummy node at index 0
@@ -517,18 +516,19 @@ module DFG_ILP
 			@vertex_precedence_adj.each{|v|
 				v.adj.each{|w|
 					reverse_adj_list[w.n - 1].adj_push(v)}}
+			print "reverselist: ", reverse_adj_list , "\n\n"
 			scheduled = []
 			for_scheduling = reverse_adj_list.select{|v| 
-				(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n ] }.empty?) and (not scheduled[v.n ]) }
+				(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n - 1] }.empty?) and (not scheduled[v.n - 1]) }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
 				print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil then
-					time_slot_alap[i].each{|v|
+					time_slot_alap[i].each{|v|# starting from index 0
 						# Assign time step
 						if(not scheduled[v] ) then 
-							time[v - 1] = i 
+							time[v ] = i 
 							scheduled[v] = true 
 						end
 						if(time_slot[i] == nil) 
@@ -536,7 +536,8 @@ module DFG_ILP
 						else
 							time_slot[i].push(v)
 						end
-						case @vertex[v - 1] 
+
+						case @vertex[v ] 
 						when 'x'
 						available_resource = being_used['x'][ type[v - 1] ].index(0)
 						if  available_resource == nil  
@@ -562,10 +563,10 @@ module DFG_ILP
 					}
 				else 
 					for_scheduling = reverse_adj_list.select{|v| 
-						(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n ] }.empty?) and (not scheduled[v.n ]) }
+						(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n  - 1] }.empty?) and (not scheduled[v.n - 1]) }
 					if(not for_scheduling.empty?) then 
 						for_scheduling = for_scheduling.sort{|x,y|
-							time_alap[x.n] <=> time_alap[y.n]
+							time_alap[x.n - 1] <=> time_alap[y.n - 1]
 						}
 						print time_alap, "\n"
 						print for_scheduling, "\n"
@@ -576,7 +577,7 @@ module DFG_ILP
 							if(available_resource != nil) then 
 								being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
 									@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
-								scheduled [ v.n ] = true
+								scheduled [ v.n - 1] = true
 								# Assign time step
 								time[v.n - 1] = i 
 								if(time_slot[i] == nil) 
