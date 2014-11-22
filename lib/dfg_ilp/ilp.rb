@@ -494,9 +494,26 @@ module DFG_ILP
 			
 		end
 		# time is the scheduled starting time for each node
-		# node index starting from 1
-		def scheduled(time)
+		def delay(vertex, type, index) 
+			@d[vertex.type][type [ index ] ]
 		end
+		def finished(time, cur, vertex, type)
+			index = vertex.n - 1
+			if(time[index] == nil) 
+				return false
+			else
+				return ( cur >= time[index] + delay( vertex, type, index) )
+			end
+		end
+		def scheduled(time, cur, vertex, type)
+			index = vertex.n - 1
+			if(time[index] == nil)
+				return false 
+			else 
+				return true 
+			end
+		end
+		
 		def list_scheduler(type)
 			time = []
 			time_slot = []
@@ -504,11 +521,15 @@ module DFG_ILP
 			time_slot_alap = []
 			reverse_adj_list = []
 			for i in [*0..time_alap.length - 1] do
-				if time_slot_alap[ time_alap[i] ] == nil then time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
-				else time_slot_alap[ time_alap[i] ].push(i) end
+				if time_slot_alap[ time_alap[i] ] == nil 
+					time_slot_alap[ time_alap[i] ] = Array.new(1, i) 
+				else 
+					time_slot_alap[ time_alap[i] ].push(i) 
+				end
 			end
 			print "\n", "time_alap: ", time_alap, "time_slot_alap: ", time_slot_alap, "\n\n"
 			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
+
 			# Create reverse adjancency list 
 			# No dummy node at index 0
 			@vertex_precedence_adj.each{|v|
@@ -517,9 +538,12 @@ module DFG_ILP
 				v.adj.each{|w|
 					reverse_adj_list[w.n - 1].adj_push(v)}}
 			print "reverselist: ", reverse_adj_list , "\n\n"
-			scheduled = []
+			#scheduled = []
 			for_scheduling = reverse_adj_list.select{|v| 
-				(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n - 1] }.empty?) and (not scheduled[v.n - 1]) }
+				(v.adj.empty? or 
+				v.adj.select{|vi| 
+					not finished(time, i, vi, type) }.empty?) and 
+				(not scheduled( time, i, v, type) ) }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
 				print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
@@ -527,58 +551,39 @@ module DFG_ILP
 				if time_slot_alap[i]  != nil then
 					time_slot_alap[i].each{|v|# starting from index 0
 						# Assign time step
-						if(not scheduled[v] ) then 
+						if(not scheduled( time, i, reverse_adj_list[v], type) ) then 
 							time[v ] = i 
-							scheduled[v] = true 
-						end
-						if(time_slot[i] == nil) 
-							time_slot[i] = Array.new(1, v)
-						else
-							time_slot[i].push(v)
-						end
-
-						case @vertex[v ] 
-						when 'x'
-						available_resource = being_used['x'][ type[v - 1] ].index(0)
-						if  available_resource == nil  
-							being_used['x'][ type[v - 1] ].push( @d['x'][type[v - 1] ] )
-						else
-							being_used['x'][ type[v - 1] ][ available_resource ]  = @d['x'][type[v - 1] ]
-						end
-						when '+', 'ALU'
-						available_resource = being_used['+'][ type[v - 1] ].index(0)
-						if  available_resource == nil  
-							being_used['+'][ type[v - 1] ].push( @d['+'][type[v - 1] ])
-						else
-							being_used['+'][ type[v - 1] ][ available_resource ]  = @d['+'][type[v - 1] ]
-						end
-						else
-						available_resource = being_used['@'][ type[v - 1] ].index(0)
-						if  available_resource == nil  
-							being_used['@'][ type[v - 1] ].push( @d['@'][type[v - 1]  ] )
-						else
-							being_used['@'][ type[v - 1] ][ available_resource ]  = @d['@'][type[v - 1] ]
-						end
+							if(time_slot[i] == nil) 
+								time_slot[i] = Array.new(1, reverse_adj_list[v])
+							else
+								time_slot[i].push(reverse_adj_list[v])
+							end
+							available_resource = being_used[ @vertex[v] ] [ type [v - 1] ].index(0) 
+							if available_resource == nil 
+								being_used[ @vertex[v] ][ type[v - 1] ].push ( @d[ @vertex[v] ][type[ v - 1]] )
+							else
+								being_used[ @vertex[v] ][ type[v - 1] ][ available_resource ]  = @d[@vertex[v] ][type[v - 1] ]
+							end
 						end
 					}
 				else 
 					for_scheduling = reverse_adj_list.select{|v| 
-						(v.adj.empty? or v.adj.select{|vi| not scheduled[vi.n  - 1] }.empty?) and (not scheduled[v.n - 1]) }
+						(v.adj.empty? or 
+						v.adj.select{|vi| 
+							not finished( time, i, vi, type) }.empty?) and 
+						(not scheduled( time, i, v, type) ) }
 					if(not for_scheduling.empty?) then 
 						for_scheduling = for_scheduling.sort{|x,y|
 							time_alap[x.n - 1] <=> time_alap[y.n - 1]
 						}
 						print time_alap, "\n"
 						print for_scheduling, "\n"
-						print scheduled, "\n"
 						for_scheduling.each{|v|
 							available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
 							print being_used , "\n"
 							if(available_resource != nil) then 
 								being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
 									@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
-								scheduled [ v.n - 1] = true
-								# Assign time step
 								time[v.n - 1] = i 
 								if(time_slot[i] == nil) 
 									time_slot[i] = Array.new(1, v)

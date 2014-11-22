@@ -29,5 +29,9 @@ testcases.each do |g|
 	$stderr.print  "energy:", r[:energy],  "\n"
 	$stderr.print "var: ", r[:var].map{|var_slack| variance_bound - var_slack}, "\n"
 	$stderr.print "er: ", [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| r[:error][po] }.max
-	print "\n",ilp.list_scheduler(r[:type]), "\n"
+	sch = ilp.list_scheduler(r[:type])
+	print "\n\n------------------\nresults: \n\n"
+	sch[1].each{|arr|
+		print arr != nil ? arr.map{|v| v.n}:nil, "\n"
+	}
 end
