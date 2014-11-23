@@ -483,7 +483,8 @@ module DFG_ILP
 			 :error => error} 
 			
 		end
-		# time is the scheduled starting time for each node
+		
+		# following are for list scheduling
 		def delay(vertex, type, index) 
 			@d[vertex.type][type [ index ] ]
 		end
@@ -539,7 +540,7 @@ module DFG_ILP
 				end
 			end
 			print "\n", "time_alap: ", time_alap, "time_slot_alap: ", time_slot_alap, "\n\n"
-			being_used = Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
+			being_used = Hash[ @d.map{|k,v| [k, v.map{|delay| []} ] } ]
 
 			# Create reverse adjancency list 
 			# No dummy node at index 0
@@ -585,8 +586,14 @@ module DFG_ILP
 						print time_alap, "\n"
 						print for_scheduling, "\n"
 						for_scheduling.each{|v|
-						if ( true == allocate_available_resource( being_used, v.n - 1, implementation[v.n - 1], allocated) )
-							add_to(i, time_slot, time, reverse_adj_list, v.n - 1)
+						vindex_0 = v.n - 1
+						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated) )
+							add_to(i, time_slot, time, reverse_adj_list, vindex_0 )
+						elsif ( being_used[ v.type ][ implementation[ vindex_0 ] ].empty? )
+							add_to(i, time_slot, time, reverse_adj_list, vindex_0)
+							being_used[ v.type ][ implementation[ vindex_0] ].push ( 
+								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
+							allocated[ vindex_0] = implementation[vindex_0]
 						end
 						}
 					end
