@@ -19,7 +19,9 @@ arf.ifactor
 
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
-testcases = [arf]
+iir4.ifactor
+
+testcases = [iir4]
 
 testcases.each do |g|
 	variance_bound = 30000

@@ -516,6 +516,14 @@ module DFG_ILP
 			end
 			return false
 		end
+		def add_to(cur,time_slot, time, reverse_adj_list, vindex_0)
+			time[vindex_0] = cur
+			if(time_slot[cur] == nil) 
+				time_slot[cur] = Array.new(1, reverse_adj_list[vindex_0])
+			else
+				time_slot[cur].push(reverse_adj_list[vindex_0])
+			end
+		end
 		def list_scheduler(implementation)
 			time = []
 			time_slot = []
@@ -553,20 +561,16 @@ module DFG_ILP
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil then
 					time_slot_alap[i].each{|vindex_0|# starting from index 0
-						# Assign time step
-						if(not scheduled( time, i, reverse_adj_list[vindex_0], implementation) ) then 
-							time[vindex_0 ] = i 
-							if(time_slot[i] == nil) 
-								time_slot[i] = Array.new(1, reverse_adj_list[vindex_0])
-							else
-								time_slot[i].push(reverse_adj_list[vindex_0])
-							end
-							if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated ) == false)
-								being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].push ( 
-									@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
-								allocated[ vindex_0] = implementation[vindex_0]
-							end
+					
+					if(not scheduled( time, i, reverse_adj_list[vindex_0], implementation) ) then 
+						add_to(i, time_slot, time, reverse_adj_list, vindex_0)
+						if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated ) == false)
+							being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].push ( 
+								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
+							allocated[ vindex_0] = implementation[vindex_0]
 						end
+					end
+			
 					}
 				else 
 					for_scheduling = reverse_adj_list.select{|v| 
@@ -581,14 +585,9 @@ module DFG_ILP
 						print time_alap, "\n"
 						print for_scheduling, "\n"
 						for_scheduling.each{|v|
-							if ( true == allocate_available_resource( being_used, v.n - 1, implementation[v.n - 1], allocated) )
-								time[v.n - 1] = i 
-								if(time_slot[i] == nil) 
-									time_slot[i] = Array.new(1, v)
-								else
-									time_slot[i].push(v)
-								end
-							end
+						if ( true == allocate_available_resource( being_used, v.n - 1, implementation[v.n - 1], allocated) )
+							add_to(i, time_slot, time, reverse_adj_list, v.n - 1)
+						end
 						}
 					end
 				end
