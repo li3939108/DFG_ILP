@@ -564,6 +564,7 @@ module DFG_ILP
 							if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated ) == false)
 								being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].push ( 
 									@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
+								allocated[ vindex_0] = implementation[vindex_0]
 							end
 						end
 					}
@@ -592,6 +593,8 @@ module DFG_ILP
 					end
 				end
 			end
+			print "\n\n"
+			print allocated, "\n\n"
 			[time, time_slot, being_used]
 		end
 		def compute(g, method)
