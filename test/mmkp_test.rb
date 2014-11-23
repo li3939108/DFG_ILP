@@ -34,4 +34,5 @@ testcases.each do |g|
 	sch[1].each{|arr|
 		print arr != nil ? arr.map{|v| v.n}:nil, "\n"
 	}
+	print "\n\n", sch, "\n"
 end

@@ -513,10 +513,23 @@ module DFG_ILP
 				return true 
 			end
 		end
-		
-		def list_scheduler(type)
+		def allocate_available_resource( being_used, vindex_0, implementation, allocated)
+			type = @vertex[ vindex_0 ]
+			length = being_used[ type ].length
+			for i in  implementation..length-1 
+				available_resource = being_used[ type ][ i ].index(0) 
+				if(available_resource != nil)
+					being_used[ type ][ i][available_resource] = @d[ type ][ i ]
+					allocated [ vindex_0 ] = i 
+					return true
+				end
+			end
+			return false
+		end
+		def list_scheduler(implementation)
 			time = []
 			time_slot = []
+			allocated = []
 			time_alap = self.ALAP(nil)
 			time_slot_alap = []
 			reverse_adj_list = []
@@ -528,7 +541,7 @@ module DFG_ILP
 				end
 			end
 			print "\n", "time_alap: ", time_alap, "time_slot_alap: ", time_slot_alap, "\n\n"
-			being_used =  Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
+			being_used = Hash[ @d.map{|k,v| [k, v.map{|delay| [0]} ] } ]
 
 			# Create reverse adjancency list 
 			# No dummy node at index 0
@@ -542,27 +555,25 @@ module DFG_ILP
 			for_scheduling = reverse_adj_list.select{|v| 
 				(v.adj.empty? or 
 				v.adj.select{|vi| 
-					not finished(time, i, vi, type) }.empty?) and 
-				(not scheduled( time, i, v, type) ) }
+					not finished(time, i, vi, implementation) }.empty?) and 
+				(not scheduled( time, i, v, implementation) ) }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
 				print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil then
-					time_slot_alap[i].each{|v|# starting from index 0
+					time_slot_alap[i].each{|vindex_0|# starting from index 0
 						# Assign time step
-						if(not scheduled( time, i, reverse_adj_list[v], type) ) then 
-							time[v ] = i 
+						if(not scheduled( time, i, reverse_adj_list[vindex_0], implementation) ) then 
+							time[vindex_0 ] = i 
 							if(time_slot[i] == nil) 
-								time_slot[i] = Array.new(1, reverse_adj_list[v])
+								time_slot[i] = Array.new(1, reverse_adj_list[vindex_0])
 							else
-								time_slot[i].push(reverse_adj_list[v])
+								time_slot[i].push(reverse_adj_list[vindex_0])
 							end
-							available_resource = being_used[ @vertex[v] ] [ type [v - 1] ].index(0) 
-							if available_resource == nil 
-								being_used[ @vertex[v] ][ type[v - 1] ].push ( @d[ @vertex[v] ][type[ v - 1]] )
-							else
-								being_used[ @vertex[v] ][ type[v - 1] ][ available_resource ]  = @d[@vertex[v] ][type[v - 1] ]
+							if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated ) == false)
+								being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].push ( 
+									@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
 							end
 						end
 					}
@@ -570,8 +581,8 @@ module DFG_ILP
 					for_scheduling = reverse_adj_list.select{|v| 
 						(v.adj.empty? or 
 						v.adj.select{|vi| 
-							not finished( time, i, vi, type) }.empty?) and 
-						(not scheduled( time, i, v, type) ) }
+							not finished( time, i, vi, implementation) }.empty?) and 
+						(not scheduled( time, i, v, implementation) ) }
 					if(not for_scheduling.empty?) then 
 						for_scheduling = for_scheduling.sort{|x,y|
 							time_alap[x.n - 1] <=> time_alap[y.n - 1]
@@ -579,11 +590,7 @@ module DFG_ILP
 						print time_alap, "\n"
 						print for_scheduling, "\n"
 						for_scheduling.each{|v|
-							available_resource = being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ].index(0)
-							print being_used , "\n"
-							if(available_resource != nil) then 
-								being_used[ @vertex[v.n - 1] ][ type [v.n - 1] ][available_resource] = 
-									@d [ @vertex[v.n - 1] ] [ type [v.n - 1] ]
+							if ( true == allocate_available_resource( being_used, v.n - 1, implementation[v.n - 1], allocated) )
 								time[v.n - 1] = i 
 								if(time_slot[i] == nil) 
 									time_slot[i] = Array.new(1, v)
@@ -595,7 +602,7 @@ module DFG_ILP
 					end
 				end
 			end
-			[time, time_slot]
+			[time, time_slot, being_used]
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
