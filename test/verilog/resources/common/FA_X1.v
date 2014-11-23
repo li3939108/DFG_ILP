@@ -1,6 +1,9 @@
 // Library - Design, Cell - MA_Nan, View - schematic
 // LAST TIME SAVED: Nov 14 22:56:26 2014
 // NETLIST TIME: Nov 14 22:56:48 2014
+`ifndef __FA_X1_V__
+`define __FA_X1_V__
+
 `timescale 1ns / 1ns 
 
 module FA_X1 ( A, B, Cin, Cout, SUM );
@@ -51,3 +54,5 @@ nmos  M22 ( net120, net121, A);
 nmos  M23 ( net121, GND, B);
 
 endmodule
+
+`endif

@@ -1,6 +1,9 @@
 // Library - Design, Cell - AMA_appr4_24bit_6appr, View - schematic
 // LAST TIME SAVED: Nov 16 22:24:34 2014
 // NETLIST TIME: Nov 16 22:24:57 2014
+`include "../common/MA_4bit_Nan.v"
+`include "../common/MA_appr4_Nan.v"
+`include "../common/FA_X1.v"
 `timescale 1ns / 1ns 
 
 module AMA_appr4_24bit_6appr ( Cout, S, A, B, Cin );

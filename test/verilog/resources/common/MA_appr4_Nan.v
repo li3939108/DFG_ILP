@@ -1,6 +1,9 @@
 // Library - Design, Cell - MA_appr4_Nan, View - schematic
 // LAST TIME SAVED: Nov 14 20:30:24 2014
 // NETLIST TIME: Nov 14 21:02:11 2014
+`ifndef __MA_APPR4_NAN_V__
+`define __MA_APPR4_NAN_V__
+
 `timescale 1ns / 1ns 
 
 module MA_appr4_Nan ( Cout, SUM, GND, Vdd, A, B, Cin );
@@ -35,3 +38,5 @@ nmos  M9 ( net73, net74, B);
 nmos  M10 ( net74, GND, A);
 
 endmodule
+
+`endif

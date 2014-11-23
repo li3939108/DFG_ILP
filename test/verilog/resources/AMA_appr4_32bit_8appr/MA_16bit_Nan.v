@@ -1,6 +1,3 @@
-// Library - Design, Cell - MA_16bit_Nan, View - schematic
-// LAST TIME SAVED: Nov 12 13:56:28 2014
-// NETLIST TIME: Nov 14 21:02:11 2014
 `timescale 1ns / 1ns 
 
 module MA_16bit_Nan ( Cout, S, A, B, Cin );

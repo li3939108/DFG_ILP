@@ -1,6 +1,9 @@
 // Library - Design, Cell - AMA_appr4_28bit_7appr, View - schematic
 // LAST TIME SAVED: Nov 16 22:26:06 2014
 // NETLIST TIME: Nov 16 22:26:37 2014
+`include "../common/MA_4bit_Nan.v"
+`include "../common/MA_appr4_Nan.v"
+`include "../common/FA_X1.v"
 `timescale 1ns / 1ns 
 
 module AMA_appr4_28bit_7appr ( Cout, S, A, B, Cin );

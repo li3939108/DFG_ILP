@@ -6,7 +6,7 @@
 
 module arf();
 
-wire signed [31:0] out_27_var, out_27_acc, out_28_var, out_28_acc;
+wire signed [31:0] out_27_var, out_27_acc, out_28_var, out_28_acc, in_25_0_acc, in_25_1_acc, in_25_0_var, in_25_1_var;
 
 reg signed [31:0] 
 	in_1_0,
@@ -24,35 +24,35 @@ integer i, TESTSIZE;
 real mean[2], variance[2], std[2], mean_result[2], snr[2], snr_sum[2], mse[2], ares_sum[2], ares[2];
 longint signed error[2][], sum[2], result_sum[2];
 
-arf_variance_0 arf0(
-	in_1_0,
-	in_2_0,
-	in_3_0,
-	in_4_0,
-	in_5_0,
-	in_6_0,
-	in_7_0,
-	in_8_0,
-	in_13_1,
-	in_14_1,
-	out_27_var,
-	out_28_var);
+arf_variance arf0(
+	.in_1_0(in_1_0),
+	.in_2_0(in_2_0),
+	.in_3_0(in_3_0),
+	.in_4_0(in_4_0),
+	.in_5_0(in_5_0),
+	.in_6_0(in_6_0),
+	.in_7_0(in_7_0),
+	.in_8_0(in_8_0),
+	.in_13_1(in_13_1),
+	.in_14_1(in_14_1),
+	.out_27(out_27_var),
+	.out_28(out_28_var)
+	);
 arf_accurate arf1(
-	in_1_0,
-	in_2_0,
-	in_3_0,
-	in_4_0,
-	in_5_0,
-	in_6_0,
-	in_7_0,
-	in_8_0,
-	in_13_1,
-	in_14_1,
-	out_27_acc,
-	out_28_acc);
+	.in_1_0(in_1_0),
+	.in_2_0(in_2_0),
+	.in_3_0(in_3_0),
+	.in_4_0(in_4_0),
+	.in_5_0(in_5_0),
+	.in_6_0(in_6_0),
+	.in_7_0(in_7_0),
+	.in_8_0(in_8_0),
+	.in_13_1(in_13_1),
+	.in_14_1(in_14_1),
+	.out_27(out_27_acc),
+	.out_28(out_28_acc));
+
 initial begin
-	integer r_seed = 200 ;
-	integer tmp = $urandom(r_seed);
 	integer status ;
 	TESTSIZE = 0;
 	status = $value$plusargs("T=%d", TESTSIZE) ;
@@ -73,6 +73,8 @@ end
 
 initial begin
 	integer input_width = 64 - `INPUT_WIDTH ;
+	integer r_seed = 2 ;
+	$srandom(r_seed);
 
 	for(i = 0; i < TESTSIZE; i = i + 1 )begin
 		in_1_0 = {$urandom(),$urandom()} >> input_width;
@@ -102,7 +104,7 @@ initial begin
 		ares_sum[1] += error[1][i] / ( out_28_acc + 0.0);
 
 		#200;
-		$display ("%h, %h, %h, %h, %h, %h, %h, %h\n", in_1_0, in_2_0, in_3_0, in_4_0, in_5_0, in_6_0, in_7_0, in_8_0 ) ;
+		$display ("%h, %h, %h, %h, %h, %h, %h, %h\n", in_1_0, in_2_0, in_3_0, in_4_0, in_5_0, in_6_0, in_7_0, in_8_0) ;
 		$display("27_var: %d, 28_var: %d\n27_acc: %d, 28_acc: %d\ndiff:   %d(%f),         %d(%f)\n",
 			$signed(out_27_var),$signed(out_28_var),$signed(out_27_acc),$signed(out_28_acc), 
 			error[0][i], $itor(error[0][i]) / $itor(out_27_acc) , error[1][i], $itor(error[1][i]) / $itor(out_28_acc) );

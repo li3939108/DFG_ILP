@@ -2,10 +2,10 @@
 // LAST TIME SAVED: Nov 14 20:55:28 2014
 // NETLIST TIME: Nov 14 21:02:11 2014
 `timescale 1ns / 1ns 
-`include "FA_X1.v"
-`include "MA_appr4_Nan.v"
+`include "../common/FA_X1.v"
+`include "../common/MA_appr4_Nan.v"
 `include "MA_appr4_4bit_Nan.v"
-`include "MA_4bit_Nan.v"
+`include "../common/MA_4bit_Nan.v"
 `include "MA_16bit_Nan.v"
 `include "MA_appr4_8bit_Nan.v"
 

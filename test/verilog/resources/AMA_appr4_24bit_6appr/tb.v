@@ -1,32 +1,54 @@
-`timescale 1ns / 1ns
 `include "AMA_appr4_24bit_6appr.v"
-`include "FA_X1.v"
-`include "MA_4bit_Nan.v"
-`include "MA_appr4_Nan.v"
+`include "parameters.v"
+module tb;
+reg [`BIT_WIDTH - 1:0] in_0;
+reg [`BIT_WIDTH - 1:0] in_1;
+wire [`BIT_WIDTH - 1:0] out ;
+wire  Cout ;
 
-module stimulus;
-integer file;
-reg [23:0] A;
-reg [23:0] B;
-reg Cin;
-wire [23:0] SUM;
-wire Cout;
+integer i, TESTSIZE;
+real mean, variance, std, mean_result;
+longint signed error[], sum, result_sum;
 
-AMA_appr4_24bit_6appr n1(Cout, SUM, A, B, Cin);
+AMA_appr4_24bit_6appr appr0( 
+	.Cout(Cout) , 
+	.S(out), 
+	.A(in_0), 
+	.B(in_1), 
+	.Cin(1'b0) );
 
-initial
-begin
-file = $fopen("result.txt","w");
-
-#5 A=24'h135FAD; B=24'h8D683D; Cin=1'h1;
-#5 A=24'hBAAC2A; B=24'h4EF295; Cin=1'h0;
-#5 A=24'h3DD0FB; B=24'hB51E77; Cin=1'h1;
-#5 A=24'hC934FC; B=24'h30D59A; Cin=1'h1;
-#5 A=24'h1E6D76; B=24'h006F80; Cin=1'h0;
+initial begin
+	integer r_seed = 23232 ;
+	integer tmp = $urandom(r_seed);
+	integer status ;
+	TESTSIZE = 0;
+	status = $value$plusargs("T=%d", TESTSIZE) ;
+	#5;
+	error = new[TESTSIZE] ;
+	sum = 0;
+	variance = 0;
+	result_sum = 0;
+end
+initial begin
+	for(i=0; i<TESTSIZE; i=i+1)begin
+		in_0 = $urandom()>> (32 - `INPUT_WIDTH);
+		in_1 = $urandom()>> (32 - `INPUT_WIDTH);
+		#5;
+		error[i] = $signed(out) - $signed( in_0 + in_1 ) ;
+		sum += error[i] ;
+		result_sum += $signed(in_0 + in_1);
+		$display("Actual: %d\nAppr:   %d\nError:  %d\n", in_0 + in_1, out, error[i]) ;
+	end
+	#5;
+	mean = sum / (TESTSIZE + 0.0) ;
+	for (i=0;i<TESTSIZE;i=i+1)begin
+		variance += ( (error[i] - mean)**2)/( TESTSIZE+0.0) ;
+	end
+	std = variance**(1.0/2.0);
+	mean_result = result_sum/ (TESTSIZE + 0.0) ;
+	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\n", 
+		mean, mean / mean_result, variance, std, std/mean_result, mean_result);
 
 end
-
-initial
-$fmonitor(file,"A=%h, B=%h, Cin=%h, SUM=%h, Cout=%h",A, B, Cin, SUM, Cout);
 
 endmodule

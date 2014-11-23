@@ -1,16 +1,16 @@
-`include "AMA_appr4_32bit_8appr.v"
+`include "AMA_appr4_28bit_7appr.v"
 `include "parameters.v"
 module tb;
-reg [31:0] in_0;
-reg [31:0] in_1;
-wire [31:0] out ;
+reg [`BIT_WIDTH - 1:0] in_0;
+reg [`BIT_WIDTH - 1:0] in_1;
+wire [`BIT_WIDTH - 1:0] out ;
 wire  Cout ;
 
 integer i, TESTSIZE;
 real mean, variance, std, mean_result;
 longint signed error[], sum, result_sum;
 
-AMA_appr4_32bit_8appr appr0( 
+AMA_appr4_28bit_7appr appr0( 
 	.Cout(Cout) , 
 	.S(out), 
 	.A(in_0), 
@@ -31,8 +31,8 @@ initial begin
 end
 initial begin
 	for(i=0; i<TESTSIZE; i=i+1)begin
-		in_0 = $urandom()>> `INPUT_WIDTH;
-		in_1 = $urandom()>> `INPUT_WIDTH;
+		in_0 = $urandom()>> (32 - `INPUT_WIDTH);
+		in_1 = $urandom()>> (32 - `INPUT_WIDTH);
 		#5;
 		error[i] = $signed(out) - $signed( in_0 + in_1 ) ;
 		sum += error[i] ;

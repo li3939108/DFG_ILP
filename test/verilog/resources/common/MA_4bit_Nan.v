@@ -1,6 +1,9 @@
 // Library - Design, Cell - MA_4bit_Nan, View - schematic
 // LAST TIME SAVED: Nov 12 13:51:11 2014
 // NETLIST TIME: Nov 16 22:24:57 2014
+`ifndef __MA_4BIT_NAN_V__
+`define __MA_4BIT_NAN_V__
+
 `timescale 1ns / 1ns 
 
 module MA_4bit_Nan ( Cout, S, A, B, Cin );
@@ -26,3 +29,4 @@ FA_X1 I1 ( A[2], B[2], net8, net9, S[2]);
 FA_X1 I0 ( A[3], B[3], net9, Cout, S[3]);
 
 endmodule
+`endif

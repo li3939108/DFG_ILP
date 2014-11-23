@@ -1,6 +1,3 @@
-// Library - Design, Cell - MA_appr4_8bit_Nan, View - schematic
-// LAST TIME SAVED: Nov 14 20:39:36 2014
-// NETLIST TIME: Nov 14 21:02:11 2014
 `timescale 1ns / 1ns 
 
 module MA_appr4_8bit_Nan ( Cout, S, GND, Vdd, A, B, Cin );

@@ -33,7 +33,7 @@ longint signed
 	result_sum;
 
 
-fir_variance_0 fir0(
+fir_variance fir0(
 	.in_1_0(in_1_0),
 	.in_2_0(in_2_0),
 	.in_3_0(in_3_0),
