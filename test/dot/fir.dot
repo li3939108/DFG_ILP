@@ -1,0 +1,25 @@
+digraph g {
+node [fontcolor=white,style=filled,color=blue2];
+node_1 [label = "x1"];
+node_2 [label = "x2"];
+node_3 [label = "x3"];
+node_4 [label = "x4"];
+node_5 [label = "x5"];
+node_6 [label = "x6"];
+node_7 [label = "+7"];
+node_8 [label = "+8"];
+node_9 [label = "+9"];
+node_10 [label = "+10"];
+node_11 [label = "+11"];
+node_1 -> node_7 ;
+node_2 -> node_7 ;
+node_7 -> node_8 ;
+node_3 -> node_8 ;
+node_8 -> node_9 ;
+node_4 -> node_9 ;
+node_9 -> node_10 ;
+node_5 -> node_10 ;
+node_10 -> node_11 ;
+node_6 -> node_11 ;
+}
+
