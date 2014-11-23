@@ -553,7 +553,7 @@ module DFG_ILP
 			for_scheduling = reverse_adj_list.select{|v| 
 				(v.adj.empty? or 
 				v.adj.select{|vi| 
-					not finished(time, i, vi, implementation) }.empty?) and 
+					not finished(time, i, vi, allocated) }.empty?) and 
 				(not scheduled( time, i, v, implementation) ) }
 			print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
@@ -576,7 +576,7 @@ module DFG_ILP
 					for_scheduling = reverse_adj_list.select{|v| 
 						(v.adj.empty? or 
 						v.adj.select{|vi| 
-							not finished( time, i, vi, implementation) }.empty?) and 
+							not finished( time, i, vi, allocated) }.empty?) and 
 						(not scheduled( time, i, v, implementation) ) }
 					if(not for_scheduling.empty?) then 
 						for_scheduling = for_scheduling.sort{|x,y|
