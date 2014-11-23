@@ -18,8 +18,6 @@ module DFG_ILP
 			if parameters[:no_resource_limit] == nil then no_resource_limit = no_resource_limit
 			else no_resource_limit = true end
 
-			operations            = [] 
-
 			# this is the default error rate bound on the primay outputs
 			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.99)
 			else error_bound = parameters[:error_bound] end

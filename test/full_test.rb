@@ -17,15 +17,21 @@ arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.arf_AST
 arf.ifactor
 
+vertex = ['x', 'x', 'x', 'x', 'x', 'x', '+', '+', '+', '+', '+']
+edge = [[6, 0], [6,1], [7,6], [7,2],[8,7], [8,3], [9,8], [9,4], [10,9], [10,5] ]
+fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})
+fir.ifactor
+
+
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
-testcases = [arf]
+testcases = [fir]
 fullset = [iir4, arf, midct, mv, mm, jfdct, pyr, jbmp, sds]
 testset1 = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 testcases.each do |g|
 	print "\n", g.p[:name], " start", "\n---------------------------\n"
-	ilp = DFG_ILP::ILP.new(g, {:q => ARGV[0].to_i, :error_bound => Math::log(1-0.005)}) 
+	ilp = DFG_ILP::ILP.new(g, {:q => ARGV[0].to_i, :error_bound => Math::log(1-1)}) 
 	ret = ilp.ASAP
 	print   "ASAP scheduling done, longest path length: ", ret[:latency], "\n"
 	r = ilp.compute(g, :cplex)
