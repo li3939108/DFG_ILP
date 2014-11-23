@@ -63,7 +63,7 @@ operation_parameters1 = {
 
 	
 
-root_dir = "/home/me/DFG_ILP"
+root_dir = "/homes/grad/li3939108/DFG_ILP"
 
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.ifactor
