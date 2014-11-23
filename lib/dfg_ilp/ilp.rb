@@ -1,66 +1,10 @@
 module DFG_ILP
 	class ILP
-		DEFAULT_OPERATION_PARAMETERS = {
 
-		's' => {
-			:type => ["approximate", "accurate"],
-			:u    => [1,1],
-			:d    => [2,3],
-			:g    => [40930, 74995],
-			:p    => [50, 45],
-			:err  => [Math::log(1 - 0.91), Math::log(1 - 0), ],
-			:variance  => [77, 0],
-		},
-		'x' => {
-			:type => ["approximate", "accurate"], 
-			:u    => [1, 1], 
-			:d    => [2, 3], 
-			:g    => [40930, 74995],
-			:p    => [50, 45],
-			:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-			:variance  => [77, 0],
-		},
-		'ALU' => {
-			:type => ["approximate", "accurate"], 
-			:u    => [1, 1],
-			:d    => [1, 2], 
-			:g    => [4705, 6050],
-			:p    => [3, 4],
-			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)], 
-			:variance  => [4474, 0],
-		},
-		'+' => {
-			:type => ["approximate", "accurate"], 
-			:u    => [1, 1],
-			:d    => [1, 2], 
-			:g    => [4705, 6050],
-			:p    => [3 , 4],
-			:err  => [Math::log(1 - 0.91),Math::log(1 - 0)] ,
-			:variance  => [4474, 0],
-		},
-		'D' => {
-			:type => ["accurate"],
-			:u    => [Float::INFINITY],
-			:d    => [1],
-			:g    => [0],
-			:p    => [0],
-			:err  => [Math::log(1 - 0)] ,
-			:variance  => [0],
-
-		},
-		'@' => {
-			:type => ["accurate"],
-			:u    => [Float::INFINITY],
-			:d    => [1],
-			:g    => [6050],
-			:p    => [4],
-			:err  => [Math::log(1 - 0)] ,
-			:variance  => [0],
-		},
-		}
 		MIN = true#constant for minimum linear programming
 		MAX = false#constant for maximum linear programming
 		def initialize(g, parameters = {} )
+			operation_parameters = parameters[:operation_parameters]
 			mobility_constrainted = true
 			no_resource_limit = true
 
@@ -92,15 +36,15 @@ module DFG_ILP
 			@vertex_precedence_adj = g.p[:adj]
 			@edge   = g.p[:e]
 			@mC     = mobility_constrainted
-			@type   = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:type] ]}]
-			@u      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:u] ]} ]
-			@d      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:d] ]} ]
+			@type   = Hash[operation_parameters.map{|k,v| [k, v[:type] ]}]
+			@u      = Hash[operation_parameters.map{|k,v| [k, v[:u] ]} ]
+			@d      = Hash[operation_parameters.map{|k,v| [k, v[:d] ]} ]
 			# dynamic energy
-			@g      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:g] ]} ]
+			@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
 			# static power
-			@p      = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:p] ]} ]
-			@err    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:err]]}]
-			@variance    = Hash[DEFAULT_OPERATION_PARAMETERS.map{|k,v| [k, v[:variance]]}]
+			@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
+			@err    = Hash[operation_parameters.map{|k,v| [k, v[:err]]}]
+			@variance    = Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
 			@variance_bound = variance_bound
 			@errB = error_bound
 
