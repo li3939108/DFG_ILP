@@ -27,7 +27,7 @@ operation_parameters3 = {
 		:d    => [2, 2, 2], 
 		:g    => [48390, 38750, 66780],
 		:p    => [7300,  4000,  10000],
-		:err  => [Math::log(1 - 1),  Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833,  0],
 	},
 	'+' => {
@@ -36,7 +36,7 @@ operation_parameters3 = {
 		:d    => [2, 2, 2], 
 		:g    => [48390, 38750, 66780],
 		:p    => [7300,  4000,  10000],
-		:err  => [Math::log(1 - 1),  Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833,  0],
 	},
 	'D' => {
@@ -184,6 +184,11 @@ operation_parameters1 = {
 
 root_dir = "/home/me/DFG_ILP"
 
+vertex = ['x', 'x', 'x', 'x', 'x', 'x', '+', '+', '+', '+', '+']
+edge = [[6, 0], [6,1], [7,6], [7,2],[8,7], [8,3], [9,8], [9,4], [10,9], [10,5] ]
+fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})
+fir.ifactor
+
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.ifactor
 $stderr.print arf.p[:adj].map{|v| [v.n, v.rand_number]}
@@ -209,10 +214,11 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [arf]
+testcase = [fir]
 testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = {
+	fir => 10,
 	iir4 =>14, 
 	arf => 19, 
 	mv => 7, 
