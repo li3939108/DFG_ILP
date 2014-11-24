@@ -8,7 +8,7 @@ operation_parameters3 = {
 		:u    => [1, 1], 
 		:d    => [3, 3], 
 		:g    => [50000, 142200],
-		:p    => [300000, 430000],
+		:p    => [300, 430],
 		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
 		:variance  => [210000, 0],
 	},
@@ -17,7 +17,7 @@ operation_parameters3 = {
 		:u    => [1, 1], 
 		:d    => [3, 3], 
 		:g    => [50000, 142200],
-		:p    => [300000, 430000],
+		:p    => [300, 430],
 		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
 		:variance  => [210000, 0],
 	},
@@ -26,7 +26,7 @@ operation_parameters3 = {
 		:u    => [1, 1, 1 ],
 		:d    => [2, 2, 2], 
 		:g    => [48390, 38750, 66780],
-		:p    => [7300,  4000,  10000],
+		:p    => [7,  4,  10],
 		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833,  0],
 	},
@@ -35,7 +35,7 @@ operation_parameters3 = {
 		:u    => [1, 1, 1 ],
 		:d    => [2, 2, 2], 
 		:g    => [48390, 38750, 66780],
-		:p    => [7300,  4000,  10000],
+		:p    => [7,  4,  10],
 		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833,  0],
 	},
@@ -53,13 +53,12 @@ operation_parameters3 = {
 		:type => ["accurate"],
 		:u    => [Float::INFINITY],
 		:d    => [1],
-		:g    => [6050],
-		:p    => [4],
+		:g    => [66780],
+		:p    => [10],
 		:err  => [Math::log(1 - 0)] ,
 		:variance  => [0],
 	},
 	}
-
 
 operation_parameters2 = {
 
@@ -68,7 +67,7 @@ operation_parameters2 = {
 		:u    => [1, 1], 
 		:d    => [3, 3], 
 		:g    => [50000, 142200],
-		:p    => [300000, 430000],
+		:p    => [300, 430],
 		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
 		:variance  => [210000, 0],
 	},
@@ -77,7 +76,7 @@ operation_parameters2 = {
 		:u    => [1, 1], 
 		:d    => [3, 3], 
 		:g    => [50000, 142200],
-		:p    => [300000, 430000],
+		:p    => [300, 430],
 		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
 		:variance  => [210000, 0],
 	},
@@ -86,7 +85,7 @@ operation_parameters2 = {
 		:u    => [1, 1, 1, 1],
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
-		:p    => [7300,  4000, 8500, 10000],
+		:p    => [7,  4, 8, 10],
 		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
@@ -95,7 +94,7 @@ operation_parameters2 = {
 		:u    => [1, 1, 1, 1],
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
-		:p    => [7300,  4000, 8500, 10000],
+		:p    => [7,  4, 8, 10],
 		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
@@ -113,8 +112,8 @@ operation_parameters2 = {
 		:type => ["accurate"],
 		:u    => [Float::INFINITY],
 		:d    => [1],
-		:g    => [6050],
-		:p    => [4],
+		:g    => [66780],
+		:p    => [10],
 		:err  => [Math::log(1 - 0)] ,
 		:variance  => [0],
 	},
@@ -231,15 +230,19 @@ minLatency = {
 
 testcase.each do |g|
 	operation_parameters = operation_parameters2
+	
+	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	latency = minLatency[g] * 2
 	variance_bound = 50000
+	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
 	ilp = DFG_ILP::ILP.new(g, {
 		:err_type => 'var', 
 		:q => latency, 
 		:variance_bound => variance_bound, 
-		:operation_parameters => operation_parameters} )
+		:operation_parameters => operation_parameters,
+		:scaling => scaling} )
 	ret = ilp.ASAP(:min)
 	$stderr.print   "ASAP scheduling done, longest path length: ", ret[:latency], "\n"
 	r = ilp.compute(g, :cplex)
@@ -256,7 +259,8 @@ testcase.each do |g|
 	er_ilp = DFG_ILP::ILP.new(g, {
 		:q => latency, 
 		:error_bound => er_bound,
-		:operation_parameters => operation_parameters}) 
+		:operation_parameters => operation_parameters,
+		:scaling => scaling}) 
 	er_r = er_ilp.compute(g, :cplex)
 	$stderr.print "var: ", er_r[:var].map{|var| -var}, "\n"
 	max_var = er_r[:var].map{|var| -var}.max
@@ -271,7 +275,8 @@ testcase.each do |g|
 		:err_type => 'var', 
 		:q => latency, 
 		:variance_bound =>unlimited_variance_bound,
-		:operation_parameters => operation_parameters })
+		:operation_parameters => operation_parameters ,
+		:scaling => scaling})
 	fa_ret = full_approximate_ilp.compute(g, :cplex)
 	$stderr.print "var: ", fa_ret[:var].map{|var_slack| variance_bound - var_slack}, "\n"
 	max_var = fa_ret[:var].map{|var_slack| variance_bound- var_slack}.max
@@ -285,7 +290,8 @@ testcase.each do |g|
 		:err_type => 'var', 
 		:q => latency, 
 		:variance_bound => 0, 
-		:operation_parameters => operation_parameters})
+		:operation_parameters => operation_parameters,
+		:scaling => scaling})
 	a_ret = accurate_ilp.compute(g, :cplex)
 	accurate_ilp.vs(a_ret[:sch], 0)
 	
@@ -296,11 +302,18 @@ testcase.each do |g|
 		:type => 'mmkp', 
 		:variance_bound => variance_bound, 
 		:q => latency,
-		:operation_parameters => operation_parameters})
+		:operation_parameters => operation_parameters,
+		:scaling => scaling})
 	mmkp_r = ilp.mmkp_compute(g, :cplex)
 	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
-	$stderr.print  "energy:", mmkp_r[:energy],  "\n"
+	sch = ilp.list_scheduler(mmkp_r[:type])
+	static_energy = @p.map{|k,v|
+		sch[:being_used][k].map.with_index{|arr,i|
+			arr.length * v[i] 
+		}.reduce(0, :+) * latency * scaling
+	}.reduce(0, :+)
+	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
 	$stderr.print "var: ", max_var, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	

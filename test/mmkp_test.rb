@@ -1,6 +1,66 @@
 #! /usr/bin/env ruby
 
 require 'dfg_ilp'
+operation_parameters = {
+
+	's' => {
+		:type => ["approximate", "accurate"], 
+		:u    => [1, 1], 
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300, 430],
+		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+		:variance  => [210000, 0],
+	},
+	'x' => {
+		:type => ["approximate", "accurate"], 
+		:u    => [1, 1], 
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300, 430],
+		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+		:variance  => [210000, 0],
+	},
+	'ALU' => {
+		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
+		:u    => [1, 1, 1, 1],
+		:d    => [2, 2, 2, 2], 
+		:g    => [48390, 38750, 55670,66780],
+		:p    => [7,  4, 8, 10],
+		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:variance  => [10905, 6833, 42, 0],
+	},
+	'+' => {
+		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
+		:u    => [1, 1, 1, 1],
+		:d    => [2, 2, 2, 2], 
+		:g    => [48390, 38750, 55670,66780],
+		:p    => [7,  4, 8, 10],
+		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:variance  => [10905, 6833, 42, 0],
+	},
+	'D' => {
+		:type => ["accurate"],
+		:u    => [Float::INFINITY],
+		:d    => [1],
+		:g    => [0],
+		:p    => [0],
+		:err  => [Math::log(1 - 0)] ,
+		:variance  => [0],
+
+	},
+	'@' => {
+		:type => ["accurate"],
+		:u    => [Float::INFINITY],
+		:d    => [1],
+		:g    => [66780],
+		:p    => [10],
+		:err  => [Math::log(1 - 0)] ,
+		:variance  => [0],
+	},
+	}
+
+
 
 root_dir = "/home/me/DFG_ILP"
 
@@ -22,19 +82,28 @@ iir4.IIR(4)
 iir4.ifactor
 
 testcases = [arf]
+@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 
 testcases.each do |g|
 	variance_bound = 30000
+	latency = ARGV[0].to_i
+	scaling = 10
 	print "\n", g.p[:name], "start", "\n------------------------\n"
-	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => variance_bound, :q => 22})
+	ilp = DFG_ILP::ILP.new(g, {:type => 'mmkp', :variance_bound => variance_bound, :q => latency, :operation_parameters => operation_parameters, :scaling => scaling})
 	r = ilp.mmkp_compute(g, :cplex)
 	$stderr.print  "energy:", r[:energy],  "\n"
 	$stderr.print "var: ", r[:var].map{|var_slack| variance_bound - var_slack}, "\n"
 	$stderr.print "er: ", [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| r[:error][po] }.max
 	sch = ilp.list_scheduler(r[:type])
 	print "\n\n------------------\nresults: \n\n"
-	sch[1].each{|arr|
+	sch[:time_slot].each{|arr|
 		print arr != nil ? arr.map{|v| v.n}:nil, "\n"
 	}
+	static_energy = @p.map{|k,v|
+		sch[:being_used][k].map.with_index{|arr,i|
+			arr.length * v[i] 
+		}.reduce(0, :+) * latency * scaling
+	}.reduce(0, :+)
+	print "energy: ", static_energy + r[:energy], "\n"
 	print "\n\n", sch, "\n"
 end

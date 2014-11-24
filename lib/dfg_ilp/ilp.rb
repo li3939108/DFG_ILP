@@ -45,6 +45,7 @@ module DFG_ILP
 			@variance    = Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
 			@variance_bound = variance_bound
 			@errB = error_bound
+			@scaling_factor = parameters[:scaling]
 
 			#get the vertices without vertices depending on
 			@end = [*0..@vertex.length-1].map{|i| !@edge.map{|e| e[1]}.include?(i)}
@@ -360,7 +361,7 @@ module DFG_ILP
 					@vertex.map.with_index{|v,xi|   [*0..q-1].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
 				end							+		#xArray
 				Array.new(@Nerr, 0)					+		#errArray
-				@p.values.flatten.map{|p| p * q }			+		#uArray
+				@p.values.flatten.map{|p| p * q * @scaling_factor }	+		#uArray
 				Array.new(@Ns, 0)							#sArray
 			# Integer constraints
 			@int	=
@@ -543,7 +544,10 @@ module DFG_ILP
 			end
 			print "\n\n"
 			print allocated, "\n\n"
-			[time, time_slot, being_used]
+			{:time => time, 
+			:time_slot=> time_slot, 
+			:being_used => being_used,
+			}
 		end
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
