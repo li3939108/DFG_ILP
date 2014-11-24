@@ -52,7 +52,7 @@ module DFG_ILP
 					case w.type
 					when 's','x'
 					@ifactor = @ifactor.map.with_index{|if_value,i|
-						w.rand_number = (randgen.rand(1..2)*2 - 3) * 3
+						w.rand_number = (randgen.rand(1.0..2.0)*2 - 3) * 3
 						if_value + w.ifactor[i] * w.rand_number
 					}
 					when '+', 'ALU'
