@@ -87,7 +87,7 @@ operation_parameters2 = {
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
 		:p    => [7300,  4000, 8500, 10000],
-		:err  => [Math::log(1 - 1), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
 	'+' => {
@@ -96,7 +96,7 @@ operation_parameters2 = {
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
 		:p    => [7300,  4000, 8500, 10000],
-		:err  => [Math::log(1 - 1), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
 	'D' => {
@@ -214,7 +214,7 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [fir]
+testcase = [arf]
 testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = {
@@ -230,9 +230,9 @@ minLatency = {
 
 
 testcase.each do |g|
-	operation_parameters = operation_parameters3
+	operation_parameters = operation_parameters2
 	latency = minLatency[g] * 2
-	variance_bound = 30000
+	variance_bound = 50000
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
 	ilp = DFG_ILP::ILP.new(g, {
@@ -266,11 +266,11 @@ testcase.each do |g|
 	er_ilp.vs(er_r[:sch], 0)
 
 	# all approximate	
-	variance_bound = 99999999999999
+	unlimited_variance_bound = 99999999999999
 	full_approximate_ilp = DFG_ILP::ILP.new(g, {
 		:err_type => 'var', 
 		:q => latency, 
-		:variance_bound =>variance_bound,
+		:variance_bound =>unlimited_variance_bound,
 		:operation_parameters => operation_parameters })
 	fa_ret = full_approximate_ilp.compute(g, :cplex)
 	$stderr.print "var: ", fa_ret[:var].map{|var_slack| variance_bound - var_slack}, "\n"
