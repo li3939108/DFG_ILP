@@ -1,6 +1,65 @@
 #! /usr/bin/env ruby
 
 require 'dfg_ilp'
+operation_parameters3 = {
+
+	's' => {
+		:type => ["approximate", "accurate"], 
+		:u    => [1, 1], 
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300000, 430000],
+		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+		:variance  => [210000, 0],
+	},
+	'x' => {
+		:type => ["approximate", "accurate"], 
+		:u    => [1, 1], 
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300000, 430000],
+		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+		:variance  => [210000, 0],
+	},
+	'ALU' => {
+		:type => ["32/8trun", "32/8appr","accurate"], 
+		:u    => [1, 1, 1 ],
+		:d    => [2, 2, 2], 
+		:g    => [48390, 38750, 66780],
+		:p    => [7300,  4000,  10000],
+		:err  => [Math::log(1 - 1),  Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:variance  => [10905, 6833,  0],
+	},
+	'+' => {
+		:type => ["32/8trun", "32/8appr","accurate"], 
+		:u    => [1, 1, 1 ],
+		:d    => [2, 2, 2], 
+		:g    => [48390, 38750, 66780],
+		:p    => [7300,  4000,  10000],
+		:err  => [Math::log(1 - 1),  Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:variance  => [10905, 6833,  0],
+	},
+	'D' => {
+		:type => ["accurate"],
+		:u    => [Float::INFINITY],
+		:d    => [1],
+		:g    => [0],
+		:p    => [0],
+		:err  => [Math::log(1 - 0)] ,
+		:variance  => [0],
+
+	},
+	'@' => {
+		:type => ["accurate"],
+		:u    => [Float::INFINITY],
+		:d    => [1],
+		:g    => [6050],
+		:p    => [4],
+		:err  => [Math::log(1 - 0)] ,
+		:variance  => [0],
+	},
+	}
+
 
 operation_parameters2 = {
 
@@ -62,44 +121,43 @@ operation_parameters2 = {
 	}
 
 
-
 operation_parameters1 = {
 
 	's' => {
-		:type => ["approximate", "accurate"],
-		:u    => [1,1],
-		:d    => [2,3],
-		:g    => [40930, 74995],
-		:p    => [50, 45],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0), ],
-		:variance  => [77, 0],
+		:type => ["approximate", "accurate"], 
+		:u    => [1, 1], 
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300000, 430000],
+		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
+		:variance  => [210000, 0],
 	},
 	'x' => {
 		:type => ["approximate", "accurate"], 
 		:u    => [1, 1], 
-		:d    => [2, 3], 
-		:g    => [40930, 74995],
-		:p    => [50, 45],
+		:d    => [3, 3], 
+		:g    => [50000, 142200],
+		:p    => [300000, 430000],
 		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [77, 0],
+		:variance  => [210000, 0],
 	},
 	'ALU' => {
-		:type => ["approximate", "accurate"], 
+		:type => [ "32/8appr", "accurate"], 
 		:u    => [1, 1],
-		:d    => [1, 2], 
-		:g    => [4705, 6050],
-		:p    => [3, 4],
-		:err  => [Math::log(1 - 0.91),Math::log(1 - 0)], 
-		:variance  => [4474, 0],
+		:d    => [2, 2], 
+		:g    => [38750 ,66780],
+		:p    => [  4000,  10000],
+		:err  => [ Math::log(1- 0.91), Math::log(1 - 0)], 
+		:variance  => [ 6833, 0],
 	},
 	'+' => {
-		:type => ["approximate", "accurate"], 
+		:type => [ "32/8appr", "accurate"], 
 		:u    => [1, 1],
-		:d    => [1, 2], 
-		:g    => [4705, 6050],
-		:p    => [3 , 4],
-		:err  => [Math::log(1 - 0.91),Math::log(1 - 0)] ,
-		:variance  => [4474, 0],
+		:d    => [2, 2], 
+		:g    => [38750 ,66780],
+		:p    => [4000,  10000],
+		:err  => [ Math::log(1- 0.91), Math::log(1 - 0)], 
+		:variance  => [ 6833, 0],
 	},
 	'D' => {
 		:type => ["accurate"],
@@ -122,7 +180,7 @@ operation_parameters1 = {
 	},
 	}
 
-	
+
 
 root_dir = "/home/me/DFG_ILP"
 
@@ -156,7 +214,7 @@ testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = {
 	iir4 =>14, 
-	arf => 11, 
+	arf => 19, 
 	mv => 7, 
 	mm => 11, 
 	pyr => 8, 
@@ -166,7 +224,7 @@ minLatency = {
 
 
 testcase.each do |g|
-	operation_parameters = operation_parameters2
+	operation_parameters = operation_parameters3
 	latency = minLatency[g] * 2
 	variance_bound = 30000
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
@@ -202,14 +260,15 @@ testcase.each do |g|
 	er_ilp.vs(er_r[:sch], 0)
 
 	# all approximate	
+	variance_bound = 99999999999999
 	full_approximate_ilp = DFG_ILP::ILP.new(g, {
 		:err_type => 'var', 
 		:q => latency, 
-		:variance_bound =>99999999,
+		:variance_bound =>variance_bound,
 		:operation_parameters => operation_parameters })
 	fa_ret = full_approximate_ilp.compute(g, :cplex)
-	$stderr.print "var: ", fa_ret[:var].map{|var_slack| 99999999 - var_slack}, "\n"
-	max_var = fa_ret[:var].map{|var_slack| 99999999 - var_slack}.max
+	$stderr.print "var: ", fa_ret[:var].map{|var_slack| variance_bound - var_slack}, "\n"
+	max_var = fa_ret[:var].map{|var_slack| variance_bound- var_slack}.max
 	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
