@@ -313,10 +313,12 @@ testcase.each do |g|
 			arr.length * v[i] 
 		}.reduce(0, :+) * latency * scaling
 	}.reduce(0, :+)
+	$stderr.print "\n", sch,"\n"
 	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
 	$stderr.print "var: ", max_var, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
 	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
+	
 
 end

@@ -547,6 +547,7 @@ module DFG_ILP
 			{:time => time, 
 			:time_slot=> time_slot, 
 			:being_used => being_used,
+			:allocated => allocated,
 			}
 		end
 		def compute(g, method)
