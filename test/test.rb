@@ -215,17 +215,18 @@ sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
 testcase = [fir]
-testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
+testset = [sds, pyr, jbmp,  iir4, fir, arf, mv, mm ]
 
 minLatency = {
-	fir => 10,
-	iir4 =>14, 
+
+	pyr => 13, 
+	jbmp => 11, 
+	sds => 30,
+	fir => 13,
+	iir4 =>24, 
 	arf => 19, 
-	mv => 7, 
-	mm => 11, 
-	pyr => 8, 
-	jbmp => 8, 
-	sds => 17,
+	mv => 11, 
+	mm => 18, 
 }
 
 
@@ -233,7 +234,7 @@ testset.each do |g|
 	operation_parameters = operation_parameters2
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
-	latency = minLatency[g] * 2
+	latency = minLatency[g] * 3 / 2
 	variance_bound = 50000
 	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
