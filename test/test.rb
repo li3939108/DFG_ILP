@@ -86,7 +86,7 @@ operation_parameters2 = {
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
 		:p    => [7,  4, 8, 10],
-		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.91), Math::log(1- 0.996), Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
 	'+' => {
@@ -95,7 +95,7 @@ operation_parameters2 = {
 		:d    => [2, 2, 2, 2], 
 		:g    => [48390, 38750, 55670,66780],
 		:p    => [7,  4, 8, 10],
-		:err  => [Math::log(1 - 0.99999), Math::log(1- 0.996), Math::log(1 - 0.91),Math::log(1 - 0)], 
+		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.91), Math::log(1- 0.996), Math::log(1 - 0)], 
 		:variance  => [10905, 6833, 42, 0],
 	},
 	'D' => {
@@ -187,10 +187,11 @@ vertex = ['x', 'x', 'x', 'x', 'x', 'x', '+', '+', '+', '+', '+']
 edge = [[6, 0], [6,1], [7,6], [7,2],[8,7], [8,3], [9,8], [9,4], [10,9], [10,5] ]
 fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})
 fir.ifactor
+$stderr.print fir.p[:adj].map{|v| [v.n, v.rand_number]}
 
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.ifactor
-$stderr.print arf.p[:adj].map{|v| [v.n, v.rand_number]}
+#$stderr.print arf.p[:adj].map{|v| [v.n, v.rand_number]}
 
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
@@ -213,7 +214,7 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [arf]
+testcase = [fir]
 testset = [iir4, arf, mv, mm, pyr, jbmp, sds]
 
 minLatency = {
@@ -228,7 +229,7 @@ minLatency = {
 }
 
 
-testcase.each do |g|
+testset.each do |g|
 	operation_parameters = operation_parameters2
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
@@ -237,6 +238,7 @@ testcase.each do |g|
 	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
+	startime = Time.new
 	ilp = DFG_ILP::ILP.new(g, {
 		:err_type => 'var', 
 		:q => latency, 
@@ -254,6 +256,10 @@ testcase.each do |g|
 	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 	 
 	ilp.vs(r[:sch], 0)
+
+	endtime = Time.new
+	$stderr.print "Run Time: ", endtime - startime, "\n"
+
 	# error rate based ILP
 	$stderr.print 'er bound: ', 1 - Math::E**er_bound
 	er_ilp = DFG_ILP::ILP.new(g, {
@@ -278,8 +284,8 @@ testcase.each do |g|
 		:operation_parameters => operation_parameters ,
 		:scaling => scaling})
 	fa_ret = full_approximate_ilp.compute(g, :cplex)
-	$stderr.print "var: ", fa_ret[:var].map{|var_slack| variance_bound - var_slack}, "\n"
-	max_var = fa_ret[:var].map{|var_slack| variance_bound- var_slack}.max
+	$stderr.print "var: ", fa_ret[:var].map{|var_slack| unlimited_variance_bound - var_slack}, "\n"
+	max_var = fa_ret[:var].map{|var_slack| unlimited_variance_bound- var_slack}.max
 	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
@@ -298,6 +304,7 @@ testcase.each do |g|
 	$stdout.print "&\t#{a_ret[:opt]}&\t0&\t0"
 
 	# mmkp
+	startime = Time.new
 	ilp = DFG_ILP::ILP.new(g, {
 		:type => 'mmkp', 
 		:variance_bound => variance_bound, 
@@ -319,6 +326,8 @@ testcase.each do |g|
 	$stderr.print "er: ", er_bound, "\n"
 	
 	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
+	endtime = Time.new
+	$stderr.print "Run Time: ", endtime - startime , "\n"
 	
 
 end
