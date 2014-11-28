@@ -212,8 +212,10 @@ testcase.each do |g|
 	$stderr.print "var: ", r[:var].map{|var_slack| variance_bound - var_slack}, "\n"
 	max_var = r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
+	er1_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error1] }.max
 	
-	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\n"
+	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er1_bound}\n"
 	 
 	ilp.vs(r[:sch], 0)
 
@@ -222,9 +224,11 @@ testcase.each do |g|
 
 	# error rate based ILP
 	$stderr.print 'er bound: ', 1 - Math::E**er_bound
+	$stderr.print 'er1 bound: ', 1 - Math::E**er1_bound
 	er_ilp = DFG_ILP::ILP.new(g, {
 		:q => latency, 
 		:error_bound => er_bound,
+		:error_bound1 => er1_bound,
 		:operation_parameters => operation_parameters,
 		:scaling => scaling}) 
 	er_r = er_ilp.compute(g, :cplex)

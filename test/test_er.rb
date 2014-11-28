@@ -190,7 +190,7 @@ minLatency = {
 
 
 testcase.each do |g|
-	operation_parameters = operation_parameters1
+	operation_parameters = operation_parameters2
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	latency = minLatency[g] * 3 / 2
