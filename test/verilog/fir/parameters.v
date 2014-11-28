@@ -6,5 +6,6 @@
  */
 `define SHIFT_WIDTH 15
 `define INPUT_WIDTH 15
+`define ER_THRESH1     4
 
 `endif

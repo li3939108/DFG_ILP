@@ -13,7 +13,7 @@ real mean, variance, std, mean_result;
 longint signed error[], sum, result_sum;
 
 assign out = {{32{out_intermediate[31]}}, out_intermediate } >> `SHIFT_WIDTH;
-Multiplier_appr appr0( 
+Multiplier_appr_half appr0( 
 	.out(out_intermediate), 
 	.A(in_0), 
 	.B(in_1) 

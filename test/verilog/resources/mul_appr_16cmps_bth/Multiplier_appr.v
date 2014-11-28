@@ -10,7 +10,7 @@
 //`include "head_adder.v"
 
 //top module of approximate multiplier
-module Multiplier_appr(out, A, B);
+module Multiplier_appr_half(out, A, B);
 
 	parameter BIT = 16;
 	parameter REC = 16;

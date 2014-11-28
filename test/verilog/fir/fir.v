@@ -17,7 +17,7 @@ wire signed [31:0]
 	out_11_0, out_11_1, out_11_0_int;
 
 
-integer i, TESTSIZE,input_width = 64 - `INPUT_WIDTH ;
+integer i, nNoError[], TESTSIZE,input_width = 64 - `INPUT_WIDTH ;
 real 
 	mean       , 
 	variance   , 
@@ -74,7 +74,9 @@ initial begin
 	variance = 0.0;
 	result_sum = 0;
 	ares_sum = 0;
-
+	nNoError = new[2];
+	nNoError[0] = 0;
+	nNoError[1] = 0;
 end
 
 
@@ -92,6 +94,12 @@ initial begin
 		error[i] = $signed(out_11_0) - $signed(out_11_1) ;
 		
 		sum += error[i] ;
+		if(error[i] == 0)begin
+			nNoError[0] += 1;
+		end
+		if(out_11_0[31:`ER_THRESH1] == out_11_1[31: `ER_THRESH1])begin
+			nNoError[1] += 1;
+		end
 
 		result_sum += ($signed(out_11_1) > 0 ? out_11_1 : -out_11_1);
 	
@@ -113,8 +121,9 @@ initial begin
 	end
 	std = variance ** (1.0/2.0) ;
 	mean_result = result_sum / (TESTSIZE + 0.0);
-	$display("variance:  %f\nmean:      %f(%f)\nstd:       %f(%f)\nresult:    %f\nsnr:       %f\nares:      %f\n", 
-		variance, mean, mean/mean_result, std, std / mean_result, mean_result, snr, ares );
+	$display("variance:  %f\nmean:      %f(%f)\nstd:       %f(%f)\nresult:    %f\nsnr:       %f\nares:      %f\nER0:       %f\nER1:       %f\n",
+		variance, mean, mean/mean_result, std, std / mean_result, mean_result, snr, ares, 
+		$itor(TESTSIZE - nNoError[0])/(TESTSIZE + 0.0), $itor(TESTSIZE - nNoError[1])/(TESTSIZE + 0.0) );
 
 end
 

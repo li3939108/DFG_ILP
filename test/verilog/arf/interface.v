@@ -4,6 +4,8 @@
 `include "../resources/AMA_appr4_24bit_6appr/AMA_appr4_24bit_6appr.v"
 //`include "../approximate/Han_multiplier_signed/Multiplier_appr.v"
 `include "../resources/jiehan_bth/Multiplier_appr.v"
+`include "../resources/mul_appr_16cmps_bth/Multiplier_appr.v"
+
 //`include "approximate/jiehan/Multiplier_appr_gate.v"
 //`include "approximate/jiehan/osu018_stdcells.v"
 
@@ -31,10 +33,47 @@ Multiplier_appr mul(
 
 endmodule
 
+module mul_1(
+	out, in_0, in_1
+);
+input wire [31:0] in_0, in_1;
+output wire [31:0] out;
+
+wire [31:0] out_intermediate ;
+
+assign out = {{32{out_intermediate[31]}}, out_intermediate[31:0]} >> `SHIFT_WIDTH  ;
+
+Multiplier_appr_half mul(
+	.out(out_intermediate), 
+	.A(in_0[15:0]), 
+	.B(in_1[15:0])
+);
+
+endmodule
+
+
+module mul_2(
+	out, in_0, in_1
+);
+input wire [31:0] in_0, in_1;
+output wire [31:0] out;
+
+wire [31:0] out_intermediate ;
+
+assign out = {{32{out_intermediate[31]}}, out_intermediate[31:0]} >> `SHIFT_WIDTH  ;
+
+Multiplier_appr mul(
+	.out(out_intermediate), 
+	.A(in_0[15:0]), 
+	.B(in_1[15:0])
+);
+
+endmodule
+
 /*
  * Accurate multiplier
  */
-module mul_1(
+module mul_2(
 	out, in_0, in_1
 );
 
