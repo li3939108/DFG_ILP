@@ -4,22 +4,24 @@ require 'dfg_ilp'
 operation_parameters3 = {
 
 	's' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300, 430],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
+		:type => ["approximate", "appr1", "accurate"], 
+		:u    => [1, 1, 1], 
+		:d    => [3, 3, 3], 
+		:g    => [50000,80000, 142200],
+		:p    => [300, 350,430],
+		:err  => [Math::log(1 - 0.997),Math::log(1 - 0.978), Math::log(1 - 0)] ,
+		:err1 => [Math::log(1- 0.997), Math::log(1-0.977), Math::log(1-0)],
+		:variance  => [21000,8282, 0],
 	},
 	'x' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300, 430],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
+		:type => ["approximate", "appr1", "accurate"], 
+		:u    => [1, 1, 1], 
+		:d    => [3, 3, 3], 
+		:g    => [50000,80000, 142200],
+		:p    => [300, 350,430],
+		:err  => [Math::log(1 - 0.997),Math::log(1 - 0.978), Math::log(1 - 0)] ,
+		:err1 => [Math::log(1- 0.997), Math::log(1-0.977), Math::log(1-0)],
+		:variance  => [21000,8282, 0],
 	},
 	'ALU' => {
 		:type => ["32/8trun", "32/8appr","accurate"], 
@@ -59,126 +61,6 @@ operation_parameters3 = {
 		:variance  => [0],
 	},
 	}
-
-operation_parameters2 = {
-
-	's' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300, 430],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
-	},
-	'x' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300, 430],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
-	},
-	'ALU' => {
-		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
-		:u    => [1, 1, 1, 1],
-		:d    => [2, 2, 2, 2], 
-		:g    => [48390, 38750, 55670,66780],
-		:p    => [7,  4, 8, 10],
-		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.91), Math::log(1- 0.996), Math::log(1 - 0)], 
-		:variance  => [10905, 6833, 42, 0],
-	},
-	'+' => {
-		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
-		:u    => [1, 1, 1, 1],
-		:d    => [2, 2, 2, 2], 
-		:g    => [48390, 38750, 55670,66780],
-		:p    => [7,  4, 8, 10],
-		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.91), Math::log(1- 0.996), Math::log(1 - 0)], 
-		:variance  => [10905, 6833, 42, 0],
-	},
-	'D' => {
-		:type => ["accurate"],
-		:u    => [Float::INFINITY],
-		:d    => [1],
-		:g    => [0],
-		:p    => [0],
-		:err  => [Math::log(1 - 0)] ,
-		:variance  => [0],
-
-	},
-	'@' => {
-		:type => ["accurate"],
-		:u    => [Float::INFINITY],
-		:d    => [1],
-		:g    => [66780],
-		:p    => [10],
-		:err  => [Math::log(1 - 0)] ,
-		:variance  => [0],
-	},
-	}
-
-
-operation_parameters1 = {
-
-	's' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300000, 430000],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
-	},
-	'x' => {
-		:type => ["approximate", "accurate"], 
-		:u    => [1, 1], 
-		:d    => [3, 3], 
-		:g    => [50000, 142200],
-		:p    => [300000, 430000],
-		:err  => [Math::log(1 - 0.91), Math::log(1 - 0)] ,
-		:variance  => [210000, 0],
-	},
-	'ALU' => {
-		:type => [ "32/8appr", "accurate"], 
-		:u    => [1, 1],
-		:d    => [2, 2], 
-		:g    => [38750 ,66780],
-		:p    => [  4000,  10000],
-		:err  => [ Math::log(1- 0.91), Math::log(1 - 0)], 
-		:variance  => [ 6833, 0],
-	},
-	'+' => {
-		:type => [ "32/8appr", "accurate"], 
-		:u    => [1, 1],
-		:d    => [2, 2], 
-		:g    => [38750 ,66780],
-		:p    => [4000,  10000],
-		:err  => [ Math::log(1- 0.91), Math::log(1 - 0)], 
-		:variance  => [ 6833, 0],
-	},
-	'D' => {
-		:type => ["accurate"],
-		:u    => [Float::INFINITY],
-		:d    => [1],
-		:g    => [0],
-		:p    => [0],
-		:err  => [Math::log(1 - 0)] ,
-		:variance  => [0],
-
-	},
-	'@' => {
-		:type => ["accurate"],
-		:u    => [Float::INFINITY],
-		:d    => [1],
-		:g    => [6050],
-		:p    => [4],
-		:err  => [Math::log(1 - 0)] ,
-		:variance  => [0],
-	},
-	}
-
 
 
 root_dir = "/home/me/DFG_ILP"
