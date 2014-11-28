@@ -20,8 +20,6 @@ Multiplier_appr appr0(
 );
 
 initial begin
-	integer r_seed = 200 ;
-	integer tmp = $urandom(r_seed);
 	integer status ;
 	TESTSIZE = 0;
 	status = $value$plusargs("T=%d", TESTSIZE) ;
@@ -32,16 +30,21 @@ initial begin
 	result_sum = 0;
 end
 initial begin
+	integer same = 0;
+	integer r_seed = 200 ;
+	$srandom(r_seed);
 	for(i=0; i<TESTSIZE; i=i+1)begin
 		/* High 16 bits as inputs*/
 		in_0 = {$urandom(), $urandom()} >> (64-`INPUT_WIDTH);
 		//in_1 = (  (~16'b0000_0000_0000_0011) + 1 ) << `SHIFT_WIDTH;
 		//in_1 =   16'd3 << `SHIFT_WIDTH;
-		in_1 = $rtoi(-0.0674941238280375028 * (2**`SHIFT_WIDTH)) ;
+		//in_1 = $rtoi(-2.674941238280375028 * (2**`SHIFT_WIDTH)) ;
+		in_1 = $rtoi(-1.93232* (2**`SHIFT_WIDTH)) ;
 		#5;
 		precise_out = {{16{in_0[15]}}, in_0[15:0]} * {{16{in_1[15]}}, in_1[15:0]} ;
 		precise_out = {{32{precise_out[31]}}, precise_out[31:0]} >> `SHIFT_WIDTH ;
 		error[i] = $signed(out) - $signed( precise_out[31:0] ) ;
+		if(error[i] == 0)begin same += 1 ; end
 		sum += error[i] ;
 		result_sum += $signed(precise_out[31:0]) > 0 ? $signed(precise_out[31:0] ) : -$signed(precise_out[31:0]) ;
 		$display("%d x %d \n", in_0, in_1) ;
@@ -54,8 +57,8 @@ initial begin
 	end
 	std = variance**(1.0/2.0);
 	mean_result = result_sum / (TESTSIZE + 0.0) ;
-	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\n", 
-		mean, mean / mean_result, variance, std, std/mean_result, mean_result);
+	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\nER:       %f\n",
+		mean, mean / mean_result, variance, std, std/mean_result, mean_result, (same + 0.0) / (TESTSIZE +0.0));
 
 end
 

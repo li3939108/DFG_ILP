@@ -52,7 +52,7 @@ endmodule
 /*
  * Approximate adder 0
  */
-module add_0(
+module add_1(
 	out, in_0, in_1
 );
 input wire [31:0] in_0, in_1;
@@ -65,10 +65,35 @@ AMA_appr4_32bit_8appr add(Cout, out, in_0, in_1, Cin);
 
 endmodule
 
+module add_0(
+	out, in_0, in_1);
+input wire [31:0] in_0, in_1;
+output wire [31:0] out;
+wire Cin, Cout;
+
+assign Cin = 1'b0 ;
+assign out[31:8] = in_0[31:8] + in_1[31:8] ;
+assign out[7:0] = 8'b0;
+
+
+endmodule
+
+module add_2(
+	out, in_0, in_1);
+input wire [31:0] in_0, in_1;
+output wire [31:0] out;
+wire Cin, Cout;
+
+assign Cin = 1'b0 ;
+assign out[31:4] = in_0[31:4] + in_1[31:4] ;
+assign out[3:0] = 4'b0;
+
+
+endmodule
 /*
- * Approximate adder 1
+ * Approximate adder 3
  */
-module add_1(
+module add_3(
 	out, in_0, in_1
 );
 input wire [31:0] in_0, in_1;
@@ -77,15 +102,15 @@ wire Cin, Cout;
 
 assign Cin = 1'b0 ;
 
-AMA_appr4_28bit_7appr add(Cout, out[27:0], in_0[27:0], in_1[27:0], Cin);
-assign out[31:28] = {4{out[27]}};
+AMA_appr4_28bit_7appr add(Cout, out[31:4], in_0[31:4], in_1[31:4], Cin);
+assign out[3:0] = 4'b0;
 
 endmodule
 
 /*
- * Approximate adder 22
+ * Approximate adder 4
  */
-module add_2(
+module add_4(
 	out, in_0, in_1
 );
 input wire [31:0] in_0, in_1;
