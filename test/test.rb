@@ -50,6 +50,7 @@ operation_parameters2 = {
 		:g    => [0],
 		:p    => [0],
 		:err  => [Math::log(1 - 0)] ,
+		:err1  => [Math::log(1 - 0)] ,
 		:variance  => [0],
 
 	},
@@ -60,6 +61,7 @@ operation_parameters2 = {
 		:g    => [66780],
 		:p    => [10],
 		:err  => [Math::log(1 - 0)] ,
+		:err1  => [Math::log(1 - 0)] ,
 		:variance  => [0],
 	},
 	}
