@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'dfg_ilp'
-operation_parameters3 = {
+operation_parameters2 = {
 
 	's' => {
 		:type => ["approximate", "appr1", "accurate"], 
@@ -24,22 +24,24 @@ operation_parameters3 = {
 		:variance  => [21000,8282, 0],
 	},
 	'ALU' => {
-		:type => ["32/8trun", "32/8appr","accurate"], 
-		:u    => [1, 1, 1 ],
-		:d    => [2, 2, 2], 
-		:g    => [48390, 38750, 66780],
-		:p    => [7,  4,  10],
-		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
-		:variance  => [10905, 6833,  0],
+		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
+		:u    => [1, 1, 1, 1],
+		:d    => [2, 2, 2, 2], 
+		:g    => [48390, 38750, 55670,66780],
+		:p    => [7,  4, 8, 10],
+		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.978), Math::log(1- 0.996), Math::log(1 - 0)], 
+		:err1 => [Math::log(1 - 0.998), Math::log(1 - 0.754), Math::log(1- 0.468), Math::log(1 - 0)]
+		:variance  => [10905, 6833, 42, 0],
 	},
-	'+' => {
-		:type => ["32/8trun", "32/8appr","accurate"], 
-		:u    => [1, 1, 1 ],
-		:d    => [2, 2, 2], 
-		:g    => [48390, 38750, 66780],
-		:p    => [7,  4,  10],
-		:err  => [Math::log(1 - 0.99999),  Math::log(1 - 0.91),Math::log(1 - 0)], 
-		:variance  => [10905, 6833,  0],
+	'+' => 'ALU' => {
+		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
+		:u    => [1, 1, 1, 1],
+		:d    => [2, 2, 2, 2], 
+		:g    => [48390, 38750, 55670,66780],
+		:p    => [7,  4, 8, 10],
+		:err  => [Math::log(1 - 0.99999), Math::log(1 - 0.978), Math::log(1- 0.996), Math::log(1 - 0)], 
+		:err1 => [Math::log(1 - 0.998), Math::log(1 - 0.754), Math::log(1- 0.468), Math::log(1 - 0)]
+		:variance  => [10905, 6833, 42, 0],
 	},
 	'D' => {
 		:type => ["accurate"],
@@ -61,7 +63,6 @@ operation_parameters3 = {
 		:variance  => [0],
 	},
 	}
-
 
 root_dir = "/home/me/DFG_ILP"
 
