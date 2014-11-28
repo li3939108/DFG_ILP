@@ -592,7 +592,7 @@ module DFG_ILP
 			}
 			schedule = []
 			position = 0
-			err_position =  @Nx 
+			err_position =  @Nx
 			err1_position = @Nx + @Nerr
 			for i in [*0..@vertex.length-1]	do
 				if(@mC)
@@ -648,7 +648,7 @@ module DFG_ILP
 					if (sch[i][:time] == l) 
 						$stderr.print sch[i][:op],sch[i][:id],': ', 
 						'd', sch[i][:delay], 't', sch[i][:type],
-						'e', 1 - Math::E**sch[i][:error], "   "
+						'e', 1 - Math::E**sch[i][:error],'e1', 1-Math::E**sch[i][:error1], "   "
 						sch.delete_at(i)
 					else
 						i = i + 1
