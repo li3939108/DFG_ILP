@@ -221,10 +221,10 @@ testcase.each do |g|
 	#$stderr.print "Run Time: ", endtime - startime, "\n"
 
 	# error rate based ILP
-	er_bound =  1 - Math::E** ARGV[0].to_f
-	er1_bound = 1 -  Math::E** ARGV[1].to_f
-	$stderr.print 'er bound: ', er_bound
-	$stderr.print 'er1 bound: ', er1_bound
+	er_bound =  Math::log( 1 - ARGV[0].to_f)
+	er1_bound = Math::log( 1 - ARGV[1].to_f)
+	$stderr.print 'er bound: ',1- Math::E** er_bound
+	$stderr.print 'er1 bound: ',1- Math::E** er1_bound
 	er_ilp = DFG_ILP::ILP.new(g, {
 		:q => latency, 
 		:error_bound => er_bound,
