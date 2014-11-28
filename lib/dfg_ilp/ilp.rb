@@ -22,6 +22,10 @@ module DFG_ILP
 			if parameters[:error_bound] == nil then error_bound = Math::log(1 - 0.99)
 			else error_bound = parameters[:error_bound] end
 
+			# this is the default error rate bound on the primay outputs
+			if parameters[:error_bound1] == nil then error_bound1 = Math::log(1 - 0.9)
+			else error_bound1 = parameters[:error_bound1] end
+
 			# this is the default variance bound on the primary outputs 
 			if parameters[:variance_bound] == nil then variance_bound = 30000
 			else variance_bound = parameters[:variance_bound] end
@@ -42,9 +46,11 @@ module DFG_ILP
 			# static power
 			@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 			@err    = Hash[operation_parameters.map{|k,v| [k, v[:err]]}]
+			@err1   = Hash[operation_parameters.map{|k,v| [k, v[:err1]]}]
 			@variance    = Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
 			@variance_bound = variance_bound
 			@errB = error_bound
+			@errB1 = error_bound1
 			@scaling_factor = parameters[:scaling]
 
 			#get the vertices without vertices depending on
@@ -164,7 +170,7 @@ module DFG_ILP
 			@Ns = @vertex.length
 
 			# number of columns 
-			@Ncolumn = @Nx + @Nerr + @Nu + @Ns
+			@Ncolumn = @Nx + @Nerr + @Nerr + @Nu + @Ns
 
 			# This giant matrix is the constraint matrix
 			# Ax <= b
@@ -198,7 +204,7 @@ module DFG_ILP
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[i] = -1
-				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + sArray
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0) * 2 + Array.new(@Nu, 0) + sArray
 			} +
 			
 			# precedence constraints
@@ -215,7 +221,7 @@ module DFG_ILP
 				sArray = Array.new(@vertex.length,0)
 				sArray[e[0]] = -1
 				sArray[e[1]] = 1
-				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)* 2  + Array.new(@Nu, 0)+ sArray
 			} +
 			
 			#precedence constraints at Primary Outputs
@@ -231,7 +237,7 @@ module DFG_ILP
 				end
 				sArray = Array.new(@vertex.length,0)
 				sArray[v] = 1
-				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)  + Array.new(@Nu, 0)+ sArray
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr, 0)*2  + Array.new(@Nu, 0)+ sArray
 			} +
 			
 			# error constraints
@@ -251,7 +257,23 @@ module DFG_ILP
 				if g.p[:PI][i] == false
 					@edge.select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
 				end
-				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + errArray+Array.new(@Nerr,0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+			} +@vertex.map.with_index{|v,i|	
+				if(mobility_constrainted)
+					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * (1+@mobility[j]) }.reduce(0,:+) 
+					xArray = [*@asap[i]..@alap[i]].map{|t| Array.new(@err1[v])}.reduce([], :+) 
+					ntail = @Nx - start_point - @u[v].length * (1+@mobility[i])
+				else
+					start_point = [*0..i-1].map{|j| @u[@vertex[j]].length * q }.reduce(0,:+) 
+					xArray = [*0..q-1].map{|t| Array.new(@err1[v])}.reduce([], :+) 
+					ntail = @Nx - start_point - @u[v].length * q
+				end
+				errArray = Array.new(@Nerr, 0)
+				errArray[i] = -1
+				if g.p[:PI][i] == false
+					@edge.select{|e| e[0] == i}.each{|e| errArray[e[1] ] = 1}	
+				end
+				Array.new(start_point, 0) + xArray + Array.new(ntail, 0) + Array.new(@Nerr,0) + errArray + Array.new(@Nu, 0) +  Array.new(@Ns, 0)
 			} +
 			# variance constraints and bounds
 			[*0..@po_total - 1].map{|po_i|
@@ -272,16 +294,20 @@ module DFG_ILP
 						})}.reduce([], :+)
 					}.reduce([],:+)
 				end
-				xArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+				xArray + Array.new(@Nerr, 0)*2 + Array.new(@Nu, 0) + Array.new(@Ns, 0)
 			}   +
 			(@err_type == 'er' ? 
 
 			# Error bounds at Primary Outputs
-			@PO_vertex.map{|v|	
+			(@PO_vertex.map{|v|	
 				errArray = Array.new(@Nerr, 0)
 				errArray[v] = 1
-				Array.new(@Nx, 0) + errArray + Array.new(@Nu, 0) + Array.new(@Ns, 0)
-			} : [] ) +
+				Array.new(@Nx, 0) + errArray + Array.new(@Nerr, 0) + Array.new(@Nu, 0) + Array.new(@Ns, 0)
+			}+@PO_vertex.map{|v|	
+				errArray = Array.new(@Nerr, 0)
+				errArray[v] = 1
+				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + errArray + Array.new(@Nu, 0)  + Array.new(@Ns, 0)
+			}) : [] ) +
 			
 			# resource constraints
 			[*0..q * @u.values.flatten.length - 1].map{|row_i|
@@ -301,12 +327,12 @@ module DFG_ILP
 				end
 				uArray = Array.new(@Nu, 0)
 				uArray[di] = -1
-				xArray + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0) 
+				xArray + Array.new(@Nerr, 0)*2 + uArray + Array.new(@Ns, 0) 
 			} +
 			( if no_resource_limit == false then [*0..@u.values.flatten.length - 1].map{|u|
 				uArray = Array.new(@Nu, 0)
 				uArray[u] = 1
-				Array.new(@Nx, 0) + Array.new(@Nerr, 0) + uArray + Array.new(@Ns, 0)
+				Array.new(@Nx, 0) + Array.new(@Nerr, 0)*2 + uArray + Array.new(@Ns, 0)
 			} else [] end)
 			
 			# less than or equal to or greater than
@@ -320,13 +346,13 @@ module DFG_ILP
 				# Precedence constraints at Primary Outputs
 				Array.new(@end_vertex.length, LE )			+	
 				# Error Rate propagation 
-				Array.new(@vertex.length, EQ) 				+
+				Array.new(@vertex.length, EQ)*2				+
 				# variance bounds
 				(@err_type == 'er' ? Array.new(@po_total, GE):
 					Array.new(@po_total, LE))		 	+		#error
 				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? 
-					Array.new(@PO_vertex.length, GE):[])		+		
+					Array.new(@PO_vertex.length, GE):[])*2		+		
 				# Resource allocation 
 				Array.new(q * @u.values.flatten.length, LE)		+
 				# Recousce bounds 
@@ -341,12 +367,14 @@ module DFG_ILP
 				# Precedence constraints at Primary Outputs
 				Array.new(@end_vertex.length, q)				+
 				# Error rate propagation 
-				Array.new(@vertex.length , 0)					+
+				Array.new(@vertex.length , 0)*2					+
 				# Variance bounds
 				(@err_type == 'er' ?  Array.new(@po_total, 0):
 					Array.new(@po_total, @variance_bound)		)	+
 				# Error Rate bounds at Primary Outputs
 				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB):[])	+
+				# Error Rate bounds at Primary Outputs
+				(@err_type == 'er' ? Array.new(@PO_vertex.length, @errB1):[])	+
 				# Resource allocation 
 				Array.new(q * @u.values.flatten.length, 0)			+
 				# Recousce bounds 
@@ -360,7 +388,7 @@ module DFG_ILP
 				else
 					@vertex.map.with_index{|v,xi|   [*0..q-1].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
 				end							+		#xArray
-				Array.new(@Nerr, 0)					+		#errArray
+				Array.new(@Nerr, 0)*2					+		#errArray
 				@p.values.flatten.map{|p| p * q * @scaling_factor }	+		#uArray
 				Array.new(@Ns, 0)							#sArray
 			# Integer constraints
@@ -368,7 +396,7 @@ module DFG_ILP
 				# Binary 
 				Array.new(@Nx, 'B')					+
 				# Continuous
-				Array.new(@Nerr, 'C')					+
+				Array.new(@Nerr, 'C')*2					+
 				# Integer
 				Array.new(@Nu, 'I')					+ 
 				Array.new(@Ns, 'I')
@@ -376,13 +404,13 @@ module DFG_ILP
 			# Lower bounds for each variable
 			@lb	=
 				Array.new(@Nx, 0)					+
-				Array.new(@Nerr, -Float::INFINITY)			+
+				Array.new(@Nerr, -Float::INFINITY)*2			+
 				Array.new(@Nu, 0)					+
 				Array.new(@Ns, 0)					
 			# Upper bounds for each variable
 			@ub	=
 				Array.new(@Nx, Float::INFINITY)    +
-				Array.new(@Nerr, 0)                +
+				Array.new(@Nerr, 0)*2              +
 				Array.new(@Nu, Float::INFINITY)    +
 				Array.new(@Ns, Float::INFINITY)
 		end
@@ -553,7 +581,7 @@ module DFG_ILP
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
-			position = @Nx +@Nerr - 1
+			position = @Nx +@Nerr*2 - 1
 	        
 			allocation = {}
 			@u.keys.each{|k|
@@ -565,6 +593,7 @@ module DFG_ILP
 			schedule = []
 			position = 0
 			err_position =  @Nx 
+			err1_position = @Nx + @Nerr
 			for i in [*0..@vertex.length-1]	do
 				if(@mC)
 					current_length = @u[@vertex[i]].length * (1+@mobility[i]) 
@@ -580,17 +609,20 @@ module DFG_ILP
 				# The allocated resource type
 				type = index% @u[@vertex[i]].length 
 				error = ret[:v][err_position] 
+				error1 = ret[:v][err1_position] 
 				schedule = schedule + [{
 						:id => i + 1, 
 						:op => @vertex[i], 
 						:time => time, 
 						:type => type, 
 						:error =>  error , 
+						:error1 => error1,
 						:delay => @d[ @vertex[i] ][ type ] }]				
 				position = position + current_length
+				err1_position = err1_position + 1 
 				err_position = err_position + 1 
 			end
-			position = @vertex.length + @vertex.length + @edge.length + @end_vertex.length + @vertex.length
+			position = @vertex.length + @vertex.length + @edge.length + @end_vertex.length + @vertex.length*2
 			var_slack = []
 			for i in [*0..@po_total-1] do
 				var_slack.push(ret[:s][position])
