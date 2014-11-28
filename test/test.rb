@@ -165,7 +165,7 @@ jbmp.ifactor
 sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
-testcase = [fir]
+testcase = [fir, arf]
 testset = [
 	mm ,
 	sds, 
@@ -189,7 +189,7 @@ minLatency = {
 }
 
 
-testset.each do |g|
+testcase.each do |g|
 	operation_parameters = operation_parameters1
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
