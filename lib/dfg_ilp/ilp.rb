@@ -582,15 +582,16 @@ module DFG_ILP
 			:allocated => allocated,
 			}
 		end
-		def iterative_list_scheduling(implementation, y)
+		def iterative_list_scheduling(implementation, y, run_bound = Float::INFINITY)
 			cur_util = nil
 			prev_util = nil
 			prev_used = nil
 			cur_used = nil
-			while( cur_util == nil or 
+			run = 0
+			while(run < run_bound and (  cur_util == nil or 
 			prev_util == nil or 
 			(not cur_util.values.map.with_index{|u,i|
-				u == nil or u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) )
+				u == nil or u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) ) )
 
 				prev_util = cur_util 
 				prev_used = cur_used
@@ -602,7 +603,9 @@ module DFG_ILP
 				ret[:allocated],
 				@d,
 				@vertex) 
+				run += 1
 			end
+			$stderr.print "\n\nrun: " , run ,"\n\n"
 			ret
 				
 		end

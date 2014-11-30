@@ -194,7 +194,7 @@ testcase.each do |g|
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	latency = minLatency[g] * 3 / 2
-	variance_bound = 110000
+	variance_bound = 50000
 	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
@@ -278,7 +278,7 @@ testcase.each do |g|
 	mmkp_r = ilp.mmkp_compute(g, :cplex)
 	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
-	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.2)
+	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.05)
 	static_energy = @p.map{|k,v|
 		sch[:being_used][k].map.with_index{|arr,i|
 			arr.length * v[i] 
@@ -293,5 +293,25 @@ testcase.each do |g|
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime , "\n"
 	
+	$stderr.print "single run \n*********************\n"
+	# mmkp
+	startime = Time.new
 
+	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
+	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
+	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.2, 1)
+	static_energy = @p.map{|k,v|
+		sch[:being_used][k].map.with_index{|arr,i|
+			arr.length * v[i] 
+		}.reduce(0, :+) * latency * scaling
+	}.reduce(0, :+)
+	$stderr.print "\n", sch,"\n"
+	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
+	$stderr.print "var: ", max_var, "\n"
+	$stderr.print "er: ", er_bound, "\n"
+	
+	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
+	endtime = Time.new
+	$stderr.print "Run Time: ", endtime - startime , "\n"
+	
 end
