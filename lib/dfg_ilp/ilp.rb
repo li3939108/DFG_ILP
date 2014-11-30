@@ -562,8 +562,9 @@ module DFG_ILP
 						vindex_0 = v.n - 1
 						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated) )
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0 )
-						elsif ( (being_used[ v.type ].map{|arr| arr.length}.reduce(0, :+) + 0.0) / 
-							prev_used[ v.type].map{|arr| arr.length}.reduce(0, :+)  < util * y)
+						elsif ( (  prev_used == nil and being_used[ v.type ][ implementation[ vindex_0 ] ].empty? ) or 
+							( prev_used != nil and ( (being_used[ v.type ].map{|arr| arr.length}.reduce(0, :+) + 0.0) / 
+							prev_used[ v.type].map{|arr| arr.length}.reduce(0, :+)  < util[ v.type ] * y) ) )
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0)
 							being_used[ v.type ][ implementation[ vindex_0] ].push ( 
 								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
@@ -584,10 +585,12 @@ module DFG_ILP
 		def iterative_list_scheduling(implementation, y)
 			cur_util = nil
 			prev_util = nil
+			prev_used = nil
+			cur_used = nil
 			while( cur_util == nil or 
 			prev_util == nil or 
 			(not cur_util.values.map.with_index{|u,i|
-				u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) )
+				u == nil or u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) )
 
 				prev_util = cur_util 
 				prev_used = cur_used
@@ -600,6 +603,7 @@ module DFG_ILP
 				@d,
 				@vertex) 
 			end
+			ret
 				
 		end
 		#def current_utilization(cur, being_used, allocated, delay, vertex_type, type)
@@ -611,9 +615,9 @@ module DFG_ILP
 		#end
 		def all_utilization(q, previous_used, previous_allocated, delay, vertex_type)
 			ret = {}
-			Hash[ previous_allocated.keys.map{|v| 
-				v.map{|arr| arr.length}.reduce(0, :+) == 0? 
-				nil : 
+			Hash[ previous_used.keys.map{|v| 
+				previous_used[v].map{|arr| arr.length}.reduce(0, :+) == 0 ? 
+				[v, nil] : 
 				[v, average_utilization(
 					@q,
 					previous_used, 
@@ -623,9 +627,9 @@ module DFG_ILP
 					v)] }]
 		end
 		def average_utilization(q, previous_used, previous_allocated, delay, vertex_type, type)
-			total = q * being_used[type].map{|arr| arr.length}.reduce(0, :+);
+			total = q * previous_used[type].map{|arr| arr.length}.reduce(0, :+);
 			occupied = vertex_type.map.with_index{|v,i| 
-				v == type ? delay[v][ allocated[i] ]: 0
+				v == type ? delay[v][ previous_allocated[i] ]: 0
 			}.reduce(0, :+)
 			(occupied + 0.0) / total
 		end

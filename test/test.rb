@@ -194,7 +194,7 @@ testcase.each do |g|
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	latency = minLatency[g] * 3 / 2
-	variance_bound = 50000
+	variance_bound = 110000
 	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
@@ -223,21 +223,21 @@ testcase.each do |g|
 	$stderr.print "Run Time: ", endtime - startime, "\n"
 
 	# error rate based ILP
-	$stderr.print 'er bound: ', 1 - Math::E**er_bound
-	$stderr.print 'er1 bound: ', 1 - Math::E**er1_bound
-	er_ilp = DFG_ILP::ILP.new(g, {
-		:q => latency, 
-		:error_bound => er_bound,
-		:error_bound1 => er1_bound,
-		:operation_parameters => operation_parameters,
-		:scaling => scaling}) 
-	er_r = er_ilp.compute(g, :cplex)
-	$stderr.print "var: ", er_r[:var].map{|var| -var}, "\n"
-	max_var = er_r[:var].map{|var| -var}.max
+	#$stderr.print 'er bound: ', 1 - Math::E**er_bound
+	#$stderr.print 'er1 bound: ', 1 - Math::E**er1_bound
+	#er_ilp = DFG_ILP::ILP.new(g, {
+	#	:q => latency, 
+	#	:error_bound => er_bound,
+	#	:error_bound1 => er1_bound,
+	#	:operation_parameters => operation_parameters,
+	#	:scaling => scaling}) 
+	#er_r = er_ilp.compute(g, :cplex)
+	#$stderr.print "var: ", er_r[:var].map{|var| -var}, "\n"
+	#max_var = er_r[:var].map{|var| -var}.max
 
-	$stdout.print "&\t#{er_r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	#$stdout.print "&\t#{er_r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 
-	er_ilp.vs(er_r[:sch], 0)
+	#er_ilp.vs(er_r[:sch], 0)
 
 	# all approximate	
 	unlimited_variance_bound = 99999999999999
@@ -278,7 +278,7 @@ testcase.each do |g|
 	mmkp_r = ilp.mmkp_compute(g, :cplex)
 	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
-	sch = ilp.list_scheduler(mmkp_r[:type])
+	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.2)
 	static_energy = @p.map{|k,v|
 		sch[:being_used][k].map.with_index{|arr,i|
 			arr.length * v[i] 
