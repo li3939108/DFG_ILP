@@ -231,7 +231,6 @@ sds.ifactor
 
 testcase = [fir, arf]
 testset = [
-	mm ,
 	sds, 
 	pyr, 
 	jbmp,  
@@ -239,6 +238,7 @@ testset = [
 	fir, 
 	arf,
 	mv,
+	mm ,
 ]
 
 minLatency = {
@@ -248,18 +248,18 @@ minLatency = {
 	sds => 30,
 	fir => 13,
 	iir4 =>24, 
-	arf => 16, 
+	arf => 19, 
 	mv => 11, 
 }
 
 
-testcase.each do |g|
+testset.each do |g|
 	operation_parameters = operation_parameters3
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
 	@variance=Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
-	latency = minLatency[g] * 3 / 2
+	latency = minLatency[g] * 2
 	variance_bound = 30000
 	scaling = 10
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
@@ -281,7 +281,8 @@ testcase.each do |g|
 	er1_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error1] }.max
 	
 	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\n"
-	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er1_bound}\n"
+	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&"
+	#$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er1_bound}\n"
 	 
 	ilp.vs(r[:sch], 0)
 
@@ -319,7 +320,8 @@ testcase.each do |g|
 	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
-	$stdout.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	#$stdout.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	$stdout.print "#{fa_ret[:opt]}&\t#{max_var}&"
 
 	#accurate 
 	accurate_ilp = DFG_ILP::ILP.new(g, {
@@ -331,7 +333,7 @@ testcase.each do |g|
 	a_ret = accurate_ilp.compute(g, :cplex)
 	accurate_ilp.vs(a_ret[:sch], 0)
 	
-	$stdout.print "&\t#{a_ret[:opt]}&\t0&\t0"
+	$stdout.print "&\t#{a_ret[:opt]}&\t0"
 
 	# mmkp
 	startime = Time.new
@@ -369,7 +371,7 @@ testcase.each do |g|
 	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
-	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
+	$stdout.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime , "\n"
 	
@@ -388,6 +390,7 @@ testcase.each do |g|
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
 		@g[ g.p[:v][i] ][ t ]
 	}.reduce(0, :+)
+	new_energy = static_energy + dynamic_energy
 	new_variance = sch[:allocated].map.with_index{|t,i|
 		g.p[:adj][i].ifactor.map{|factor|
 			@variance[ g.p[:v][i] ][ t ] * (factor**2)
@@ -399,12 +402,12 @@ testcase.each do |g|
 	}
 	$stderr.print "\n", sch,"\n"
 	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
-	$stderr.print "new_energy:", static_energy + dynamic_energy , "\n"
+	$stderr.print "new_energy:",new_energy  , "\n"
 	$stderr.print "var: ", max_var, "\n"
 	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
-	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
+	$stdout.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime , "\n"
 	
