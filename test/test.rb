@@ -132,8 +132,8 @@ operation_parameters2 = {
 	},
 	}
 
-root_dir = "/home/me/DFG_ILP"
-
+#root_dir = "/home/me/DFG_ILP"
+root_dir = "/homes/grad/li3939108/DFG_ILP"
 vertex = ['x', 'x', 'x', 'x', 'x', 'x', '+', '+', '+', '+', '+']
 edge = [[6, 0], [6,1], [7,6], [7,2],[8,7], [8,3], [9,8], [9,4], [10,9], [10,5] ]
 fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})

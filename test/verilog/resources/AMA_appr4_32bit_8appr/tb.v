@@ -6,7 +6,7 @@ reg [31:0] in_1;
 wire [31:0] out ;
 wire  Cout ;
 
-integer i, TESTSIZE;
+integer i, TESTSIZE, nNoError[];
 real mean, variance, std, mean_result;
 longint signed error[], sum, result_sum;
 
@@ -25,9 +25,12 @@ initial begin
 	status = $value$plusargs("T=%d", TESTSIZE) ;
 	#5;
 	error = new[TESTSIZE] ;
+	nNoError new[2];
 	sum = 0;
 	variance = 0;
 	result_sum = 0;
+	nNoError [0] = 0;
+	nNoError [1] = 1;
 end
 initial begin
 	for(i=0; i<TESTSIZE; i=i+1)begin
@@ -35,6 +38,12 @@ initial begin
 		in_1 = $urandom()>> `INPUT_WIDTH;
 		#5;
 		error[i] = $signed(out) - $signed( in_0 + in_1 ) ;
+		if(error[i] == 0)begin
+			nNoError[0] += 1;
+		end
+		if(out[31:`ER_THRESH1] == in_0[31:`ER_THRESH1] + in_1[31:`ER_THRESH1])begin
+			nNoError[1] += 1;
+		end
 		sum += error[i] ;
 		result_sum += $signed(in_0 + in_1);
 		$display("Actual: %d\nAppr:   %d\nError:  %d\n", in_0 + in_1, out, error[i]) ;
@@ -46,7 +55,8 @@ initial begin
 	end
 	std = variance**(1.0/2.0);
 	mean_result = result_sum/ (TESTSIZE + 0.0) ;
-	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\n", 
+	$display("Mean:     %f(%f)\nVariance: %f\nStd:      %f(%f)\nResult:   %f\n
+		  ER1:      %f\n", 
 		mean, mean / mean_result, variance, std, std/mean_result, mean_result);
 
 end

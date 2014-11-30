@@ -1,4 +1,4 @@
-`include "./Multiplier_appr.v"
+`include "./Multiplier_appr_half.v"
 `include "parameters.v"
 module tb;
 reg signed [15:0] in_0;
