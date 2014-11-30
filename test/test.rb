@@ -258,6 +258,7 @@ testcase.each do |g|
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
+	@variance=Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
 	latency = minLatency[g] * 3 / 2
 	variance_bound = 30000
 	scaling = 10
@@ -352,10 +353,20 @@ testcase.each do |g|
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
 		@g[ g.p[:v][i] ][ t ]
 	}.reduce(0, :+)
+	new_variance = sch[:allocated].map.with_index{|t,i|
+		g.p[:adj][i].ifactor.map{|factor|
+			@variance[ g.p[:v][i] ][ t ] * (factor**2)
+		}
+	}.inject(Array.new(g.p[:adj][1].ifactor.length, 0) ){|sum, arr| 
+		arr.map.with_index{|ele,i|
+			ele + sum[i]
+		}
+	}
 	$stderr.print "\n", sch,"\n"
 	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
 	$stderr.print "new_energy:", static_energy + dynamic_energy , "\n"
 	$stderr.print "var: ", max_var, "\n"
+	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
 	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
@@ -377,10 +388,20 @@ testcase.each do |g|
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
 		@g[ g.p[:v][i] ][ t ]
 	}.reduce(0, :+)
+	new_variance = sch[:allocated].map.with_index{|t,i|
+		g.p[:adj][i].ifactor.map{|factor|
+			@variance[ g.p[:v][i] ][ t ] * (factor**2)
+		}
+	}.inject(Array.new(g.p[:adj][1].ifactor.length, 0) ){|sum, arr| 
+		arr.map.with_index{|ele,i|
+			ele + sum[i]
+		}
+	}
 	$stderr.print "\n", sch,"\n"
 	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
 	$stderr.print "new_energy:", static_energy + dynamic_energy , "\n"
 	$stderr.print "var: ", max_var, "\n"
+	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
 	$stdout.print "\t&#{mmkp_r[:energy]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\\\\\n"
