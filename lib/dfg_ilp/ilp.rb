@@ -499,7 +499,7 @@ module DFG_ILP
 			end
 		end
 		
-		def list_scheduler(implementation, util)
+		def list_scheduler(implementation, util, prev_used, y)
 			time = []
 			time_slot = []
 			allocated = []
@@ -562,7 +562,8 @@ module DFG_ILP
 						vindex_0 = v.n - 1
 						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated) )
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0 )
-						elsif ( being_used[ v.type ][ implementation[ vindex_0 ] ].empty? )
+						elsif ( (being_used[ v.type ].map{|arr| arr.length}.reduce(0, :+) + 0.0) / 
+							prev_used[ v.type].map{|arr| arr.length}.reduce(0, :+)  < util * y)
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0)
 							being_used[ v.type ][ implementation[ vindex_0] ].push ( 
 								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
@@ -580,7 +581,7 @@ module DFG_ILP
 			:allocated => allocated,
 			}
 		end
-		def iterative_list_scheduling(implementation)
+		def iterative_list_scheduling(implementation, y)
 			cur_util = nil
 			prev_util = nil
 			while( cur_util == nil or 
@@ -589,7 +590,9 @@ module DFG_ILP
 				u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) )
 
 				prev_util = cur_util 
-				ret = list_scheduler(implementation, cur_util)
+				prev_used = cur_used
+				ret = list_scheduler(implementation, cur_util, prev_used, y)
+				cur_used = ret[:being_used]
 				cur_util = all_utilization(
 				@q,
 				ret[:being_used], 
