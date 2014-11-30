@@ -106,4 +106,5 @@ testcases.each do |g|
 	}.reduce(0, :+)
 	print "energy: ", static_energy + r[:energy], "\n"
 	print "\n\n", sch, "\n"
+	print ilp.two_round_list_scheduling(r[:type])
 end

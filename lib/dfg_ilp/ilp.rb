@@ -454,8 +454,10 @@ module DFG_ILP
 			 :error => error} 
 			
 		end
-		
+
+		###################################
 		# following are for list scheduling
+		###################################
 		def delay(vertex, type, index) 
 			@d[vertex.type][type [ index ] ]
 		end
@@ -496,7 +498,8 @@ module DFG_ILP
 				time_slot[cur].push(reverse_adj_list[vindex_0])
 			end
 		end
-		def list_scheduler(implementation)
+		
+		def list_scheduler(implementation, util)
 			time = []
 			time_slot = []
 			allocated = []
@@ -542,7 +545,6 @@ module DFG_ILP
 							allocated[ vindex_0] = implementation[vindex_0]
 						end
 					end
-			
 					}
 				else 
 					for_scheduling = reverse_adj_list.select{|v| 
@@ -578,6 +580,55 @@ module DFG_ILP
 			:allocated => allocated,
 			}
 		end
+		def iterative_list_scheduling(implementation)
+			cur_util = nil
+			prev_util = nil
+			while( cur_util == nil or 
+			prev_util == nil or 
+			(not cur_util.values.map.with_index{|u,i|
+				u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) )
+
+				prev_util = cur_util 
+				ret = list_scheduler(implementation, cur_util)
+				cur_util = all_utilization(
+				@q,
+				ret[:being_used], 
+				ret[:allocated],
+				@d,
+				@vertex) 
+			end
+				
+		end
+		#def current_utilization(cur, being_used, allocated, delay, vertex_type, type)
+		#	total = (cur + 1) * being_allocated[type].map{|arr| arr.length}.reduce(0, :+)
+		#	occupied = allocated.map.with_index{|imp, i|
+		#		vertex_type[i] == type ? delay[ vertex_type[i] ][ imp ] : 0	
+		#	}.reduce(0, :+)
+		#	
+		#end
+		def all_utilization(q, previous_used, previous_allocated, delay, vertex_type)
+			ret = {}
+			Hash[ previous_allocated.keys.map{|v| 
+				v.map{|arr| arr.length}.reduce(0, :+) == 0? 
+				nil : 
+				[v, average_utilization(
+					@q,
+					previous_used, 
+					previous_allocated,
+					@d,
+					@vertex,
+					v)] }]
+		end
+		def average_utilization(q, previous_used, previous_allocated, delay, vertex_type, type)
+			total = q * being_used[type].map{|arr| arr.length}.reduce(0, :+);
+			occupied = vertex_type.map.with_index{|v,i| 
+				v == type ? delay[v][ allocated[i] ]: 0
+			}.reduce(0, :+)
+			(occupied + 0.0) / total
+		end
+		#######################
+		#End of List Scheduling
+		#######################
 		def compute(g, method)
 			ret = DFG_ILP.send(method, @A, @op, @b, @c, @int, @lb, @ub, :min)
 			# This is the position of resource usage
