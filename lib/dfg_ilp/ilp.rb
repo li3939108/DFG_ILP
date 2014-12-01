@@ -556,8 +556,8 @@ module DFG_ILP
 						for_scheduling = for_scheduling.sort{|x,y|
 							time_alap[x.n - 1] <=> time_alap[y.n - 1]
 						}
-						print time_alap, "\n"
-						print for_scheduling, "\n"
+					#	print time_alap, "\n"
+					#	print for_scheduling, "\n"
 						for_scheduling.each{|v|
 						vindex_0 = v.n - 1
 						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated) )
