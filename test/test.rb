@@ -236,6 +236,7 @@ sds = DFG_ILP::Parser.new("#{root_dir}/test/dot/sds.dot").parse.to_DFG
 sds.ifactor
 
 testcase = [fir, arf]
+complexcases = [mm]
 testset = [
 	fir, 
 	arf,
@@ -244,7 +245,6 @@ testset = [
 	jbmp,  
 	iir4, 
 	mv,
-	mm ,
 ]
 
 minLatency = {
@@ -259,7 +259,7 @@ minLatency = {
 }
 
 
-testcase.each do |g|
+testset.each do |g|
 	operation_parameters = operation_parameters1
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
