@@ -231,12 +231,12 @@ sds.ifactor
 
 testcase = [fir, arf]
 testset = [
+	fir, 
+	arf,
 	sds, 
 	pyr, 
 	jbmp,  
 	iir4, 
-	fir, 
-	arf,
 	mv,
 	mm ,
 ]
@@ -252,6 +252,8 @@ minLatency = {
 	mv => 11, 
 }
 
+energyout = File.open("EnergyOut_#{Time.new}", "w")
+varout = File.open("VarianceOut_#{Time.new}", "w")
 
 testset.each do |g|
 	operation_parameters = operation_parameters3
@@ -280,9 +282,12 @@ testset.each do |g|
 	er_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	er1_bound = r[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error1] }.max
 	
-	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\n"
-	$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&"
-	#$stdout.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er1_bound}\n"
+	$stderr.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}\n"
+	$stderr.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&"
+	#$stderr.print "#{g.p[:name]}&\t#{r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er1_bound}\n"
+
+	var_ILP_energy = r[:opt]
+	var_ILP_var = max_var
 	 
 	ilp.vs(r[:sch], 0)
 
@@ -302,7 +307,7 @@ testset.each do |g|
 	#$stderr.print "var: ", er_r[:var].map{|var| -var}, "\n"
 	#max_var = er_r[:var].map{|var| -var}.max
 
-	#$stdout.print "&\t#{er_r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	#$stderr.print "&\t#{er_r[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
 
 	#er_ilp.vs(er_r[:sch], 0)
 
@@ -320,8 +325,8 @@ testset.each do |g|
 	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
 	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
-	#$stdout.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
-	$stdout.print "#{fa_ret[:opt]}&\t#{max_var}&"
+	#$stderr.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	$stderr.print "#{fa_ret[:opt]}&\t#{max_var}&"
 
 	#accurate 
 	accurate_ilp = DFG_ILP::ILP.new(g, {
@@ -333,7 +338,7 @@ testset.each do |g|
 	a_ret = accurate_ilp.compute(g, :cplex)
 	accurate_ilp.vs(a_ret[:sch], 0)
 	
-	$stdout.print "&\t#{a_ret[:opt]}&\t0"
+	$stderr.print "&\t#{a_ret[:opt]}&\t0"
 
 	# mmkp
 	startime = Time.new
@@ -364,6 +369,7 @@ testset.each do |g|
 			ele + sum[i]
 		}
 	}
+	new_energy = static_energy + dynamic_energy
 	$stderr.print "\n", sch,"\n"
 	$stderr.print  "energy:", mmkp_r[:energy] + static_energy,  "\n"
 	$stderr.print "new_energy:", static_energy + dynamic_energy , "\n"
@@ -371,9 +377,12 @@ testset.each do |g|
 	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
-	$stdout.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
+	$stderr.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime , "\n"
+	
+	kils_energy = new_energy
+	kils_var = new_variance
 	
 	$stderr.print "single run \n*********************\n"
 	# mmkp
@@ -407,8 +416,29 @@ testset.each do |g|
 	$stderr.print "new_var: ", new_variance, "\n"
 	$stderr.print "er: ", er_bound, "\n"
 	
-	$stdout.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
+	$stderr.print "\t&#{new_energy}&#{new_variance}\t\\\\\n"
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime , "\n"
 	
+	kls_energy = new_energy
+	kls_var = new_variance
+
+	
+
+	static_energy = @p.map{|k,v|
+		sch[:being_used][k].map.with_index{|arr,i|
+			arr.length  
+		}.reduce(0, :+) * v.last * latency * scaling
+	}.reduce(0, :+)
+	dynamic_energy = sch[:allocated].map.with_index{|t,i|
+		@g[ g.p[:v][i] ].last
+	}.reduce(0, :+)
+	ils_acc_energy = static_energy + dynamic_energy
+	ils_acc_var = 0
+
+	energyout.print "#{var_ILP_energy/(ils_acc_energy + 0.0) }&&#{kils_energy/(ils_acc_energy + 0.0)}&#{kls_energy / (ils_acc_energy + 0.0)}\n"
+	varout.print "#{var_ILP_var.kind_of?(Array) ? var_ILP_var.max/(variance_bound + 0.0):var_ILP_var/(variance_bound + 0.0) }&&#{kils_var.kind_of?(Array)? kils_var.max/(variance_bound + 0.0): kils_var/(variance_bound+0.0)}&#{kls_var.kind_of?(Array)?kls_var.max/(variance_bound + 0.0):kls_var/(variance_bound+0.0)}\n" 
 end
+
+energyout.close
+varout.close
