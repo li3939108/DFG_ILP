@@ -25,7 +25,7 @@ integer i, TESTSIZE, nNoError[2][];
 real mean[2], variance[2], std[2], mean_result[2], snr[2], snr_sum[2], mse[2], ares_sum[2], ares[2];
 longint signed error[2][], sum[2], result_sum[2];
 
-arf_er arf0(
+arf_variance arf0(
 	.in_1_0(in_1_0),
 	.in_2_0(in_2_0),
 	.in_3_0(in_3_0),
