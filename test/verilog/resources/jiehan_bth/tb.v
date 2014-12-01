@@ -39,7 +39,7 @@ initial begin
 		//in_1 = (  (~16'b0000_0000_0000_0011) + 1 ) << `SHIFT_WIDTH;
 		//in_1 =   16'd3 << `SHIFT_WIDTH;
 		//in_1 = $rtoi(-2.674941238280375028 * (2**`SHIFT_WIDTH)) ;
-		in_1 = $rtoi(-1.93232* (2**`SHIFT_WIDTH)) ;
+		in_1 = $rtoi(-1.719332* (2**`SHIFT_WIDTH)) ;
 		#5;
 		precise_out = {{16{in_0[15]}}, in_0[15:0]} * {{16{in_1[15]}}, in_1[15:0]} ;
 		precise_out = {{32{precise_out[31]}}, precise_out[31:0]} >> `SHIFT_WIDTH ;

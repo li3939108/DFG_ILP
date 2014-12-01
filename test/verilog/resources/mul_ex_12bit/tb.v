@@ -1,4 +1,4 @@
-`include "./Multiplier_appr_half.v"
+`include "./mul_ex_12bit.v"
 `include "parameters.v"
 module tb;
 reg signed [15:0] in_0;
@@ -13,10 +13,10 @@ real mean, variance, std, mean_result;
 longint signed error[], sum, result_sum;
 
 assign out = {{32{out_intermediate[31]}}, out_intermediate } >> `SHIFT_WIDTH;
-Multiplier_appr_half appr0( 
+mul_ex_12bit appr0( 
 	.out(out_intermediate), 
-	.A(in_1), 
-	.B(in_0) 
+	.A(in_0), 
+	.B(in_1) 
 );
 
 initial begin
@@ -31,14 +31,14 @@ initial begin
 end
 initial begin
 	integer same = 0;
-	integer r_seed = 200 ;
+	integer r_seed = 2 ;
 	$srandom(r_seed);
 	for(i=0; i<TESTSIZE; i=i+1)begin
 		/* High 16 bits as inputs*/
 		in_0 = {$urandom(), $urandom()} >> (64-`INPUT_WIDTH);
 		//in_1 = (  (~16'b0000_0000_0000_0011) + 1 ) << `SHIFT_WIDTH;
 		//in_1 =   16'd3 << `SHIFT_WIDTH;
-		in_1 = $rtoi(1.69332 * (2**`SHIFT_WIDTH)) ;
+		in_1 = $rtoi(-1.98332 * (2**`SHIFT_WIDTH)) ;
 		//in_1 = $rtoi(-0.919332 * (2**`SHIFT_WIDTH)) ;
 		#5;
 		precise_out = {{16{in_0[15]}}, in_0[15:0]} * {{16{in_1[15]}}, in_1[15:0]} ;
