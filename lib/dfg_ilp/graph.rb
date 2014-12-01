@@ -136,7 +136,7 @@ module DFG_ILP
 						@vertex_adj_precedence[ e[0] ] )
 				}
 				
-				@randgen = Random.new(Time.new.to_i)
+				@randgen = Random.new(232389)
 			else
 				@PI = []
 				@PO = []

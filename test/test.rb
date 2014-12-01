@@ -436,8 +436,31 @@ testset.each do |g|
 	ils_acc_energy = static_energy + dynamic_energy
 	ils_acc_var = 0
 
-	energyout.print "#{var_ILP_energy/(ils_acc_energy + 0.0) }&&#{kils_energy/(ils_acc_energy + 0.0)}&#{kls_energy / (ils_acc_energy + 0.0)}\n"
-	varout.print "#{var_ILP_var.kind_of?(Array) ? var_ILP_var.max/(variance_bound + 0.0):var_ILP_var/(variance_bound + 0.0) }&&#{kils_var.kind_of?(Array)? kils_var.max/(variance_bound + 0.0): kils_var/(variance_bound+0.0)}&#{kls_var.kind_of?(Array)?kls_var.max/(variance_bound + 0.0):kls_var/(variance_bound+0.0)}\n" 
+
+
+
+	static_nergy = @p.map{|k,v|
+		sch[:being_used][k].map.with_index{|arr,i|
+			arr.length
+		}.reduce(0, :+) * ( (k == '+') ? v[1]: v[0] ) * latency * scaling
+	}.reduce(0,:+)
+	dynamic_energy = sch[:allocated].map.with_index{|t,i|
+		((g.p[:v][i] == '+' )?@g[ g.p[:v][i] ][1]:@g[ g.p[:v][i] ][0])
+	}.reduce(0, :+)
+	new_variance = sch[:allocated].map.with_index{|t,i|
+		g.p[:adj][i].ifactor.map{|factor|
+			g.p[:v][i] == '+' ? @variance[ g.p[:v][i] ][ 1 ] * (factor**2) : @variance[ g.p[:v][i] ][ 0] * (factor**2)
+		}
+	}.inject(Array.new(g.p[:adj][1].ifactor.length, 0) ){|sum, arr| 
+		arr.map.with_index{|ele,i|
+			ele + sum[i]
+		}
+	}
+	ils_app_energy = static_nergy+dynamic_energy
+	ils_app_var = new_variance
+
+	energyout.print "#{var_ILP_energy/(ils_acc_energy + 0.0) }&#{ils_app_energy/(ils_acc_energy+0.0)}&#{kils_energy/(ils_acc_energy + 0.0)}&#{kls_energy / (ils_acc_energy + 0.0)}\n"
+	varout.print "#{var_ILP_var.kind_of?(Array) ? var_ILP_var.max/(variance_bound + 0.0):var_ILP_var/(variance_bound + 0.0) }&#{ils_app_var.kind_of?(Array)?ils_app_var.max/(variance_bound+0.0):ils_app_var/(variance_bound+0.0)}&#{kils_var.kind_of?(Array)? kils_var.max/(variance_bound + 0.0): kils_var/(variance_bound+0.0)}&#{kls_var.kind_of?(Array)?kls_var.max/(variance_bound + 0.0):kls_var/(variance_bound+0.0)}\n" 
 end
 
 energyout.close
