@@ -259,7 +259,7 @@ minLatency = {
 }
 
 
-testcase.each do |g|
+testset.each do |g|
 	operation_parameters = operation_parameters1
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
