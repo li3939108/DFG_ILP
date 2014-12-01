@@ -38,14 +38,14 @@ initial begin
 		in_0 = {$urandom(), $urandom()} >> (64-`INPUT_WIDTH);
 		//in_1 = (  (~16'b0000_0000_0000_0011) + 1 ) << `SHIFT_WIDTH;
 		//in_1 =   16'd3 << `SHIFT_WIDTH;
-		//in_1 = $rtoi(-2.674941238280375028 * (2**`SHIFT_WIDTH)) ;
-		in_1 = $rtoi(-1.93232* (2**`SHIFT_WIDTH)) ;
+		in_1 = $rtoi(-2.69332 * (2**`SHIFT_WIDTH)) ;
+		//in_1 = $rtoi(-0.919332 * (2**`SHIFT_WIDTH)) ;
 		#5;
 		precise_out = {{16{in_0[15]}}, in_0[15:0]} * {{16{in_1[15]}}, in_1[15:0]} ;
 		precise_out = {{32{precise_out[31]}}, precise_out[31:0]} >> `SHIFT_WIDTH ;
 		error[i] = $signed(out) - $signed( precise_out[31:0] ) ;
 		if(error[i] == 0)begin same += 1 ; end
-		sum += error[i] ;
+		sum += error[i];
 		result_sum += $signed(precise_out[31:0]) > 0 ? $signed(precise_out[31:0] ) : -$signed(precise_out[31:0]) ;
 		$display("%d x %d \n", in_0, in_1) ;
 		$display("Actual: %d\nAppr:   %d\nError:  %d\n", $signed( precise_out[31:0]) , $signed( out ), error[i]) ;
