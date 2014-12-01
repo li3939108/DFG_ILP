@@ -67,25 +67,15 @@ operation_parameters3 = {
 	}
 operation_parameters1 = {
 
-	's' => {
-		:type => [ "appr1", "accurate"], 
-		:u    => [ 1, 1], 
-		:d    => [ 3, 3], 
-		:g    => [80000, 142200],
-		:p    => [ 350,430],
-		:err  => [Math::log(1 - 0.978), Math::log(1 - 0)] ,
-		:err1 => [ Math::log(1-0.977), Math::log(1-0)],
-		:variance  => [8282, 0],
-	},
 	'x' => {
 		:type => ["appr1", "accurate"], 
 		:u    => [ 1, 1], 
 		:d    => [ 3, 3], 
-		:g    => [80000, 142200],
+		:g    => [83100, 142200],
 		:p    => [ 350,430],
 		:err  => [Math::log(1 - 0.978), Math::log(1 - 0)] ,
 		:err1 => [ Math::log(1-0.977), Math::log(1-0)],
-		:variance  => [8282, 0],
+		:variance  => [2500, 0],
 	},
 	'ALU' => {
 		:type => ["32/8trun", "32/8appr", "32/4trun","accurate"], 
@@ -200,13 +190,29 @@ root_dir = "/home/me/DFG_ILP"
 #root_dir = "/homes/grad/li3939108/DFG_ILP"
 vertex = ['x', 'x', 'x', 'x', 'x', 'x', '+', '+', '+', '+', '+']
 edge = [[6, 0], [6,1], [7,6], [7,2],[8,7], [8,3], [9,8], [9,4], [10,9], [10,5] ]
+
+
+energyout = File.open("EnergyOut_#{Time.new}", "w")
+varout = File.open("VarianceOut_#{Time.new}", "w")
+bindingOut = File.open("BindingOut_#{Time.new}", "w")
+scalersOut = File.open("ScalerOut_#{Time.new}", "w")
+
+
 fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})
 fir.ifactor
-$stderr.print fir.p[:adj].map{|v| [v.n, v.rand_number]}
+
+scalersOut.print "\n\/********fir******\/\n"
+fir.p[:adj].each{|v| 
+	scalersOut.print v.n," = ", v.rand_number, "\n"
+}
 
 arf = DFG_ILP::Parser.new("#{root_dir}/test/dot/arf.dot").parse.to_DFG
 arf.ifactor
-$stderr.print arf.p[:adj].map{|v| [v.n, v.rand_number]}
+
+scalersOut.print "\n\/********arf******\/\n"
+arf.p[:adj].each{|v| 
+	scalersOut.print v.n," = ", v.rand_number, "\n"
+}
 
 iir4 = DFG_ILP::GRAPH.new
 iir4.IIR(4)
@@ -252,11 +258,9 @@ minLatency = {
 	mv => 11, 
 }
 
-energyout = File.open("EnergyOut_#{Time.new}", "w")
-varout = File.open("VarianceOut_#{Time.new}", "w")
 
-testset.each do |g|
-	operation_parameters = operation_parameters3
+testcase.each do |g|
+	operation_parameters = operation_parameters1
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
@@ -289,11 +293,16 @@ testset.each do |g|
 	var_ILP_energy = r[:opt]
 	var_ILP_var = max_var
 	 
+	bindingOut.print "\n\/*****#{g.p[:name]}***ILP*******\/\n"
+	r[:sch].each{|sch|
+		bindingOut.print "#{(sch[:op] == '+' or sch[:op] == 'ALU')?"add":"mul"}_#{sch[:type]} #{(sch[:op] == '+' or sch[:op] == 'ALU')?"adder":"multiplier"}_#{sch[:id]}#{(sch[:op] == '+' or sch[:op] == 'ALU')?"       ":" "}(out_#{sch[:id]}, in_#{sch[:id]}_0, in_#{sch[:id]}_1 );\n" 
+	}
+
 	ilp.vs(r[:sch], 0)
 
 	endtime = Time.new
 	$stderr.print "Run Time: ", endtime - startime, "\n"
-
+	
 	# error rate based ILP
 	#$stderr.print 'er bound: ', 1 - Math::E**er_bound
 	#$stderr.print 'er1 bound: ', 1 - Math::E**er1_bound
@@ -312,33 +321,33 @@ testset.each do |g|
 	#er_ilp.vs(er_r[:sch], 0)
 
 	# all approximate	
-	unlimited_variance_bound = 99999999999999
-	full_approximate_ilp = DFG_ILP::ILP.new(g, {
-		:err_type => 'var', 
-		:q => latency, 
-		:variance_bound =>unlimited_variance_bound,
-		:operation_parameters => operation_parameters ,
-		:scaling => scaling})
-	fa_ret = full_approximate_ilp.compute(g, :cplex)
-	$stderr.print "var: ", fa_ret[:var].map{|var_slack| unlimited_variance_bound - var_slack}, "\n"
-	max_var = fa_ret[:var].map{|var_slack| unlimited_variance_bound- var_slack}.max
-	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
-	full_approximate_ilp.vs(fa_ret[:sch], 0)
+	#unlimited_variance_bound = 99999999999999
+	#full_approximate_ilp = DFG_ILP::ILP.new(g, {
+	#	:err_type => 'var', 
+	#	:q => latency, 
+	#	:variance_bound =>unlimited_variance_bound,
+	#	:operation_parameters => operation_parameters ,
+	#	:scaling => scaling})
+	#fa_ret = full_approximate_ilp.compute(g, :cplex)
+	#$stderr.print "var: ", fa_ret[:var].map{|var_slack| unlimited_variance_bound - var_slack}, "\n"
+	#max_var = fa_ret[:var].map{|var_slack| unlimited_variance_bound- var_slack}.max
+	#er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
+	#full_approximate_ilp.vs(fa_ret[:sch], 0)
 
 	#$stderr.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
-	$stderr.print "#{fa_ret[:opt]}&\t#{max_var}&"
-
-	#accurate 
-	accurate_ilp = DFG_ILP::ILP.new(g, {
-		:err_type => 'var', 
-		:q => latency, 
-		:variance_bound => 0, 
-		:operation_parameters => operation_parameters,
-		:scaling => scaling})
-	a_ret = accurate_ilp.compute(g, :cplex)
-	accurate_ilp.vs(a_ret[:sch], 0)
-	
-	$stderr.print "&\t#{a_ret[:opt]}&\t0"
+	#$stderr.print "#{fa_ret[:opt]}&\t#{max_var}&"
+        #
+	##accurate 
+	#accurate_ilp = DFG_ILP::ILP.new(g, {
+	#	:err_type => 'var', 
+	#	:q => latency, 
+	#	:variance_bound => 0, 
+	#	:operation_parameters => operation_parameters,
+	#	:scaling => scaling})
+	#a_ret = accurate_ilp.compute(g, :cplex)
+	#accurate_ilp.vs(a_ret[:sch], 0)
+	#
+	#$stderr.print "&\t#{a_ret[:opt]}&\t0"
 
 	# mmkp
 	startime = Time.new
@@ -383,6 +392,13 @@ testset.each do |g|
 	
 	kils_energy = new_energy
 	kils_var = new_variance
+
+	
+	bindingOut.print "\n\/***#{g.p[:name]}**KILS*******\/\n"
+	for i in [*0..sch[:allocated].length-1] do
+		bindingOut.print "#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"add":"mul"}_#{sch[:allocated][i]} #{( g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"adder":"multiplier"}_#{i+1}#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"      ":" "}(out_#{i+1}, in_#{i+1}_0, in_#{i+1}_1 );\n" 
+	end
+
 	
 	$stderr.print "single run \n*********************\n"
 	# mmkp
@@ -423,6 +439,11 @@ testset.each do |g|
 	kls_energy = new_energy
 	kls_var = new_variance
 
+	bindingOut.print "\n\/***#{g.p[:name]}**KLS*******\/\n"
+	for i in [*0..sch[:allocated].length-1] do
+		bindingOut.print "#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"add":"mul"}_#{sch[:allocated][i]} #{( g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"adder":"multiplier"}_#{i+1}#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"      ":" "}(out_#{i+1}, in_#{i+1}_0, in_#{i+1}_1  );\n" 
+	end
+
 	
 
 	static_energy = @p.map{|k,v|
@@ -461,7 +482,10 @@ testset.each do |g|
 
 	energyout.print "#{var_ILP_energy/(ils_acc_energy + 0.0) }&#{ils_app_energy/(ils_acc_energy+0.0)}&#{kils_energy/(ils_acc_energy + 0.0)}&#{kls_energy / (ils_acc_energy + 0.0)}\n"
 	varout.print "#{var_ILP_var.kind_of?(Array) ? var_ILP_var.max/(variance_bound + 0.0):var_ILP_var/(variance_bound + 0.0) }&#{ils_app_var.kind_of?(Array)?ils_app_var.max/(variance_bound+0.0):ils_app_var/(variance_bound+0.0)}&#{kils_var.kind_of?(Array)? kils_var.max/(variance_bound + 0.0): kils_var/(variance_bound+0.0)}&#{kls_var.kind_of?(Array)?kls_var.max/(variance_bound + 0.0):kls_var/(variance_bound+0.0)}\n" 
+	
+
 end
 
+bindingOut.close
 energyout.close
 varout.close
