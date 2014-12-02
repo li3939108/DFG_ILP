@@ -477,7 +477,7 @@ module DFG_ILP
 				return true 
 			end
 		end
-		def allocate_available_resource( being_used, vindex_0, implementation, allocated)
+		def allocate_available_resource( being_used, vindex_0, implementation, allocated, allocated_index)
 			type = @vertex[ vindex_0 ]
 			length = being_used[ type ].length
 			for i in  implementation..length-1 
@@ -485,6 +485,7 @@ module DFG_ILP
 				if(available_resource != nil)
 					being_used[ type ][ i][available_resource] = @d[ type ][ i ]
 					allocated [ vindex_0 ] = i 
+					allocated_index[ vindex_0] = available_resource 
 					return true
 				end
 			end
@@ -499,10 +500,11 @@ module DFG_ILP
 			end
 		end
 		
-		def list_scheduler(implementation, util, prev_used, y)
+		def list_scheduler(implementation, util, prev_used, y, prev_util)
 			time = []
 			time_slot = []
 			allocated = []
+			allocated_index = []
 			time_alap = self.ALAP(nil)
 			time_slot_alap = []
 			reverse_adj_list = []
@@ -523,26 +525,27 @@ module DFG_ILP
 			@vertex_precedence_adj.each{|v|
 				v.adj.each{|w|
 					reverse_adj_list[w.n - 1].adj_push(v)}}
-			print "reverselist: ", reverse_adj_list , "\n\n"
+			#print "reverselist: ", reverse_adj_list , "\n\n"
 			#scheduled = []
 			for_scheduling = reverse_adj_list.select{|v| 
 				(v.adj.empty? or 
 				v.adj.select{|vi| 
 					not finished(time, i, vi, allocated) }.empty?) and 
 				(not scheduled( time, i, v, implementation) ) }
-			print for_scheduling , "\n\n"
+			#print for_scheduling , "\n\n"
 			for i in [*0..time_slot_alap.length - 1] do
-				print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
+				#print "enter step: ", i, "\n\n", time, "\n\n----------\n\n"
 				being_used = Hash[ being_used.map{|k,v| [k, v.map{|delay| delay.map{|d| d > 0 ? d - 1 : 0 }} ]}  ]
 				if time_slot_alap[i]  != nil then
 					time_slot_alap[i].each{|vindex_0|# starting from index 0
 					
 					if(not scheduled( time, i, reverse_adj_list[vindex_0], implementation) ) then 
 						add_to(i, time_slot, time, reverse_adj_list, vindex_0)
-						if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated ) == false)
+						if( allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated, allocated_index ) == false)
 							being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].push ( 
 								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
 							allocated[ vindex_0] = implementation[vindex_0]
+							allocated_index[vindex_0] =  being_used[ @vertex[vindex_0] ][ implementation[vindex_0] ].length - 1 
 						end
 					end
 					}
@@ -560,54 +563,81 @@ module DFG_ILP
 					#	print for_scheduling, "\n"
 						for_scheduling.each{|v|
 						vindex_0 = v.n - 1
-						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated) )
+						if ( true == allocate_available_resource( being_used, vindex_0, implementation[vindex_0], allocated, allocated_index) )
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0 )
-						elsif ( (  prev_used == nil and being_used[ v.type ][ implementation[ vindex_0 ] ].empty? ) or 
-							( prev_used != nil and ( (being_used[ v.type ].map{|arr| arr.length}.reduce(0, :+) + 0.0) / 
-							prev_used[ v.type].map{|arr| arr.length}.reduce(0, :+)  < util[ v.type ] * y) ) )
+						elsif (  prev_used == nil and being_used[ v.type ][ implementation[ vindex_0 ] ].empty? )  
+
 							add_to(i, time_slot, time, reverse_adj_list, vindex_0)
 							being_used[ v.type ][ implementation[ vindex_0] ].push ( 
 								@d[ @vertex[vindex_0] ][implementation[ vindex_0 ]] )
 							allocated[ vindex_0] = implementation[vindex_0]
+							allocated_index[vindex_0 ] = being_used[ v.type ][ implementation[ vindex_0] ].length - 1
+
+						elsif( prev_used != nil and ( (being_used[ v.type ].map{|arr| arr.length}.reduce(0, :+) + 0.0) / 
+						prev_used[ v.type].map{|arr| arr.length}.reduce(0, :+)  < util[ v.type ] * y) ) 
+
+							chosen_type = choose_type_to_allocate(prev_util, @vertex[ vindex_0 ], implementation[ vindex_0 ])
+							if(chosen_type != -1)
+								add_to(i, time_slot, time, reverse_adj_list, vindex_0)
+								being_used[ v.type ][ chosen_type ].push(
+									@d[ @vertex[vindex_0] ][ chosen_type ] ) 
+								allocated[ vindex_0 ] = chosen_type 
+								allocated_index[ vindex_0 ] = being_used[v.type ][chosen_type ].length - 1
+							end
 						end
 						}
 					end
 				end
 			end
-			print "\n\n"
-			print allocated, "\n\n"
 			{:time => time, 
 			:time_slot=> time_slot, 
 			:being_used => being_used,
 			:allocated => allocated,
+			:allocated_index => allocated_index,
 			}
 		end
+		def choose_type_to_allocate(util, vtype, imptype)
+			max_index = -1
+			i = imptype
+			max = 0
+			util[vtype][imptype..-1].each{|arr|
+				if( not arr.empty?  )
+					if(arr.last > max)
+						max = arr.last
+						max_index =  i
+					end
+				end
+				i += 1
+			}
+			if(max_index != -1) then util[vtype][max_index].pop end
+			max_index
+		end
+		
 		def iterative_list_scheduling(implementation, y, run_bound = Float::INFINITY)
-			cur_util = nil
-			prev_util = nil
+			cur_overall_util = nil
+			prev_overall_util = nil
+			cur_each_util = nil
+			prev_each_util = nil
 			prev_used = nil
 			cur_used = nil
 			run = 0
-			while(run < run_bound and (  cur_util == nil or 
-			prev_util == nil or 
-			(not cur_util.values.map.with_index{|u,i|
-				u == nil or u - prev_util.values[i] < 0.01}.select{|t| t == false}.empty? ) ) )
-
-				prev_util = cur_util 
+			while(run < run_bound and (  cur_overall_util == nil or 
+			prev_overall_util == nil or 
+			(not cur_overall_util.values.map.with_index{|u,i|
+				u == nil or u - prev_overall_util.values[i] < 0.01}.select{|t| t == false}.empty? ) ) )
+				
+				prev_each_util = cur_each_util
+				prev_overall_util = cur_overall_util
 				prev_used = cur_used
-				ret = list_scheduler(implementation, cur_util, prev_used, y)
+				ret = list_scheduler(implementation, cur_overall_util, prev_used, y, cur_each_util)
 				cur_used = ret[:being_used]
-				cur_util = all_utilization(
-				@q,
-				ret[:being_used], 
-				ret[:allocated],
-				@d,
-				@vertex) 
+				cur_overall_util = all_utilization( @q,	ret[:being_used], ret[:allocated], @d, @vertex )
+				cur_each_util = utilization(@q, ret[:being_used], ret[:allocated], ret[:allocated_index], @d, @vertex)
 				run += 1
 			end
 			$stderr.print "\n\nrun: " , run ,"\n\n"
+			print utilization(@q, ret[:being_used], ret[:allocated], ret[:allocated_index], @d, @vertex)
 			ret
-				
 		end
 		#def current_utilization(cur, being_used, allocated, delay, vertex_type, type)
 		#	total = (cur + 1) * being_allocated[type].map{|arr| arr.length}.reduce(0, :+)
@@ -621,13 +651,19 @@ module DFG_ILP
 			Hash[ previous_used.keys.map{|v| 
 				previous_used[v].map{|arr| arr.length}.reduce(0, :+) == 0 ? 
 				[v, nil] : 
-				[v, average_utilization(
-					@q,
-					previous_used, 
-					previous_allocated,
-					@d,
-					@vertex,
-					v)] }]
+				[v, average_utilization( @q,previous_used, previous_allocated,@d,@vertex,v)] }]
+		end
+		def utilization(q, used, allocated, allocated_index, delay, vertex_type)
+			ret = Hash[ used.map{|k,v|
+				[k, v.map.with_index{|res, i|
+					total = q 
+					res.map.with_index{|nouse, index|
+						occupied = delay[ k ][ i ] * allocated.map.with_index{|type, aindex|
+							( vertex_type[aindex] == k and type == i and allocated_index[ aindex ] == index ) ? 1: 0
+						}.reduce(0, :+) / (q + 0.0)
+					}.sort
+				} ]
+			}]
 		end
 		def average_utilization(q, previous_used, previous_allocated, delay, vertex_type, type)
 			total = q * previous_used[type].map{|arr| arr.length}.reduce(0, :+);

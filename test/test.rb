@@ -360,7 +360,7 @@ testset.each do |g|
 	mmkp_r = ilp.mmkp_compute(g, :cplex)
 	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
 	er_bound = [*0..g.p[:v].length - 1].select{|i| g.p[:PO][i] }.map{|po| mmkp_r[:error][po] }.max
-	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.05)
+	sch = ilp.iterative_list_scheduling(mmkp_r[:type], 1.75)
 	static_energy = @p.map{|k,v|
 		sch[:being_used][k].map.with_index{|arr,i|
 			arr.length * v[i] 
