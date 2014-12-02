@@ -463,14 +463,14 @@ testset.each do |g|
 	static_nergy = @p.map{|k,v|
 		sch[:being_used][k].map.with_index{|arr,i|
 			arr.length
-		}.reduce(0, :+) * ( (k == '+') ? v[1]: v[0] ) * latency * scaling
+		}.reduce(0, :+) * ( (k == '+' or k == 'ALU') ? v[1]: v[0] ) * latency * scaling
 	}.reduce(0,:+)
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
-		((g.p[:v][i] == '+' )?@g[ g.p[:v][i] ][1]:@g[ g.p[:v][i] ][0])
+		((g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?@g[ g.p[:v][i] ][1]:@g[ g.p[:v][i] ][0])
 	}.reduce(0, :+)
 	new_variance = sch[:allocated].map.with_index{|t,i|
 		g.p[:adj][i].ifactor.map{|factor|
-			g.p[:v][i] == '+' ? @variance[ g.p[:v][i] ][ 1 ] * (factor**2) : @variance[ g.p[:v][i] ][ 0] * (factor**2)
+			(g.p[:v][i] == '+'  or g.p[:v][i] == 'ALU') ? @variance[ g.p[:v][i] ][ 1 ] * (factor**2) : @variance[ g.p[:v][i] ][ 0] * (factor**2)
 		}
 	}.inject(Array.new(g.p[:adj][1].ifactor.length, 0) ){|sum, arr| 
 		arr.map.with_index{|ele,i|
