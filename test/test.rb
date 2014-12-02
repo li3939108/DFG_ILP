@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'dfg_ilp'
+dynamic_on = 0
 operation_parameters3 = {
 
 	's' => {
@@ -196,6 +197,7 @@ energyout = File.open("EnergyOut_#{Time.new}", "w")
 varout = File.open("VarianceOut_#{Time.new}", "w")
 bindingOut = File.open("BindingOut_#{Time.new}", "w")
 scalersOut = File.open("ScalerOut_#{Time.new}", "w")
+apprRatio = File.open("ApprRatio_#{Time.new}", "w")
 
 
 fir = DFG_ILP::GRAPH.new({:e => edge, :v => vertex, :name => 'fir5'})
@@ -265,9 +267,9 @@ testset.each do |g|
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
 	@variance=Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
-	latency = minLatency[g] * 2
-	variance_bound = 30000
-	scaling = 10
+	latency = minLatency[g] * 1.5
+	variance_bound = 10000
+	scaling = 30
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
 	startime = Time.new
@@ -297,6 +299,11 @@ testset.each do |g|
 	r[:sch].each{|sch|
 		bindingOut.print "#{(sch[:op] == '+' or sch[:op] == 'ALU')?"add":"mul"}_#{sch[:type]} #{(sch[:op] == '+' or sch[:op] == 'ALU')?"adder":"multiplier"}_#{sch[:id]}#{(sch[:op] == '+' or sch[:op] == 'ALU')?"       ":" "}(out_#{sch[:id]}, in_#{sch[:id]}_0, in_#{sch[:id]}_1 );\n" 
 	}
+	ilp_apprNumber = 0
+	r[:sch].each{|sch|
+		if( sch[:type] != @variance[ sch[:op] ].length - 1) then  ilp_apprNumber += 1 end
+	}
+	ilp_apprRatio = ilp_apprNumber/ (r[:sch].length + 0.0)
 
 	ilp.vs(r[:sch], 0)
 
@@ -349,7 +356,7 @@ testset.each do |g|
 	#
 	#$stderr.print "&\t#{a_ret[:opt]}&\t0"
 
-	# mmkp
+	# mmkp - ILS
 	startime = Time.new
 	ilp = DFG_ILP::ILP.new(g, {
 		:type => 'mmkp', 
@@ -367,7 +374,7 @@ testset.each do |g|
 		}.reduce(0, :+) * latency * scaling
 	}.reduce(0, :+)
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
-		@g[ g.p[:v][i] ][ t ]
+		@g[ g.p[:v][i] ][ t ] * dynamic_on
 	}.reduce(0, :+)
 	new_variance = sch[:allocated].map.with_index{|t,i|
 		g.p[:adj][i].ifactor.map{|factor|
@@ -398,10 +405,14 @@ testset.each do |g|
 	for i in [*0..sch[:allocated].length-1] do
 		bindingOut.print "#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"add":"mul"}_#{sch[:allocated][i]} #{( g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"adder":"multiplier"}_#{i+1}#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"      ":" "}(out_#{i+1}, in_#{i+1}_0, in_#{i+1}_1 );\n" 
 	end
+	kils_apprnumber = sch[:allocated].map.with_index{|imp,i|
+		(@variance[ g.p[:v][i] ].length - 1 == imp )? 0 : 1
+	}.reduce(0,:+)
+	kils_apprRatio = kils_apprnumber / (sch[:allocated].length + 0.0)
 
 	
+	# mmkp - LS
 	$stderr.print "single run \n*********************\n"
-	# mmkp
 	startime = Time.new
 
 	max_var =  mmkp_r[:var].map{|var_slack| variance_bound - var_slack}.max
@@ -413,7 +424,7 @@ testset.each do |g|
 		}.reduce(0, :+) * latency * scaling
 	}.reduce(0, :+)
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
-		@g[ g.p[:v][i] ][ t ]
+		@g[ g.p[:v][i] ][ t ] * dynamic_on
 	}.reduce(0, :+)
 	new_energy = static_energy + dynamic_energy
 	new_variance = sch[:allocated].map.with_index{|t,i|
@@ -443,6 +454,10 @@ testset.each do |g|
 	for i in [*0..sch[:allocated].length-1] do
 		bindingOut.print "#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"add":"mul"}_#{sch[:allocated][i]} #{( g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"adder":"multiplier"}_#{i+1}#{(g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?"      ":" "}(out_#{i+1}, in_#{i+1}_0, in_#{i+1}_1  );\n" 
 	end
+	kls_apprnumber = sch[:allocated].map.with_index{|imp,i|
+		(@variance[ g.p[:v][i] ].length - 1 == imp )? 0 : 1
+	}.reduce(0,:+)
+	kls_apprRatio = kls_apprnumber / (sch[:allocated].length + 0.0)
 
 	
 
@@ -452,7 +467,7 @@ testset.each do |g|
 		}.reduce(0, :+) * v.last * latency * scaling
 	}.reduce(0, :+)
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
-		@g[ g.p[:v][i] ].last
+		@g[ g.p[:v][i] ].last * dynamic_on
 	}.reduce(0, :+)
 	ils_acc_energy = static_energy + dynamic_energy
 	ils_acc_var = 0
@@ -466,7 +481,7 @@ testset.each do |g|
 		}.reduce(0, :+) * ( (k == '+' or k == 'ALU') ? v[1]: v[0] ) * latency * scaling
 	}.reduce(0,:+)
 	dynamic_energy = sch[:allocated].map.with_index{|t,i|
-		((g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?@g[ g.p[:v][i] ][1]:@g[ g.p[:v][i] ][0])
+		((g.p[:v][i] == '+' or g.p[:v][i] == 'ALU')?@g[ g.p[:v][i] ][1]:@g[ g.p[:v][i] ][0])* dynamic_on
 	}.reduce(0, :+)
 	new_variance = sch[:allocated].map.with_index{|t,i|
 		g.p[:adj][i].ifactor.map{|factor|
@@ -480,12 +495,14 @@ testset.each do |g|
 	ils_app_energy = static_nergy+dynamic_energy
 	ils_app_var = new_variance
 
-	energyout.print "#{var_ILP_energy/(ils_acc_energy + 0.0) }&#{ils_app_energy/(ils_acc_energy+0.0)}&#{kils_energy/(ils_acc_energy + 0.0)}&#{kls_energy / (ils_acc_energy + 0.0)}\n"
+	energyout.print "#{kls_energy / (ils_acc_energy + 0.0)}\t#{kils_energy/(ils_acc_energy + 0.0)}\t#{var_ILP_energy/(ils_acc_energy + 0.0) }\t#{ils_app_energy/(ils_acc_energy+0.0)}\n"
 	varout.print "#{var_ILP_var.kind_of?(Array) ? var_ILP_var.max/(variance_bound + 0.0):var_ILP_var/(variance_bound + 0.0) }&#{ils_app_var.kind_of?(Array)?ils_app_var.max/(variance_bound+0.0):ils_app_var/(variance_bound+0.0)}&#{kils_var.kind_of?(Array)? kils_var.max/(variance_bound + 0.0): kils_var/(variance_bound+0.0)}&#{kls_var.kind_of?(Array)?kls_var.max/(variance_bound + 0.0):kls_var/(variance_bound+0.0)}\n" 
 	
+	apprRatio.print "#{ilp_apprRatio}\t#{kils_apprRatio}\t#{kls_apprRatio}\n"
 
 end
 
 bindingOut.close
 energyout.close
 varout.close
+apprRatio.close

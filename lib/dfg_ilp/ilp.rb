@@ -384,9 +384,9 @@ module DFG_ILP
 			# Objective vector
 			@c	=
 				if(mobility_constrainted)
-					@vertex.map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
+					@vertex.map.with_index{|v,xi|   [*@asap[xi]..@alap[xi]].map{|xt|   @g[v].map{|v| 0}   }.reduce([], :+)      }.reduce([], :+)
 				else
-					@vertex.map.with_index{|v,xi|   [*0..q-1].map{|xt|   @g[v]   }.reduce([], :+)      }.reduce([], :+)
+					@vertex.map.with_index{|v,xi|   [*0..q-1].map{|xt|   @g[v].map{|v| 0}  }.reduce([], :+)      }.reduce([], :+)
 				end							+		#xArray
 				Array.new(@Nerr, 0)*2					+		#errArray
 				@p.values.flatten.map{|p| p * q * @scaling_factor }	+		#uArray
