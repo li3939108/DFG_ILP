@@ -1,8 +1,7 @@
 `include "interface.v"
 `include "arf_variance.v"
 `include "arf_accurate.v"
-`include "arf_variance_0.v"
-`include "arf_er.v"
+`include "arf_allappr.v"
 `include "parameters.v"
 
 module arf();
@@ -21,7 +20,7 @@ reg signed [31:0]
 reg signed [31:0]
 	in_13_1, in_14_1;
 
-integer i, TESTSIZE, nNoError[2][];
+integer i, TESTSIZE, nNoError[2][], compensation[2];
 real mean[2], variance[2], std[2], mean_result[2], snr[2], snr_sum[2], mse[2], ares_sum[2], ares[2];
 longint signed error[2][], sum[2], result_sum[2];
 
@@ -58,6 +57,8 @@ initial begin
 	TESTSIZE = 0;
 	status = $value$plusargs("T=%d", TESTSIZE) ;
 	#5;
+	compensation[0]=794;
+	compensation[1]=-434;
 	error[0] = new[TESTSIZE] ;
 	error[1] = new[TESTSIZE] ;
 	nNoError[0] = new[2];
@@ -80,7 +81,7 @@ end
 
 initial begin
 	integer input_width = 64 - `INPUT_WIDTH ;
-	integer r_seed = 2 ;
+	integer r_seed = 34 ;
 	$srandom(r_seed);
 
 	for(i = 0; i < TESTSIZE; i = i + 1 )begin
@@ -94,9 +95,10 @@ initial begin
 		in_8_0 = {$urandom(),$urandom()} >> input_width;
 		in_13_1 = {$urandom(), $urandom()} >> input_width;
 		in_14_1 = {$urandom(), $urandom()} >> input_width;
-	
-		error[0][i] = $signed(out_27_var) - $signed(out_27_acc) ;
-		error[1][i] = $signed(out_28_var) - $signed(out_28_acc) ;
+
+		#5;
+		error[0][i] = $signed(out_27_var) - $signed(out_27_acc) + compensation[0];
+		error[1][i] = $signed(out_28_var) - $signed(out_28_acc) + compensation[1];
 		if(error[0][i] == 0)begin
 			nNoError[0][0] += 1;
 		end
@@ -140,7 +142,7 @@ initial begin
 		variance[1] += ( ( error[1][i] - mean[1])**2) / (TESTSIZE + 0.0) ;
 		
 		mse[0] += (error[0][i]**2) / (TESTSIZE + 0.0) ;
-		mse[1] += (error[0][i]**2) / (TESTSIZE + 0.0) ;
+		mse[1] += (error[1][i]**2) / (TESTSIZE + 0.0) ;
 	end
 	
 	std[0] = variance[0]**(1.0 / 2.0) ;

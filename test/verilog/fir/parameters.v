@@ -4,7 +4,7 @@
 /*
  * for fixed-point variable
  */
-`define SHIFT_WIDTH 15
+`define SHIFT_WIDTH 12
 `define INPUT_WIDTH 15
 `define ER_THRESH1     4
 

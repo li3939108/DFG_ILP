@@ -1,8 +1,6 @@
 `include "interface.v"
 `include "fir_accurate.v"
 `include "fir_variance.v"
-`include "fir_variance_0.v"
-`include "fir_er.v"
 `include "parameters.v"
 module fir;
 
@@ -34,7 +32,7 @@ longint signed
 	result_sum;
 
 
-fir_er fir0(
+fir_variance fir0(
 	.in_1_0(in_1_0),
 	.in_2_0(in_2_0),
 	.in_3_0(in_3_0),

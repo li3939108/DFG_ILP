@@ -38,7 +38,7 @@ initial begin
 		in_0 = {$urandom(), $urandom()} >> (64-`INPUT_WIDTH);
 		//in_1 = (  (~16'b0000_0000_0000_0011) + 1 ) << `SHIFT_WIDTH;
 		//in_1 =   16'd3 << `SHIFT_WIDTH;
-		in_1 = $rtoi(-1.98332 * (2**`SHIFT_WIDTH)) ;
+		in_1 = $rtoi(0.89332 * (2**`SHIFT_WIDTH)) ;
 		//in_1 = $rtoi(-0.919332 * (2**`SHIFT_WIDTH)) ;
 		#5;
 		precise_out = {{16{in_0[15]}}, in_0[15:0]} * {{16{in_1[15]}}, in_1[15:0]} ;

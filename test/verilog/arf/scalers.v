@@ -1,14 +1,24 @@
 `include "parameters.v"
 
-assign 	in_15_1 =   $rtoi( -2.719361854264811*(2**`SHIFT_WIDTH) );
-assign 	in_16_1 =   $rtoi( 0.5617869860861595*(2**`SHIFT_WIDTH) );
-assign 	in_17_1 =   $rtoi(-1.721618489130774*(2**`SHIFT_WIDTH) ) ;	
+/*
+assign 	in_15_1 =   $rtoi( -2.719361854264811  *(2**`SHIFT_WIDTH) );
+assign 	in_16_1 =   $rtoi( 0.5617869860861595  *(2**`SHIFT_WIDTH) );
+assign 	in_17_1 =   $rtoi(-1.721618489130774   *(2**`SHIFT_WIDTH) ) ;	
 assign 	in_18_1 =   $rtoi( -2.3232966470791023 *(2**`SHIFT_WIDTH) ) ;
-assign 	in_21_1 =   $rtoi( 0.5194551902584168*(2**`SHIFT_WIDTH) );
-assign 	in_22_1 =   $rtoi(1.822723232772419   *(2**`SHIFT_WIDTH) );
-assign 	in_23_1 =   $rtoi(0.5818079254078512  *(2**`SHIFT_WIDTH) ) ;
-assign 	in_24_1 =   $rtoi(2.0090964184157114 *(2**`SHIFT_WIDTH) ) ;
+assign 	in_21_1 =   $rtoi( 0.5194551902584168  *(2**`SHIFT_WIDTH) );
+assign 	in_22_1 =   $rtoi(1.822723232772419    *(2**`SHIFT_WIDTH) );
+assign 	in_23_1 =   $rtoi(0.5818079254078512   *(2**`SHIFT_WIDTH) ) ;
+assign 	in_24_1 =   $rtoi(2.0090964184157114   *(2**`SHIFT_WIDTH) ) ;
+*/
 	
+assign 	in_15_1 = $rtoi(1.1746823398377373   *(2**`SHIFT_WIDTH) );
+assign 	in_16_1 = $rtoi(0.6263884512229376   *(2**`SHIFT_WIDTH) );
+assign 	in_17_1 = $rtoi(0.113473787746182    *(2**`SHIFT_WIDTH) ) ;
+assign 	in_18_1 = $rtoi(2.4495068242254288   *(2**`SHIFT_WIDTH) ) ;
+assign 	in_21_1 = $rtoi(2.298204742339039    *(2**`SHIFT_WIDTH) );
+assign 	in_22_1 = $rtoi(-1.171294381959251   *(2**`SHIFT_WIDTH) );
+assign 	in_23_1 = $rtoi(-2.0816340087716827  *(2**`SHIFT_WIDTH) ) ;
+assign 	in_24_1 = $rtoi(2.013118053040035    *(2**`SHIFT_WIDTH) ) ;
 assign 	in_1_1 =  $rtoi( -2.752332*(2**`SHIFT_WIDTH) );
 assign 	in_2_1 =  $rtoi( 1.283223*(2**`SHIFT_WIDTH) );
 assign 	in_3_1 =  $rtoi( 0.372823*(2**`SHIFT_WIDTH) ) ;	
