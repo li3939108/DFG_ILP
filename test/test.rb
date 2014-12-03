@@ -261,14 +261,14 @@ minLatency = {
 }
 
 
-testset.each do |g|
+testcase.each do |g|
 	operation_parameters = operation_parameters1
 	
 	@p      = Hash[operation_parameters.map{|k,v| [k, v[:p] ]} ]
 	@g      = Hash[operation_parameters.map{|k,v| [k, v[:g] ]} ]
 	@variance=Hash[operation_parameters.map{|k,v| [k, v[:variance]]}]
 	latency = minLatency[g] * 1.5
-	variance_bound = 10000
+	variance_bound = 3000
 	scaling = 30
 	$stderr.print "\n", g.p[:name], " start", "\n---------------------------\n"
 	# variance based ILP
@@ -328,33 +328,33 @@ testset.each do |g|
 	#er_ilp.vs(er_r[:sch], 0)
 
 	# all approximate	
-	#unlimited_variance_bound = 99999999999999
-	#full_approximate_ilp = DFG_ILP::ILP.new(g, {
-	#	:err_type => 'var', 
-	#	:q => latency, 
-	#	:variance_bound =>unlimited_variance_bound,
-	#	:operation_parameters => operation_parameters ,
-	#	:scaling => scaling})
-	#fa_ret = full_approximate_ilp.compute(g, :cplex)
-	#$stderr.print "var: ", fa_ret[:var].map{|var_slack| unlimited_variance_bound - var_slack}, "\n"
-	#max_var = fa_ret[:var].map{|var_slack| unlimited_variance_bound- var_slack}.max
-	#er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
-	#full_approximate_ilp.vs(fa_ret[:sch], 0)
+	unlimited_variance_bound = 99999999999999
+	full_approximate_ilp = DFG_ILP::ILP.new(g, {
+		:err_type => 'var', 
+		:q => latency, 
+		:variance_bound =>unlimited_variance_bound,
+		:operation_parameters => operation_parameters ,
+		:scaling => scaling})
+	fa_ret = full_approximate_ilp.compute(g, :cplex)
+	$stderr.print "var: ", fa_ret[:var].map{|var_slack| unlimited_variance_bound - var_slack}, "\n"
+	max_var = fa_ret[:var].map{|var_slack| unlimited_variance_bound- var_slack}.max
+	er_bound = fa_ret[:sch].select{|sch| g.p[:PO][sch[:id] - 1] }.map{|schedule| schedule[:error] }.max
+	full_approximate_ilp.vs(fa_ret[:sch], 0)
 
-	#$stderr.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
-	#$stderr.print "#{fa_ret[:opt]}&\t#{max_var}&"
-        #
-	##accurate 
-	#accurate_ilp = DFG_ILP::ILP.new(g, {
-	#	:err_type => 'var', 
-	#	:q => latency, 
-	#	:variance_bound => 0, 
-	#	:operation_parameters => operation_parameters,
-	#	:scaling => scaling})
-	#a_ret = accurate_ilp.compute(g, :cplex)
-	#accurate_ilp.vs(a_ret[:sch], 0)
-	#
-	#$stderr.print "&\t#{a_ret[:opt]}&\t0"
+	$stderr.print "&\t#{fa_ret[:opt]}&\t#{max_var}&\t#{1 - Math::E**er_bound}"
+	$stderr.print "#{fa_ret[:opt]}&\t#{max_var}&"
+        
+	#accurate 
+	accurate_ilp = DFG_ILP::ILP.new(g, {
+		:err_type => 'var', 
+		:q => latency, 
+		:variance_bound => 0, 
+		:operation_parameters => operation_parameters,
+		:scaling => scaling})
+	a_ret = accurate_ilp.compute(g, :cplex)
+	accurate_ilp.vs(a_ret[:sch], 0)
+	
+	$stderr.print "&\t#{a_ret[:opt]}&\t0"
 
 	# mmkp - ILS
 	startime = Time.new
